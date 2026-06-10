@@ -104,7 +104,7 @@
                 [`\n<h${h.length}>${md2HtmlInline(txt)}</h${h.length}>\n\n`]
         ],
         [/^( *\- *[^\n]+(\n *\- *[^\n]+)*)$/m, md2HtmlProcessList("ul")],
-        [/^( *\d+\. *[^\n]+(\n *\d\. *[^\n]+)*)$/m, md2HtmlProcessList("ol")],
+        [/^( *\d+\. *[^\n]+(\n *\d+\. *[^\n]+)*)$/m, md2HtmlProcessList("ol")],
         [
             /^([^\n]+(\n[^\n]+)*)$/m,
             (all) => [
