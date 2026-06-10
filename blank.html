@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>OmniFlux</title><style>
+/* CSS-based navigation - see https://dev.to/fedia/15kb-single-file-wiki-46a1 */
+article:not(.index, :target, :has(:target)),
+#of_articles:has(> :target) article.index:not(:target) {
+    display: none;
+}
+
+/* Rudimentary reset */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+/* Page styling */
+body {
+    color: #1d1d1d;
+    background-color: #fefefe;
+}
+
+article {
+    padding: 1em;
+    margin: auto;
+    max-width: 960px;
+    font: 1.25em sans-serif;
+    line-height: 1.5;
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+#of_editor {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    font: 1.25em sans-serif;
+    background-color: inherit;
+
+    #of_menu {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+
+    #of_input {
+        padding: 0.5rem;
+        border: 0;
+        outline: none;
+        flex: 1;
+        resize: none;
+    }
+}
+
+body:has(#of_editor:not([style*="display"])) {
+    overflow: hidden;
+}
+
+#of_toolbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    margin: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+}
+</style></head><body><div id="of_articles">
+<article class="index"></article></div>
+<div id="of_toolbar" style="display: none;"><button id="of_download">Download</button><button id="of_edit">Edit</button></div><div id="of_editor" style="display: none;"><div id="of_menu"><button id="of_cancel">Cancel</button><span id="of_hash"></span><button id="of_save">Save</button></div><textarea id="of_input" placeholder="Write here..."></textarea></div><script>
+{
+    /**
+     * Minification variables and functions
+     */
+
+    const doc = document;
+    const createElement = (tag) => doc.createElement(tag);
+
+    // Simple HTML escaping
+    const htmlEncode = (str) => {
+        const element = createElement("div");
+        element.textContent = str;
+        return element.innerHTML;
+    };
+
+    /**
+     * For rules and rule processing, see
+     * https://fidian.github.io/omniflux/#rule-processing
+     */
+    const processRule = (str, regexp, handler) => {
+        let result = [];
+        let match = str.match(regexp);
+
+        while (str && match) {
+            const before = str.slice(0, match.index);
+            const after = str.slice(match.index + match[0].length);
+            const processed = handler(...match);
+            if (Array.isArray(processed)) {
+                result.push(
+                    before,
+                    ...processed,
+                );
+                str = after;
+            } else {
+                str = before + processed + after;
+            }
+            match = str.match(regexp);
+        }
+
+        result.push(str);
+
+        return result;
+    };
+    const processRules = (str, rules) => {
+        let input = [str];
+
+        for (const [regexp, handler] of rules) {
+            input = input.flatMap((item, index) =>
+                index % 2 ? item : processRule(item, regexp, handler)
+            );
+        }
+
+        return input.join("");
+    };
+
+    // Get an element by an ID. Used to find non-article elements.
+    const getById = (id) => doc.getElementById(id);
+
+    // Hide or show an element by toggling its display style.
+    const toggleDisplay = (el) => {
+        el.style.display = el.style.display === "none" ? "" : "none";
+    };
+
+    // Add an event listener
+    const on = (el, event, handler) => el.addEventListener(event, handler);
+
+    /**
+     * Convert Markdown to HTML.
+     */
+
+    const inlineRules = [
+        [/`(.+?)`/, (_, txt) => [`<code>${htmlEncode(txt)}</code>`]],
+        [/\*{3}(.+?)\*{3}/, (_, txt) => ["<b><i>", txt, "</i></b>"]],
+        [/\*\*(.+?)\*\*/, (_, txt) => ["<b>", txt, "</b>"]],
+        [/\*(.+?)\*/, (_, txt) => ["<i>", txt, "</i>"]],
+        [/~~(.+?)~~/, (_, txt) => ["<s>", txt, "</s>"]],
+        [
+            /!\[(.*?)\]\((.+?)\)/,
+            (_, txt, url) => `<img src="${url}" alt="${txt}" title="${txt}">`
+        ],
+        [
+            /\[(.+?)\]\((.+?)\)/,
+            (_, txt, url) => [`<a href="${url}">`, txt, "</a>"]
+        ],
+        [
+            /(?<!\=["'])https?\:\/\/[^\s]+/i,
+            (url) => [`<a href="${url}">`, url, "</a>"]
+        ]
+    ];
+    const md2HtmlInline = (str) => processRules(str.trim(), inlineRules);
+    const md2HtmlProcessList = (listType) => (lines) =>
+        [`<${listType}>\n<li>${lines
+            .split("\n")
+            .map((item) => md2HtmlInline(item.replace(/^ *(-|\d+\.) */, "")))
+            .join("</li>\n<li>")}</li>\n</${listType}>\n\n`];
+    const blockRules = [
+        [
+            /^```[^\n]*\n(([^\n]*\n)+?)```$/m,
+            (_, code) => [`<pre><code>${htmlEncode(code)}</code></pre>\n\n`]
+        ],
+        [
+            /^(#+)([^\n]+)$/m,
+            (_, h, txt) =>
+                [`\n<h${h.length}>${md2HtmlInline(txt)}</h${h.length}>\n\n`]
+        ],
+        [/^( *\- *[^\n]+(\n *\- *[^\n]+)*)$/m, md2HtmlProcessList("ul")],
+        [/^( *\d+\. *[^\n]+(\n *\d+\. *[^\n]+)*)$/m, md2HtmlProcessList("ol")],
+        [
+            /^([^\n]+(\n[^\n]+)*)$/m,
+            (all) => [
+                "<p>",
+                ...all
+                    .split("\n")
+                    .flatMap((item) => [md2HtmlInline(item), "<br>\n"])
+                    .slice(0, -1),
+                "</p>\n\n"
+            ]
+        ],
+        [/\n+/, () => ""]
+    ];
+    // Surround with newlines to make it easy for block level rules to work.
+    // Add newlines for easier diffing with git.
+    const md2Html = (str) => `\n${processRules(`\n${str}\n`, blockRules).trim()}\n`;
+
+    /**
+     * Convert HTML to Markdown. Must convert everything md2html supports.
+     */
+
+    const html2MdConversions = [
+        [
+            /^(B|STRONG)$/,
+            (add, currentNode) => add(`**${html2Md(currentNode)}**`)
+        ],
+        [/^(I|EM)$/, (add, currentNode) => add(`*${html2Md(currentNode)}*`)],
+        [/^(S|DEL)$/, (add, currentNode) => add(`~~${html2Md(currentNode)}~~`)],
+        [
+            /^(CODE|TT)$/,
+            (add, currentNode) => add(`\`${html2Md(currentNode)}\``)
+        ],
+        [
+            /^A$/,
+            (add, currentNode) => {
+                const href = currentNode.getAttribute("href");
+                const text = html2Md(currentNode);
+                add(href === text ? href : `[${text}](${href})`);
+            }
+        ],
+        [
+            /^IMG$/,
+            (add, currentNode) =>
+                add(
+                    `![${currentNode.getAttribute("alt")}](${currentNode.getAttribute("src")})`
+                )
+        ],
+        [
+            /^PRE$/,
+            (add, currentNode) => {
+                const codeChild = currentNode.querySelector("code");
+                const codeContent = codeChild
+                    ? codeChild.textContent
+                    : currentNode.textContent;
+                add(`\`\`\`\n${codeContent}\`\`\`\n\n`, 1);
+            }
+        ],
+        [
+            /^H[1-6]$/,
+            (add, currentNode) =>
+                add(
+                    `\n${"#".repeat(parseInt(currentNode.tagName[1]))} ${html2Md(currentNode, 1)}\n\n`,
+                    1
+                )
+        ],
+        [
+            /^LI$/,
+            (add, currentNode) => {
+                const parent = currentNode.parentElement;
+                const prefix =
+                    parent.tagName === "OL"
+                        ? `${[...parent.children].indexOf(currentNode) + 1}. `
+                        : "- ";
+                add(`${prefix}${html2Md(currentNode, 1)}\n`, 1);
+            }
+        ],
+        [/^BR$/, (add, currentNode) => add("\n", 1)],
+        [
+            /^(P|DIV|UL|OL)$/,
+            (add, currentNode) => add(html2Md(currentNode, 1) + "\n\n", 1)
+        ],
+
+        // Strip away all unknown tags but keep their content
+        [/.*/, (add, currentNode) => add(html2Md(currentNode))]
+    ];
+
+    // When inBlock is truthy, trim the markdown.
+    function html2Md(el, inBlock) {
+        const treeWalker = doc.createTreeWalker(
+            el,
+            NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT
+        );
+        const add = (text, isBlock) => {
+            if (trimFront && !isBlock) {
+                text = text.trimStart();
+
+                if (text.length) {
+                    trimFront = 0;
+                }
+            }
+
+            md += text;
+
+            if (isBlock) {
+                trimFront = 1;
+            }
+        };
+        let md = "";
+        let trimFront = inBlock;
+        let currentNode = treeWalker.nextNode();
+
+        while (currentNode) {
+            if (currentNode.nodeType === Node.TEXT_NODE) {
+                add(currentNode.textContent.replace(/\s+/g, " "));
+                currentNode = treeWalker.nextNode();
+            } else {
+                for (const [regex, handler] of html2MdConversions) {
+                    if (regex.test(currentNode.tagName)) {
+                        handler(add, currentNode);
+                        break;
+                    }
+                }
+
+                currentNode = treeWalker.nextSibling();
+            }
+        }
+
+        return inBlock
+            ? md
+                  .trim()
+                  // collapse whitespace at the end of a line but not newlines
+                  .replace(/[^\S\n]+([\n])/g, "$1")
+                  .replace(/(\n{3})\n+/g, "$1")
+            : md;
+    }
+
+    /**
+     * Get a list of elements that are manipulated more than once.
+     *
+     * Also, here is where the current state is tracked.
+     */
+
+    const toolbarEl = getById("of_toolbar");
+    const editorEl = getById("of_editor");
+    const inputEl = getById("of_input");
+    const hashEl = getById("of_hash");
+    const articlesEl = getById("of_articles");
+
+    let currentId = ""; // Current page ID, derived from URL hash
+    let currentArticleEl = null; // Current page's article element
+
+    /**
+     * Attach event listeners and show the toolbar.
+     */
+
+    // Edit - this function is used when clicking the Edit button and
+    // when navigating to a page that doesn't exist
+    const edit = () => {
+        hashEl.textContent = currentId;
+        inputEl.value = currentArticleEl ? html2Md(currentArticleEl, 1) : "";
+        toggleDisplay(editorEl);
+        inputEl.focus();
+    };
+    on(getById("of_edit"), "click", edit);
+
+    // Set internal state when navigating to a new page or upon
+    // initial load
+    const onLoad = () => {
+        currentId = location.hash.slice(1);
+        currentArticleEl = doc.querySelector(
+            `article${location.hash || ".index"}`
+        );
+        if (!currentArticleEl) edit();
+    };
+    on(window, "hashchange", onLoad);
+    onLoad();
+
+    // Download
+    on(getById("of_download"), "click", () => {
+        toggleDisplay(toolbarEl);
+        const html = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+        const link = createElement("a");
+        link.href = URL.createObjectURL(
+            new Blob([html], { type: "text/html" })
+        );
+        link.download = (
+            location.pathname.split("/").pop() || doc.title
+        ).replace(
+            /[-\d]*\.html$/,
+            `-${new Date()
+                .toISOString()
+                .replace(/[-:]|\..*/g, "")
+                .replace("T", "-")}.html`
+        );
+        link.click();
+        toggleDisplay(toolbarEl);
+    });
+
+    // Cancel editing
+    on(getById("of_cancel"), "click", () => {
+        toggleDisplay(editorEl);
+        if (!currentArticleEl) location.hash = "";
+    });
+
+    // Save edits
+    on(getById("of_save"), "click", () => {
+        const mdValue = inputEl.value;
+        if (!currentArticleEl) {
+            currentArticleEl = createElement("article");
+            currentArticleEl.id = currentId;
+            articlesEl.append(currentArticleEl);
+        }
+        if (mdValue.length) {
+            currentArticleEl.innerHTML = md2Html(mdValue);
+            // FIXME - why assign twice?
+            location.hash = "";
+            location.hash = currentId;
+        } else {
+            currentArticleEl.remove();
+            location.hash = "";
+        }
+        hashEl.innerHTML = "";
+        toggleDisplay(editorEl);
+    });
+
+    // Finally, show the toolbar
+    toggleDisplay(toolbarEl);
+}
+</script></body></html>
