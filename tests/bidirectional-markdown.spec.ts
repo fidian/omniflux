@@ -35,11 +35,13 @@ watermelon
     },
     {
         name: "basic lists",
-        markdown: `unordered list
+        markdown: `unordered lists
 
 - item 1
 - item 2 **bold**
 - item 3 \`code\`
+
+- item 1
 
 ordered list
 
@@ -47,12 +49,16 @@ ordered list
 2. item 2 *italic*
 3. item 3 \`code\``,
         html: `
-<p>unordered list</p>
+<p>unordered lists</p>
 
 <ul>
 <li>item 1</li>
 <li>item 2 <b>bold</b></li>
 <li>item 3 <code>code</code></li>
+</ul>
+
+<ul>
+<li>item 1</li>
 </ul>
 
 <p>ordered list</p>
@@ -69,6 +75,30 @@ ordered list
         markdown: `**bold** *italics* ***both***`,
         html: `
 <p><b>bold</b> <i>italics</i> <b><i>both</i></b></p>
+`
+    },
+    {
+        name: "br in paragraphs",
+        markdown: `paragraph 1
+
+paragraph 2a
+paragraph 2b
+
+paragraph 3`,
+        html: `
+<p>paragraph 1</p>
+
+<p>paragraph 2a<br>
+paragraph 2b</p>
+
+<p>paragraph 3</p>
+`
+    },
+    {
+        name: "inline code is not formatted again",
+        markdown: `*italics* \`*not italics*\` *italics*`,
+        html: `
+<p><i>italics</i> <code>*not italics*</code> <i>italics</i></p>
 `
     }
 ];

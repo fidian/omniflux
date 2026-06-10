@@ -13,11 +13,45 @@
         return element.innerHTML;
     };
 
-    // Apply handlers to even/odd elements in an array and flatten the result.
-    const evenOdd = (array, evenHandler, oddHandler) =>
-        array.flatMap((item, i) =>
-            i % 2 ? oddHandler(item) : evenHandler(item)
-        );
+    /**
+     * For rules and rule processing, see
+     * https://fidian.github.io/omniflux/#rule-processing
+     */
+    const processRule = (str, regexp, handler) => {
+        let result = [];
+        let match = str.match(regexp);
+
+        while (str && match) {
+            const before = str.slice(0, match.index);
+            const after = str.slice(match.index + match[0].length);
+            const processed = handler(...match);
+            if (Array.isArray(processed)) {
+                result.push(
+                    before,
+                    ...processed,
+                );
+                str = after;
+            } else {
+                str = before + processed + after;
+            }
+            match = str.match(regexp);
+        }
+
+        result.push(str);
+
+        return result;
+    };
+    const processRules = (str, rules) => {
+        let input = [str];
+
+        for (const [regexp, handler] of rules) {
+            input = input.flatMap((item, index) =>
+                index % 2 ? item : processRule(item, regexp, handler)
+            );
+        }
+
+        return input.join("");
+    };
 
     // Get an element by an ID. Used to find non-article elements.
     const getById = (id) => doc.getElementById(id);
@@ -34,135 +68,80 @@
      * Convert Markdown to HTML.
      */
 
-    const md2HtmlInlines = [
-        [/\*{3}(.+?)\*{3}/g, (_, txt) => `<b><i>${txt}</i></b>`],
+    const inlineRules = [
+        [/`(.+?)`/, (_, txt) => [`<code>${htmlEncode(txt)}</code>`]],
+        [/\*{3}(.+?)\*{3}/, (_, txt) => ["<b><i>", txt, "</i></b>"]],
+        [/\*\*(.+?)\*\*/, (_, txt) => ["<b>", txt, "</b>"]],
+        [/\*(.+?)\*/, (_, txt) => ["<i>", txt, "</i>"]],
+        [/~~(.+?)~~/, (_, txt) => ["<s>", txt, "</s>"]],
         [
-            /(\*{1,2}|~~)(.+?)\1/g,
-            (_, c, txt) =>
-                c == "*"
-                    ? `<i>${txt}</i>`
-                    : c == "**"
-                      ? `<b>${txt}</b>`
-                      : `<s>${txt}</s>`
-        ],
-        [/`(.+?)`/g, (_, txt) => `<code>${htmlEncode(txt)}</code>`],
-        [
-            /!\[(.*?)\]\((.+?)\)/g,
+            /!\[(.*?)\]\((.+?)\)/,
             (_, txt, url) => `<img src="${url}" alt="${txt}" title="${txt}">`
         ],
-        [/\[(.+?)\]\((.+?)\)/g, (_, txt, url) => `<a href="${url}">${txt}</a>`],
         [
-            /(?<!\=["'])https?\:\/\/[^\s]+/gi,
-            (url) => `<a href="${url}">${url}</a>`
-        ]
-    ];
-    const md2HtmlReplaceInlines = (str) =>
-        md2HtmlInlines.reduce((md, rule) => md.replace(...rule), str.trim());
-    const md2HtmlProcessList = (parts) => {
-        const listType = parts[0].match(/^ *-/) ? "ul" : "ol";
-        const listItems = [parts.shift()];
-
-        while (parts[0] === "\n" && parts.length > 1) {
-            parts.shift();
-            listItems.push(parts.shift());
-        }
-
-        return `<${listType}>\n<li>${listItems
-            .map((item) =>
-                md2HtmlReplaceInlines(item.replace(/^ *(-|\d+\.)/, ""))
-            )
-            .join("</li>\n<li>")}</li>\n</${listType}>\n\n`;
-    };
-    // [0]: regex to match a block element with capturing groups
-    // [1]: handler to process the block element, which can be
-    // null. Returns the processed string and consumes
-    // (function.length) tokens from the split result. Will be called
-    // multiple times for multiple matches in the same string.
-    // [2]: Optional handler to process the list of parts as an array.
-    // Must modify the array in-place and will be called multiple times
-    // until the items in the array are drained.
-    const md2HtmlBlocks = [
-        [
-            /^```(?:[^\n]*)\n([\s\S]*?)\n```$/gm,
-            (_, code) => `<pre><code>${htmlEncode(code)}</code></pre>\n\n`
+            /\[(.+?)\]\((.+?)\)/,
+            (_, txt, url) => [`<a href="${url}">`, txt, "</a>"]
         ],
         [
-            /^(#+)([^\n]+)$/gm,
+            /(?<!\=["'])https?\:\/\/[^\s]+/i,
+            (url) => [`<a href="${url}">`, url, "</a>"]
+        ]
+    ];
+    const md2HtmlInline = (str) => processRules(str.trim(), inlineRules);
+    const md2HtmlProcessList = (listType) => (lines) =>
+        [`<${listType}>\n<li>${lines
+            .split("\n")
+            .map((item) => md2HtmlInline(item.replace(/^ *(-|\d+\.) */, "")))
+            .join("</li>\n<li>")}</li>\n</${listType}>\n\n`];
+    const blockRules = [
+        [
+            /^```[^\n]*\n(([^\n]*\n)+?)```$/m,
+            (_, code) => [`<pre><code>${htmlEncode(code)}</code></pre>\n\n`]
+        ],
+        [
+            /^(#+)([^\n]+)$/m,
             (_, h, txt) =>
-                `\n<h${h.length}>${md2HtmlReplaceInlines(txt)}</h${h.length}>\n\n`
+                [`\n<h${h.length}>${md2HtmlInline(txt)}</h${h.length}>\n\n`]
         ],
-        [/^( *\- *[^\n]+)$/gm, md2HtmlProcessList],
-        [/^( *\d+\.[^\n]+)$/gm, md2HtmlProcessList],
+        [/^( *\- *[^\n]+(\n *\- *[^\n]+)*)$/m, md2HtmlProcessList("ul")],
+        [/^( *\d+\. *[^\n]+(\n *\d\. *[^\n]+)*)$/m, md2HtmlProcessList("ol")],
         [
-            // Embedded HTML is NOT supported
-            /^([^<\n][^\n]*\n)+/gm,
-            // FIXME: What does this replacement do? Why are there two spaces to replace?
-            (_, txt) =>
-                `<p>${md2HtmlReplaceInlines(
-                    txt.replace(/  \n/g, "<br>\n")
-                )}</p>\n\n`
-        ]
+            /^([^\n]+(\n[^\n]+)*)$/m,
+            (all) => [
+                "<p>",
+                ...all
+                    .split("\n")
+                    .flatMap((item) => [md2HtmlInline(item), "<br>\n"])
+                    .slice(0, -1),
+                "</p>\n\n"
+            ]
+        ],
+        [/\n+/, () => ""]
     ];
-    const md2html = (str) => {
-        // Every odd index is processed, every even index can still
-        // have a block rule applied to it.
-        let input = [str];
-        for (const [regex, handler] of md2HtmlBlocks) {
-            input = evenOdd(
-                input,
-                (item) => {
-                    const parts = item.split(regex);
-                    const result = [parts.shift()];
-                    while (parts.length) {
-                        result.push(
-                            handler(
-                                parts,
-                                ...parts.splice(0, handler.length - 1)
-                            )
-                        );
-                        if (parts.length) {
-                            result.push(parts.shift());
-                        }
-                    }
-                    return result;
-                },
-                (item) => item
-            );
-        }
-
-        return evenOdd(
-            input,
-            () => [],
-            (x) => x
-        )
-            .join("")
-            .trim();
-    };
+    // Surround with newlines to make it easy for block level rules to work.
+    // Add newlines for easier diffing with git.
+    const md2Html = (str) => `\n${processRules(`\n${str}\n`, blockRules).trim()}\n`;
 
     /**
      * Convert HTML to Markdown. Must convert everything md2html supports.
      */
 
-    // Convert HTML tags that match the pattern to Markdown.
-    // [0]: regex to match the tag name
-    // [1]: handler to process `currentNode` when the tag matches. Returns
-    // the processed string. Must process all children of `currentNode`.
     const html2MdConversions = [
         [
             /^(B|STRONG)$/,
-            (add, currentNode) => add(`**${html2md(currentNode)}**`)
+            (add, currentNode) => add(`**${html2Md(currentNode)}**`)
         ],
-        [/^(I|EM)$/, (add, currentNode) => add(`*${html2md(currentNode)}*`)],
-        [/^(S|DEL)$/, (add, currentNode) => add(`~~${html2md(currentNode)}~~`)],
+        [/^(I|EM)$/, (add, currentNode) => add(`*${html2Md(currentNode)}*`)],
+        [/^(S|DEL)$/, (add, currentNode) => add(`~~${html2Md(currentNode)}~~`)],
         [
             /^(CODE|TT)$/,
-            (add, currentNode) => add(`\`${html2md(currentNode)}\``)
+            (add, currentNode) => add(`\`${html2Md(currentNode)}\``)
         ],
         [
             /^A$/,
             (add, currentNode) => {
                 const href = currentNode.getAttribute("href");
-                const text = html2md(currentNode);
+                const text = html2Md(currentNode);
                 add(href === text ? href : `[${text}](${href})`);
             }
         ],
@@ -180,14 +159,14 @@
                 const codeContent = codeChild
                     ? codeChild.textContent
                     : currentNode.textContent;
-                add(`\`\`\`\n${codeContent}\n\`\`\`\n\n`, 1);
+                add(`\`\`\`\n${codeContent}\`\`\`\n\n`, 1);
             }
         ],
         [
             /^H[1-6]$/,
             (add, currentNode) =>
                 add(
-                    `\n${"#".repeat(parseInt(currentNode.tagName[1]))} ${html2md(currentNode, 1)}\n\n`,
+                    `\n${"#".repeat(parseInt(currentNode.tagName[1]))} ${html2Md(currentNode, 1)}\n\n`,
                     1
                 )
         ],
@@ -199,21 +178,21 @@
                     parent.tagName === "OL"
                         ? `${[...parent.children].indexOf(currentNode) + 1}. `
                         : "- ";
-                add(`${prefix}${html2md(currentNode, 1)}\n`, 1);
+                add(`${prefix}${html2Md(currentNode, 1)}\n`, 1);
             }
         ],
         [/^BR$/, (add, currentNode) => add("\n", 1)],
         [
             /^(P|DIV|UL|OL)$/,
-            (add, currentNode) => add(html2md(currentNode, 1) + "\n\n", 1)
+            (add, currentNode) => add(html2Md(currentNode, 1) + "\n\n", 1)
         ],
 
         // Strip away all unknown tags but keep their content
-        [/.*/, (add, currentNode) => add(html2md(currentNode))]
+        [/.*/, (add, currentNode) => add(html2Md(currentNode))]
     ];
 
     // When inBlock is truthy, trim the markdown.
-    function html2md(el, inBlock) {
+    function html2Md(el, inBlock) {
         const treeWalker = doc.createTreeWalker(
             el,
             NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT
@@ -285,7 +264,7 @@
     // when navigating to a page that doesn't exist
     const edit = () => {
         hashEl.textContent = currentId;
-        inputEl.value = currentArticleEl ? html2md(currentArticleEl, 1) : "";
+        inputEl.value = currentArticleEl ? html2Md(currentArticleEl, 1) : "";
         toggleDisplay(editorEl);
         inputEl.focus();
     };
@@ -339,9 +318,7 @@
             articlesEl.append(currentArticleEl);
         }
         if (mdValue.length) {
-            // Surround with newlines to make it easy for block
-            // level rules to work
-            currentArticleEl.innerHTML = `\n${md2html(`\n${mdValue}\n`)}\n`;
+            currentArticleEl.innerHTML = md2Html(mdValue);
             // FIXME - why assign twice?
             location.hash = "";
             location.hash = currentId;
@@ -349,6 +326,7 @@
             currentArticleEl.remove();
             location.hash = "";
         }
+        hashEl.innerHTML = "";
         toggleDisplay(editorEl);
     });
 
