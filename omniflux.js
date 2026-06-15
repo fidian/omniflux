@@ -23,7 +23,7 @@
             el.classList.toggle("hidden")
         );
     const toggleJsButtons = () => toggleHidden(".of_js");
-    const toggleEditor = () => toggleHidden("#of_editor");
+    const toggleEditor = () => toggleHidden(".of_editor");
 
     // Simple HTML escaping
     const htmlEncode = (str) => {
@@ -290,9 +290,9 @@
      * Also, here is where the current state is tracked.
      */
 
-    const inputEl = querySelectorAll("#of_input")[0];
-    const hashEl = querySelectorAll("#of_hash")[0];
-    const articlesEl = querySelectorAll("#of_articles")[0];
+    const inputEl = querySelectorAll(".of_input")[0];
+    const hashEl = querySelectorAll(".of_hash")[0];
+    const articlesEl = querySelectorAll(".of_articles")[0];
 
     let currentId = ""; // Current page ID, derived from URL hash
     let currentArticleEl = null; // Current page's article element
@@ -323,10 +323,10 @@
     });
 
     // Cancel editing
-    on("#of_cancel", "click", doneEditing);
+    on(".of_cancel", "click", doneEditing);
 
     // Save edits
-    on("#of_save", "click", () => {
+    on(".of_save", "click", () => {
         const mdValue = inputEl.value;
         if (!currentArticleEl) {
             // When creating a new element, change the hash so the browser's :target

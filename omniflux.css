@@ -1,6 +1,6 @@
 /* CSS-based navigation - see https://dev.to/fedia/15kb-single-file-wiki-46a1 */
 article:not(.index, :target, :has(:target)),
-#of_articles:has(> :target) article.index:not(:target) {
+.of_articles:has(> :target) article.index:not(:target) {
     display: none;
 }
 
@@ -27,8 +27,7 @@ article {
     }
 }
 
-/* To lower specificity, allowing display:flex to be overridden by a class */
-[id="of_editor"] {
+.of_editor {
     background-color: inherit;
     display: flex;
     flex-direction: column;
@@ -39,23 +38,24 @@ article {
     top: 0;
     width: 100vw;
 
-    #of_menu {
-        display: flex;
-        gap: 0.5rem;
-        justify-content: space-between;
-        padding: 0.5rem;
-    }
-
-    #of_input {
-        border: 0;
-        flex: 1;
-        outline: none;
-        padding: 0.5rem;
-        resize: none;
-    }
 }
 
-body:has(#of_editor:not(.hidden)) {
+.of_menu {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+    padding: 0.5rem;
+}
+
+.of_input {
+    border: 0;
+    flex: 1;
+    outline: none;
+    padding: 0.5rem;
+    resize: none;
+}
+
+body:has(.of_editor:not(.hidden)) {
     overflow: hidden;
 }
 
