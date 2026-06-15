@@ -1,0 +1,11 @@
+md2html: true
+html2md: true
+markdown:
+ > ```test
+ > test2
+ > ```
+html:
+ >
+ > <pre><code class="language-test">test2
+ > </code></pre>
+ >

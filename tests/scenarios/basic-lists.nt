@@ -1,0 +1,38 @@
+md2html: true
+html2md: true
+markdown:
+ > unordered lists
+ >
+ > - item 1
+ > - item 2 **bold**
+ > - item 3 `code`
+ >
+ > - item 1
+ >
+ > ordered list
+ >
+ > 1. item 1
+ > 2. item 2 *italic*
+ > 3. item 3 `code`
+html:
+ >
+ > <p>unordered lists</p>
+ >
+ > <ul>
+ > <li>item 1</li>
+ > <li>item 2 <b>bold</b></li>
+ > <li>item 3 <code>code</code></li>
+ > </ul>
+ >
+ > <ul>
+ > <li>item 1</li>
+ > </ul>
+ >
+ > <p>ordered list</p>
+ >
+ > <ol>
+ > <li>item 1</li>
+ > <li>item 2 <i>italic</i></li>
+ > <li>item 3 <code>code</code></li>
+ > </ol>
+ >

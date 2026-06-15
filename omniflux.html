@@ -1,27 +1,24 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>OmniFlux</title></head><body><div id="of_articles">
-<article class="index">
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>OmniFlux</title></head><body><div id="of_articles"><article class="index">
 <h1>OmniFlux - Single-Page Wiki</h1>
 
-<p>You're looking at a complete, self-contained wiki. You can download the file and edit it using the built-in Markdown editor; try it now by pressing the "Edit" button in the upper right.</p>
+<p>You're looking at a complete, self-contained wiki. You can download the file and edit it using the built-in Markdown editor; try it now by pressing the "Edit" button in the upper right. <a href="#markdown">Learn about supported Markdown.</a></p>
 
 <p>Below are different versions of this same wiki. You can preview them by following the links. If you'd like to download them, right-click on the link and "Save As".</p>
 
 <ul>
 <li>The full site (what you are viewing now): <a href="https://fidian.github.io/omniflux/">unminified</a> or <a href="https://fidian.github.io/omniflux/minified/">minified</a>. This is currently about 23k unminified, 15k minified due to the content.</li>
-<li>A blank wiki, without any pages: <a href="https://fidian.github.io/omniflux/blank.html">unminified</a> or <a href="https://fidian.github.io/omniflux/minified/blank.html">minified</a>. The blank file is only 13k unminified and under 5k minified.</li>
+<li>A blank wiki, without extra content: <a href="https://fidian.github.io/omniflux/blank.html">unminified</a> or <a href="https://fidian.github.io/omniflux/minified/blank.html">minified</a>. The blank file is only 13k unminified and under 5k minified.</li>
 <li>Or you can build your own version by downloading the <a href="https://github.com/fidian/omniflux/">GitHub repository</a>.</li>
 </ul>
 
-<p>If you deeply care about a couple kilobytes, get the minified version. Otherwise, I would suggest the unminified one because it has comments and is much easier to debug in case something goes wrong.</p>
+<p>I would suggest the unminified one because it has comments and is much easier to debug in case something goes wrong. However, if you're the type who cares deeply about a couple kilobytes, get the minified version.</p>
 
 
 <h2>Features</h2>
 
-<p><img src="https://fidian.github.io/omniflux/octocat.svg" alt="Octocat" title="Octocat"></p>
-
 <ul>
-<li>Lighter (and less feature-packed) than <a href="https://tiddlywiki.com/">TiddlyWiki</a> and <a href="https://feather.wiki/">Feather Wiki</a>.</li>
+<li>Lighter (though it's also less feature-packed) than <a href="https://tiddlywiki.com/">TiddlyWiki</a> and <a href="https://feather.wiki/">Feather Wiki</a>.</li>
 <li>Basic Markdown support (<i>italics</i>, <b>bold</b>, <b><i>both</i></b>, <code>code</code>, <s>strike</s>), external images, links, ordered and unordered lists, code fences. <a href="#markdown">See more!</a></li>
 <li>Generated HTML isn't one long line, allowing tools like <code>git</code> to work better.</li>
 <li>Automated tests to ensure the bidirectional HTML &lt;--&gt; Markdown conversion works as expected.</li>
@@ -41,16 +38,12 @@
 
 <ol>
 <li>Support tables.</li>
-<li>Support nested lists.</li>
+<li>Support nested lists. This will be vital for a Table of Contents.</li>
 <li>Add the ability to save images as base64 encoded CSS classes, then to show them and manage them.</li>
-<li>Add a sidebar that is editable, either automatically or manually.</li>
-<li>Add a way to see a list of existing pages.</li>
-<li>Write tests to verify the conversion between HTML and Markdown.</li>
+<li>Add a sidebar for Table of Contents, Index, and actions (download, auto-save, rename, delete)</li>
 <li>Add auto-save through the File API.</li>
-<li>Allow renaming of a page, which will update links on all other pages to the new ID.</li>
-<li>Deletion of a page.</li>
-<li>Include wikilink syntax to link to another internal page, like <code>[[Page Name]]</code> -&gt; <code>#page-name</code> and <code>[[Page Name|Custom Text]]</code> -&gt; <code>#page-name</code>.</li>
-<li>Improve CSS to make <code>code</code> easier to see.</li>
+<li>Deletion of a page via a link or button. (Pages can be deleted by removing all content.)</li>
+<li>Consider including wikilink syntax to link to another internal page, like <code>[[Page Name]]</code> -&gt; <code>#page-name</code> and <code>[[Page Name|Custom Text]]</code> -&gt; <code>#page-name</code>.</li>
 <li>Allow renaming a page's ID and updating all links that point to it.</li>
 </ol>
 </article>
@@ -75,7 +68,7 @@ Make your own haiku</p>
 
 <h4>Avoid</h4>
 
-<p>Using underscores for emphasis will not work.</p>
+<p>Using <code>_underscores_</code> for emphasis (bold, italics, both) will not work.</p>
 
 
 <h2>Headings</h2>
@@ -107,7 +100,7 @@ Make your own haiku</p>
 
 <p>Starting the numbering of a list with any number other than 1 is not supported.</p>
 
-<p>Using <code>+</code> or <code>*</code> for list items in an unordered list will not work.</p>
+<p>Using <code>+</code> or <code>*</code> for list items will work, but they will be converted to <code>-</code>.</p>
 
 <p>Task lists, which use <code>[]</code> and <code>[X]</code> for a list of empty or filled checkboxes is not supported.</p>
 
@@ -140,7 +133,10 @@ Make your own haiku</p>
 
 <p>You can inline a <code>block of code</code> with backticks.</p>
 
-<pre><code>Code fences are supported</code></pre>
+<pre><code>Code fences are supported and language information is preserved.
+</code></pre>
+
+<p>While code fences support language information, no highlighting happens at this stage in order to keep the wiki small. If you want it, you will need to include <a href="https://prismjs.com/">Prism</a> or <a href="https://highlightjs.org/">highlight.js</a> yourself.</p>
 
 
 <h4>Avoid</h4>
@@ -176,8 +172,6 @@ Make your own haiku</p>
 
 <p>Inline elements are a bit more tricky due to possibly wanting recursion and sometimes not. For instance, using backticks for code means anything within needs to be excluded from further processing, but one could have a bolded word in a link.</p>
 
-<p>This isn't described in comments in the code due to the sheer volume.</p>
-
 
 <h2>Rule Definitions</h2>
 
@@ -192,8 +186,10 @@ Make your own haiku</p>
 
 <p>Each handler needs to return one of two things:</p>
 
-<p>* An odd-length array of strings. The first, third, etc. index in the array would be strings that are "final" and that should not be processed further. All of the other indices are for strings that could still be modified by additional handlers. This is what the strike-through rule does.<br>
-* A string. When this happens, the matched pattern is exchanged for the string. The second rule that eliminates newlines does this, so if passed in <code>"abc\nxyz"</code>, then that string would be modified to be <code>"abcxyz"</code>.</p>
+<ul>
+<li>An odd-length array of strings. The first, third, etc. index in the array would be strings that are "final" and that should not be processed further. All of the other indices are for strings that could still be modified by additional handlers. This is what the strike-through rule does.</li>
+<li>A string. When this happens, the matched pattern is exchanged for the string. The second rule that eliminates newlines does this, so if passed in <code>"abc\nxyz"</code>, then that string would be modified to be <code>"abcxyz"</code>.</li>
+</ul>
 
 
 <h2>Markdown Processing Quick Overview</h2>
@@ -202,4 +198,4 @@ Make your own haiku</p>
 
 <p>The inline one is a bit harder because some things are expected to have further processing and some are not. For instance, inline code blocks (with backticks) are not supposed to get any further processing within the backticks. Images do get further processing because they might be turned into a link. Knowing if the handler should return an array or a string is vital.</p>
 </article></div>
-<div id="of_toolbar" style="display: none;"><button id="of_download">Download</button><button id="of_edit">Edit</button></div><div id="of_editor" style="display: none;"><div id="of_menu"><button id="of_cancel">Cancel</button><span id="of_hash"></span><button id="of_save">Save</button></div><textarea id="of_input" placeholder="Write here..."></textarea></div></body></html>
+<div id="of_toolbar" class="hidden"><button id="of_download">Download</button><button id="of_edit">Edit</button></div><div id="of_editor" class="hidden"><div id="of_menu"><button id="of_cancel">Cancel</button><span id="of_hash"></span><button id="of_save">Save</button></div><textarea id="of_input" placeholder="Write here..."></textarea></div></body></html>

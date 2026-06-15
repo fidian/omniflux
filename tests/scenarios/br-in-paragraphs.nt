@@ -1,0 +1,18 @@
+md2html: true
+html2md: true
+markdown:
+ > paragraph 1
+ >
+ > paragraph 2a
+ > paragraph 2b
+ >
+ > paragraph 3
+html:
+ >
+ > <p>paragraph 1</p>
+ >
+ > <p>paragraph 2a<br>
+ > paragraph 2b</p>
+ >
+ > <p>paragraph 3</p>
+ >

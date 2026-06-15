@@ -1,0 +1,19 @@
+md2html: true
+html2md: false
+markdown:
+ > - one
+ > + two
+ > * three
+ > 1. four
+html:
+ >
+ > <ul>
+ > <li>one</li>
+ > <li>two</li>
+ > <li>three</li>
+ > </ul>
+ >
+ > <ol>
+ > <li>four</li>
+ > </ol>
+ >

@@ -1,0 +1,26 @@
+md2html: true
+html2md: true
+markdown:
+ > ```
+ > function hello() {
+ >     console.log("Hello, world!");
+ > }
+ > ```
+ >
+ > and
+ >
+ > ```
+ > test2
+ > ```
+html:
+ >
+ > <pre><code>function hello() {
+ >     console.log("Hello, world!");
+ > }
+ > </code></pre>
+ > 
+ > <p>and</p>
+ > 
+ > <pre><code>test2
+ > </code></pre>
+ >

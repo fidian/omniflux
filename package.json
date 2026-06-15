@@ -8,6 +8,8 @@
     "devDependencies": {
         "@playwright/test": "^1.60.0",
         "@types/node": "^25.9.2",
-        "html-minifier-terser": "^7.2.0"
+        "html-minifier-terser": "^7.2.0",
+        "nestedtext": "^1.2.0",
+        "zod": "^4.4.3"
     }
 }

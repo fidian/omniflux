@@ -6,6 +6,25 @@
     const doc = document;
     const createElement = (tag) => doc.createElement(tag);
 
+    // Run a callback against all elements matching a selector.
+    // The only elements with IDs are articles.
+    const querySelectorAll = (selector, callback) =>
+        doc.querySelectorAll(selector);
+
+    // Add an event listener to one or more elements matching a selector.
+    const on = (selector, event, handler) =>
+        querySelectorAll(selector).forEach((el) =>
+            el.addEventListener(event, handler)
+        );
+
+    // Hide or show elements that match a selector
+    const toggleHidden = (selector) =>
+        querySelectorAll(selector).forEach((el) =>
+            el.classList.toggle("hidden")
+        );
+    const toggleJsButtons = () => toggleHidden('#of_toolbar');
+    const toggleEditor = () => toggleHidden('#of_editor');
+
     // Simple HTML escaping
     const htmlEncode = (str) => {
         const element = createElement("div");
@@ -26,10 +45,7 @@
             const after = str.slice(match.index + match[0].length);
             const processed = handler(...match);
             if (Array.isArray(processed)) {
-                result.push(
-                    before,
-                    ...processed,
-                );
+                result.push(before, ...processed);
                 str = after;
             } else {
                 str = before + processed + after;
@@ -52,17 +68,6 @@
 
         return input.join("");
     };
-
-    // Get an element by an ID. Used to find non-article elements.
-    const getById = (id) => doc.getElementById(id);
-
-    // Hide or show an element by toggling its display style.
-    const toggleDisplay = (el) => {
-        el.style.display = el.style.display === "none" ? "" : "none";
-    };
-
-    // Add an event listener
-    const on = (el, event, handler) => el.addEventListener(event, handler);
 
     /**
      * Convert Markdown to HTML.
@@ -88,23 +93,25 @@
         ]
     ];
     const md2HtmlInline = (str) => processRules(str.trim(), inlineRules);
-    const md2HtmlProcessList = (listType) => (lines) =>
-        [`<${listType}>\n<li>${lines
+    const md2HtmlProcessList = (listType) => (lines) => [
+        `<${listType}>\n<li>${lines
             .split("\n")
-            .map((item) => md2HtmlInline(item.replace(/^ *(-|\d+\.) */, "")))
-            .join("</li>\n<li>")}</li>\n</${listType}>\n\n`];
+            .map((item) => md2HtmlInline(item.replace(/^ *([-*+]|\d+\.) +/, "")))
+            .join(`</li>\n<li>`)}</li>\n</${listType}>\n\n`
+    ];
     const blockRules = [
         [
-            /^```[^\n]*\n(([^\n]*\n)+?)```$/m,
-            (_, code) => [`<pre><code>${htmlEncode(code)}</code></pre>\n\n`]
+            /^```([^\n]*)\n(([^\n]*\n)+?)```$/m,
+            (_, lang, code) => [`<pre><code${lang ? ` class="language-${lang}"` : ''}>${htmlEncode(code)}</code></pre>\n\n`]
         ],
         [
             /^(#+)([^\n]+)$/m,
-            (_, h, txt) =>
-                [`\n<h${h.length}>${md2HtmlInline(txt)}</h${h.length}>\n\n`]
+            (_, h, txt) => [
+                `\n<h${h.length}>${md2HtmlInline(txt)}</h${h.length}>\n\n`
+            ]
         ],
-        [/^( *\- *[^\n]+(\n *\- *[^\n]+)*)$/m, md2HtmlProcessList("ul")],
-        [/^( *\d+\. *[^\n]+(\n *\d+\. *[^\n]+)*)$/m, md2HtmlProcessList("ol")],
+        [/^( *[-*+] +[^\n]+(\n *[-*+] +[^\n]+)*)$/m, md2HtmlProcessList("ul")],
+        [/^( *\d+\. +[^\n]+(\n *\d+\. +[^\n]+)*)$/m, md2HtmlProcessList("ol")],
         [
             /^([^\n]+(\n[^\n]+)*)$/m,
             (all) => [
@@ -120,7 +127,8 @@
     ];
     // Surround with newlines to make it easy for block level rules to work.
     // Add newlines for easier diffing with git.
-    const md2Html = (str) => `\n${processRules(`\n${str}\n`, blockRules).trim()}\n`;
+    const md2Html = (str) =>
+        `\n${processRules(`\n${str}\n`, blockRules).trim()}\n`;
 
     /**
      * Convert HTML to Markdown. Must convert everything md2html supports.
@@ -155,11 +163,10 @@
         [
             /^PRE$/,
             (add, currentNode) => {
-                const codeChild = currentNode.querySelector("code");
-                const codeContent = codeChild
-                    ? codeChild.textContent
-                    : currentNode.textContent;
-                add(`\`\`\`\n${codeContent}\`\`\`\n\n`, 1);
+                const codeTarget = currentNode.querySelector("code") || currentNode;
+                const codeContent = codeTarget.textContent;
+                const lang = codeTarget.className.match(/language-(\S+)/)?.[1] || "";
+                add(`\`\`\`${lang}\n${codeContent}\`\`\`\n\n`, 1);
             }
         ],
         [
@@ -242,49 +249,51 @@
     }
 
     /**
-     * Get a list of elements that are manipulated more than once.
-     *
-     * Also, here is where the current state is tracked.
+     * A few functions that bind to element events and that are reused.
      */
-
-    const toolbarEl = getById("of_toolbar");
-    const editorEl = getById("of_editor");
-    const inputEl = getById("of_input");
-    const hashEl = getById("of_hash");
-    const articlesEl = getById("of_articles");
-
-    let currentId = ""; // Current page ID, derived from URL hash
-    let currentArticleEl = null; // Current page's article element
-
-    /**
-     * Attach event listeners and show the toolbar.
-     */
-
-    // Edit - this function is used when clicking the Edit button and
-    // when navigating to a page that doesn't exist
-    const edit = () => {
+    const editPage = () => {
         hashEl.textContent = currentId;
         inputEl.value = currentArticleEl ? html2Md(currentArticleEl, 1) : "";
-        toggleDisplay(editorEl);
+        toggleEditor();
         inputEl.focus();
     };
-    on(getById("of_edit"), "click", edit);
 
-    // Set internal state when navigating to a new page or upon
-    // initial load
     const onLoad = () => {
         currentId = location.hash.slice(1);
         currentArticleEl = doc.querySelector(
             `article${location.hash || ".index"}`
         );
-        if (!currentArticleEl) edit();
+        if (!currentArticleEl) editPage();
     };
-    on(window, "hashchange", onLoad);
-    onLoad();
+
+    const doneEditing = () => {
+        hashEl.innerHTML = "";
+        toggleEditor();
+
+        // Handle pressing "Cancel" instead of creating a new page
+        if (!currentArticleEl) location.hash = "";
+    }
+
+    /**
+     * Get a list of elements that are manipulated more than once.
+     *
+     * Also, here is where the current state is tracked.
+     */
+
+    const inputEl = querySelectorAll('#of_input')[0];
+    const hashEl = querySelectorAll('#of_hash')[0];
+    const articlesEl = querySelectorAll('#of_articles')[0];
+
+    let currentId = ""; // Current page ID, derived from URL hash
+    let currentArticleEl = null; // Current page's article element
+
+    // Edit - this function is used when clicking the Edit button and
+    // when navigating to a page that doesn't exist
+    on("#of_edit", "click", editPage);
 
     // Download
-    on(getById("of_download"), "click", () => {
-        toggleDisplay(toolbarEl);
+    on("#of_download", "click", () => {
+        toggleJsButtons();
         const html = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
         const link = createElement("a");
         link.href = URL.createObjectURL(
@@ -300,36 +309,40 @@
                 .replace("T", "-")}.html`
         );
         link.click();
-        toggleDisplay(toolbarEl);
+        toggleJsButtons();
     });
 
     // Cancel editing
-    on(getById("of_cancel"), "click", () => {
-        toggleDisplay(editorEl);
-        if (!currentArticleEl) location.hash = "";
-    });
+    on("#of_cancel", "click", doneEditing);
 
     // Save edits
-    on(getById("of_save"), "click", () => {
+    on("#of_save", "click", () => {
         const mdValue = inputEl.value;
         if (!currentArticleEl) {
+            // When creating a new element, change the hash so the browser's :target
+            // selector will show the new page after it's added to the DOM. It does
+            // not find the element otherwise. This line is also necessary to show
+            // something useful after deleting a page.
+            location.hash = "";
             currentArticleEl = createElement("article");
             currentArticleEl.id = currentId;
             articlesEl.append(currentArticleEl);
         }
         if (mdValue.length) {
             currentArticleEl.innerHTML = md2Html(mdValue);
-            // FIXME - why assign twice?
-            location.hash = "";
             location.hash = currentId;
         } else {
+            // Delete the article
             currentArticleEl.remove();
-            location.hash = "";
         }
-        hashEl.innerHTML = "";
-        toggleDisplay(editorEl);
+        doneEditing();
     });
 
-    // Finally, show the toolbar
-    toggleDisplay(toolbarEl);
+    // Set internal state when navigating to a new page or upon
+    // initial load
+    window.addEventListener("hashchange", onLoad);
+    onLoad();
+
+    // Finally, show the buttons
+    toggleJsButtons();
 }

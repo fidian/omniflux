@@ -3,9 +3,9 @@ import { Page } from "@playwright/test";
 const indexUrl = `http://localhost:5173/`;
 
 export function goto(page: Page, fragment?: string) {
-    if (fragment) {
-        return page.goto(`${indexUrl}#${fragment}`);
-    } else {
+    if (typeof fragment !== "string") {
         return page.goto(indexUrl);
     }
+
+    return page.goto(`${indexUrl}#${fragment}`);
 }

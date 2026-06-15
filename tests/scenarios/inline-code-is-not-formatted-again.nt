@@ -1,0 +1,8 @@
+md2html: true
+html2md: true
+markdown:
+ > *italics* `*not italics*` *italics*
+html:
+ >
+ > <p><i>italics</i> <code>*not italics*</code> <i>italics</i></p>
+ >
