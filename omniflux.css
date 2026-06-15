@@ -28,7 +28,7 @@ article {
 }
 
 /* To lower specificity, allowing display:flex to be overridden by a class */
-[id=of_editor] {
+[id="of_editor"] {
     background-color: inherit;
     display: flex;
     flex-direction: column;
@@ -59,8 +59,7 @@ body:has(#of_editor:not(.hidden)) {
     overflow: hidden;
 }
 
-/* To lower specificity, allowing display:flex to be overridden by a class */
-[id=of_toolbar] {
+.of_toolbar {
     display: flex;
     justify-content: space-between;
     left: 0;
@@ -74,7 +73,8 @@ body:has(#of_editor:not(.hidden)) {
     display: none;
 }
 
-pre, code {
+pre,
+code {
     background-color: #e0e0e0;
 }
 
@@ -82,4 +82,17 @@ pre {
     padding: 0.5em;
     overflow-x: auto;
     border: 1px solid #bbb;
+}
+
+kbd {
+    background-color: #f7f7f7;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.2),
+        0 0 0 2px #fff inset;
+    color: #333;
+    display: inline-block;
+    padding: 0.1em 0.4em;
+    white-space: nowrap;
 }

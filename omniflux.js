@@ -22,7 +22,7 @@
         querySelectorAll(selector).forEach((el) =>
             el.classList.toggle("hidden")
         );
-    const toggleJsButtons = () => toggleHidden("#of_toolbar");
+    const toggleJsButtons = () => toggleHidden(".of_js");
     const toggleEditor = () => toggleHidden("#of_editor");
 
     // Simple HTML escaping
@@ -299,10 +299,10 @@
 
     // Edit - this function is used when clicking the Edit button and
     // when navigating to a page that doesn't exist
-    on("#of_edit", "click", editPage);
+    on(".of_edit", "click", editPage);
 
     // Download
-    on("#of_download", "click", () => {
+    on(".of_download", "click", () => {
         toggleJsButtons();
         const html = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
         const link = createElement("a");

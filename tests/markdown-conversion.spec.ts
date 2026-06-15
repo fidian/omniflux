@@ -93,7 +93,7 @@ test('Execute scenarios', async ({ page }) => {
                         },
                         scenario.html
                     );
-                    await page.locator("#of_edit").click();
+                    await page.locator(".of_edit").click();
                     await expect(page.locator("#of_input")).toBeVisible();
                     await expect(await page.locator("#of_input").inputValue()).toBe(
                         scenario.markdown
