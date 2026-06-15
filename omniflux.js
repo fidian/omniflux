@@ -22,8 +22,8 @@
         querySelectorAll(selector).forEach((el) =>
             el.classList.toggle("hidden")
         );
-    const toggleJsButtons = () => toggleHidden('#of_toolbar');
-    const toggleEditor = () => toggleHidden('#of_editor');
+    const toggleJsButtons = () => toggleHidden("#of_toolbar");
+    const toggleEditor = () => toggleHidden("#of_editor");
 
     // Simple HTML escaping
     const htmlEncode = (str) => {
@@ -85,7 +85,11 @@
         ],
         [
             /\[(.+?)\]\((.+?)\)/,
-            (_, txt, url) => [`<a href="${url}">`, txt, "</a>"]
+            (_, txt, url) => [
+                `<a href="${url}"${url.startsWith("#") ? "" : ' target="blank"'} rel="noopener noreferrer">`,
+                txt,
+                "</a>"
+            ]
         ],
         [
             /(?<!\=["'])https?\:\/\/[^\s]+/i,
@@ -96,13 +100,17 @@
     const md2HtmlProcessList = (listType) => (lines) => [
         `<${listType}>\n<li>${lines
             .split("\n")
-            .map((item) => md2HtmlInline(item.replace(/^ *([-*+]|\d+\.) +/, "")))
+            .map((item) =>
+                md2HtmlInline(item.replace(/^ *([-*+]|\d+\.) +/, ""))
+            )
             .join(`</li>\n<li>`)}</li>\n</${listType}>\n\n`
     ];
     const blockRules = [
         [
             /^```([^\n]*)\n(([^\n]*\n)+?)```$/m,
-            (_, lang, code) => [`<pre><code${lang ? ` class="language-${lang}"` : ''}>${htmlEncode(code)}</code></pre>\n\n`]
+            (_, lang, code) => [
+                `<pre><code${lang ? ` class="language-${lang}"` : ""}>${htmlEncode(code)}</code></pre>\n\n`
+            ]
         ],
         [
             /^(#+)([^\n]+)$/m,
@@ -163,9 +171,11 @@
         [
             /^PRE$/,
             (add, currentNode) => {
-                const codeTarget = currentNode.querySelector("code") || currentNode;
+                const codeTarget =
+                    currentNode.querySelector("code") || currentNode;
                 const codeContent = codeTarget.textContent;
-                const lang = codeTarget.className.match(/language-(\S+)/)?.[1] || "";
+                const lang =
+                    codeTarget.className.match(/language-(\S+)/)?.[1] || "";
                 add(`\`\`\`${lang}\n${codeContent}\`\`\`\n\n`, 1);
             }
         ],
@@ -272,7 +282,7 @@
 
         // Handle pressing "Cancel" instead of creating a new page
         if (!currentArticleEl) location.hash = "";
-    }
+    };
 
     /**
      * Get a list of elements that are manipulated more than once.
@@ -280,9 +290,9 @@
      * Also, here is where the current state is tracked.
      */
 
-    const inputEl = querySelectorAll('#of_input')[0];
-    const hashEl = querySelectorAll('#of_hash')[0];
-    const articlesEl = querySelectorAll('#of_articles')[0];
+    const inputEl = querySelectorAll("#of_input")[0];
+    const hashEl = querySelectorAll("#of_hash")[0];
+    const articlesEl = querySelectorAll("#of_articles")[0];
 
     let currentId = ""; // Current page ID, derived from URL hash
     let currentArticleEl = null; // Current page's article element
