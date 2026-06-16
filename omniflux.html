@@ -19,17 +19,18 @@
 
 <ul>
 <li>Lighter (though it's also less feature-packed) than <a href="https://tiddlywiki.com/">TiddlyWiki</a> and <a href="https://feather.wiki/">Feather Wiki</a>.</li>
-<li>Basic Markdown support (<i>italics</i>, <b>bold</b>, <b><i>both</i></b>, <code>code</code>, <s>strike</s>), external images, links, ordered and unordered lists, code fences. <a href="#markdown">See more!</a></li>
+<li>Markdown support (<i>italics</i>, <b>bold</b>, <b><i>both</i></b>, <code>code</code>, <s>strike</s>), external images, links, ordered and unordered lists, code fences. <a href="#markdown">Learn more!</a></li>
 <li>Generated HTML isn't one long line, allowing tools like <code>git</code> to work better.</li>
-<li>Automated tests to ensure the bidirectional HTML &lt;--&gt; Markdown conversion works as expected.</li>
+<li>Automated tests to ensure the bidirectional HTML to/from Markdown conversion works as expected.</li>
+<li>Doesn't need JavaScript to browse, thanks to CSS-based navigation, allowing it to work even in a very restrictive environment.</li>
 </ul>
 
 
 <h2>Credits</h2>
 
-<p>The CSS-based navigation is entirely based on <a href="https://dev.to/fedia/15kb-single-file-wiki-46a1">1.5KB Single-File Wiki</a>. It's fantastic. This page is also the starting point for the Markdown -&gt; HTML conversion.</p>
+<p>The CSS-based navigation is entirely based on <a href="https://dev.to/fedia/15kb-single-file-wiki-46a1">1.5KB Single-File Wiki</a>. It's fantastic. This page is also the starting point for the Markdown to HTML conversion.</p>
 
-<p>The HTML -&gt; Markdown conversion uses the DOM like <a href="https://github.com/acornejo/downshow">Downshow</a>, but an entirely different implementation.</p>
+<p>The HTML to Markdown conversion walks the DOM like <a href="https://github.com/acornejo/downshow">Downshow</a>, but the similarities end there. This is an entirely different implementation.</p>
 
 
 <h2>What's Next?</h2>
