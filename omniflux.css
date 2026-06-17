@@ -1,7 +1,22 @@
+/* Avoid FOUS - Flash Of Unstyled Content */
+html {
+    visibility: hidden;
+    animation: fast-fade-in 1ms ease-in forwards;
+}
+
+@keyframes fast-fade-in {
+    to {
+        visibility: visible;
+    }
+}
+
 /* CSS-based navigation - see https://dev.to/fedia/15kb-single-file-wiki-46a1 */
-article:not(.index, :target, :has(:target)),
-.of_articles:has(> :target) article.index:not(:target) {
+article {
     display: none;
+}
+
+article:target, .of_articles:not(:has(> :target)) > .index {
+    display: block;
 }
 
 :root {
