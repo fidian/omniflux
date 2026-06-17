@@ -330,12 +330,13 @@
 
         if (mdValue.length) {
             currentArticleEl.innerHTML = md2Html(mdValue);
-            location.hash = currentId;
         } else {
             // Delete the article
             currentArticleEl.remove();
+            currentId = "";
         }
 
+        location.hash = currentId;
         updateTranscludes();
         updateIndex();
         doneEditing();
