@@ -15,8 +15,8 @@ export async function buildContent(makeBlank = false) {
     const html = await readFile(htmlFile, 'utf-8');
     const css = await readFile(cssFile, 'utf-8');
     const script = await readFile(scriptFile, 'utf-8');
-    let merged = insert(html, '</head>', `<style>\n${css.trim()}\n</style>`);
-    merged = insert(merged, '</body>', `<script>\n${script.trim()}\n</script>`);
+    let merged = insert(html, '</head>', `<style class="of_core">\n${css.trim()}\n</style>`);
+    merged = insert(merged, '</body>', `<script class="of_core">\n${script.trim()}\n</script>`);
 
     if (makeBlank) {
         const pre = merged.split(/<article/).shift();
