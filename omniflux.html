@@ -7,45 +7,52 @@
 <p>Below are different versions of this same wiki. You can preview them by following the links. If you'd like to download them, right-click on the link and "Save As".</p>
 
 <ul>
-<li>The full site (what you are viewing now): <a href="https://fidian.github.io/omniflux/">unminified</a> or <a href="https://fidian.github.io/omniflux/minified/">minified</a>. This is currently about 23k unminified, 15k minified due to the content.</li>
-<li>A blank wiki, without extra content: <a href="https://fidian.github.io/omniflux/blank.html">unminified</a> or <a href="https://fidian.github.io/omniflux/minified/blank.html">minified</a>. The blank file is only 13k unminified and under 5k minified.</li>
-<li>Or you can build your own version by downloading the <a href="https://github.com/fidian/omniflux/">GitHub repository</a>.</li>
+<li>The full site (what you are viewing now): <a href="https://fidian.github.io/omniflux/" target="blank" rel="noopener noreferrer">unminified</a> or <a href="https://fidian.github.io/omniflux/minified/" target="blank" rel="noopener noreferrer">minified</a>. This is currently about 32k unminified, 20k minified due to the content.</li>
+<li>A blank wiki, without extra content: <a href="https://fidian.github.io/omniflux/blank.html" target="blank" rel="noopener noreferrer">unminified</a> or <a href="https://fidian.github.io/omniflux/minified/blank.html" target="blank" rel="noopener noreferrer">minified</a>. The blank file is only 20k unminified and about 8k minified.</li>
+<li>Or you can build your own version by downloading the <a href="https://github.com/fidian/omniflux/" target="blank" rel="noopener noreferrer">GitHub repository</a>.</li>
 </ul>
 
-<p>I would suggest the unminified one because it has comments and is much easier to debug in case something goes wrong. However, if you're the type who cares deeply about a couple kilobytes, get the minified version.</p>
+<p>In general, I would highly suggest the unminified version. However, if you really need a few extra kilobytes of space, the minified one is just fine.</p>
 
 
 <h2>Features</h2>
 
 <ul>
-<li>Lighter (though it's also less feature-packed) than <a href="https://tiddlywiki.com/">TiddlyWiki</a> and <a href="https://feather.wiki/">Feather Wiki</a>.</li>
+<li>Lighter (though it's also less feature-packed) than <a href="https://tiddlywiki.com/" target="blank" rel="noopener noreferrer">TiddlyWiki</a> and <a href="https://feather.wiki/" target="blank" rel="noopener noreferrer">Feather Wiki</a>.</li>
 <li>Markdown support (<i>italics</i>, <b>bold</b>, <b><i>both</i></b>, <code>code</code>, <s>strike</s>), external images, links, ordered and unordered lists, code fences. <a href="#markdown">Learn more!</a></li>
 <li>Generated HTML isn't one long line, allowing tools like <code>git</code> to work better.</li>
 <li>Automated tests to ensure the bidirectional HTML to/from Markdown conversion works as expected.</li>
-<li>Doesn't need JavaScript to browse, thanks to CSS-based navigation, allowing it to work even in a very restrictive environment.</li>
+<li>Doesn't need JavaScript to browse, thanks to CSS-based navigation and sidebar, allowing it to work even in a very restrictive environment.</li>
+<li>Quick editing and saving using Ctrl+Enter or Cmd+Enter.</li>
 </ul>
 
 
 <h2>Credits</h2>
 
-<p>The CSS-based navigation is entirely based on <a href="https://dev.to/fedia/15kb-single-file-wiki-46a1">1.5KB Single-File Wiki</a>. It's fantastic. This page is also the starting point for the Markdown to HTML conversion.</p>
+<p>CSS-based navigation is from <a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a>. It's fantastic.</p>
 
-<p>The HTML to Markdown conversion walks the DOM like <a href="https://github.com/acornejo/downshow">Downshow</a>, but the similarities end there. This is an entirely different implementation.</p>
+<p>Converting Markdown to HTML started from the <a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a> as well, but it's been highly modified and extended.</p>
+
+<p>The CSS-powered slide-in menu comes from <a href="https://css-tricks.com/the-checkbox-hack/" target="blank" rel="noopener noreferrer">The "Checkbox Hack" (and things you can do with it)</a> with a fancier hamburger icon courtesy of <a href="https://codepen.io/anon/pen/OrxKWb" target="blank" rel="noopener noreferrer">Definitly Pure HTML/CSS animated Hamburger</a>.</p>
+
+<p>HTML to Markdown conversion walks the DOM (an approach similar to <a href="https://github.com/acornejo/downshow" target="blank" rel="noopener noreferrer">Downshow</a>), but the similarities end there. This is an entirely different implementation.</p>
 
 
 <h2>What's Next?</h2>
 
-<p>These items are not sorted. Feeling adventurous? Pull requests on <a href="https://github.com/fidian/omniflux">GitHub</a> are welcome! For those diving into the internals, you might want to know how <a href="#rule-processing">rule processing</a> works.</p>
+<p>These items are not sorted. Feeling adventurous? Pull requests on <a href="https://github.com/fidian/omniflux" target="blank" rel="noopener noreferrer">GitHub</a> are welcome! For those diving into the internals, you might want to know how <a href="#rule-processing">rule processing</a> works.</p>
 
 <ol>
 <li>Support tables.</li>
-<li>Support nested lists. This will be vital for a Table of Contents.</li>
+<li>Support nested lists. This will be vital for a proper Table of Contents.</li>
 <li>Add the ability to save images as base64 encoded CSS classes, then to show them and manage them.</li>
-<li>Add a sidebar for Table of Contents, Index, and actions (download, auto-save, rename, delete)</li>
-<li>Add auto-save through the File API.</li>
-<li>Deletion of a page via a link or button. (Pages can be deleted by removing all content.)</li>
+<li>Add a sidebar section for search.</li>
+<li>Add auto-save through the File API and expose it under the Download section in the sidebar.</li>
+<li>Deletion of a page via a button on the edit page. (Pages can already be deleted by removing all content.)</li>
 <li>Consider including wikilink syntax to link to another internal page, like <code>[[Page Name]]</code> -&gt; <code>#page-name</code> and <code>[[Page Name|Custom Text]]</code> -&gt; <code>#page-name</code>.</li>
-<li>Allow renaming a page's ID and updating all links that point to it.</li>
+<li>As an "Action", allow renaming a page's ID and updating all links that point to it.</li>
+<li>As an "Action", have a button to delete all pages.</li>
+<li>As an "Action", allow for renaming the wiki (setting the document title).</li>
 </ol>
 </article>
 <article id="markdown">
@@ -53,7 +60,7 @@
 
 <p>Markdown is supported, though not all features are included. This page will explain all of your available options, including common patterns that are not supported.</p>
 
-<p>When something is marked as "not supported", you could contribute code through a <a href="https://github.com/fidian/omniflux/">pull request</a>.</p>
+<p>When something is marked as "not supported", you could contribute code through a <a href="https://github.com/fidian/omniflux/" target="blank" rel="noopener noreferrer">pull request</a>.</p>
 
 
 <h2>Basic formatting</h2>
@@ -108,15 +115,15 @@ Make your own haiku</p>
 
 <h2>Images and Links</h2>
 
-<p>URLs are converted automatically: <a href="https://fidian.github.io/omniflux">https://fidian.github.io/omniflux</a></p>
+<p>URLs are converted automatically: <a href="https://fidian.github.io/omniflux" target="blank" rel="noopener noreferrer">https://fidian.github.io/omniflux</a></p>
 
-<p>Link to an external page: <a href="https://fidian.github.io/omniflux">OmniFlux</a></p>
+<p>Link to an external page: <a href="https://fidian.github.io/omniflux" target="blank" rel="noopener noreferrer">OmniFlux</a></p>
 
 <p>Link to an internal page: <a href="#">Main Page</a> or <a href="#markdown">Markdown Info</a></p>
 
 <p>External image: <img src="https://fidian.github.io/omniflux/octocat.svg" alt="Octocat" title="Octocat"> (the "alt text" is also converted to a title)</p>
 
-<p>Linking around an external image: <a href="https://fidian.github.io/omniflux/octocat.svg"><img src="https://fidian.github.io/omniflux/octocat.svg" alt="Octocat" title="Octocat"></a></p>
+<p>Linking around an external image: <a href="https://fidian.github.io/omniflux/octocat.svg" target="blank" rel="noopener noreferrer"><img src="https://fidian.github.io/omniflux/octocat.svg" alt="Octocat" title="Octocat"></a></p>
 
 
 <h4>Avoid</h4>
@@ -137,7 +144,7 @@ Make your own haiku</p>
 <pre><code>Code fences are supported and language information is preserved.
 </code></pre>
 
-<p>While code fences support language information, no highlighting happens at this stage in order to keep the wiki small. If you want it, you will need to include <a href="https://prismjs.com/">Prism</a> or <a href="https://highlightjs.org/">highlight.js</a> yourself.</p>
+<p>While code fences support language information, no highlighting happens at this stage in order to keep the wiki small. If you want it, you will need to include <a href="https://prismjs.com/" target="blank" rel="noopener noreferrer">Prism</a> or <a href="https://highlightjs.org/" target="blank" rel="noopener noreferrer">highlight.js</a> yourself.</p>
 
 
 <h4>Avoid</h4>
@@ -198,5 +205,58 @@ Make your own haiku</p>
 <p>First, block handlers will look for block-level elements. When a match is found, it must handle the block and all of the inlines within. Typically a block handler will match the beginning and end of a section of a document and then will pass chunks of text to an inline processing function.</p>
 
 <p>The inline one is a bit harder because some things are expected to have further processing and some are not. For instance, inline code blocks (with backticks) are not supposed to get any further processing within the backticks. Images do get further processing because they might be turned into a link. Knowing if the handler should return an array or a string is vital.</p>
+</article><article id="overview">
+<p><a href="#markdown">Markdown Syntax</a><br>
+<a href="#rule-processing">Rule Processing</a></p>
 </article></div>
-<div class="of_toolbar"><button class="of_download of_js hidden">Download</button><div class="of_js of_manual_save">Use <kbd>Ctrl</kbd>+<kbd>S</kbd> or <kbd>⌘ Cmd</kbd>+<kbd>S</kbd> to Download</div><button class="of_edit of_js hidden">Edit</button></div><div class="of_editor hidden"><div class="of_menu"><button class="of_cancel">Cancel</button><span class="of_hash"></span><button class="of_save">Save</button></div><textarea class="of_input" placeholder="Write here..."></textarea></div></body></html>
+<div class="of_toolbar">
+    <button class="of_edit of_js hidden">Edit</button>
+</div>
+<div class="of_sidebar">
+    <div class="of_sidebar_wrap">
+        <div class="of_sidebar_bar">
+            <div class="of_title">
+                <a href="#" data-of_transclude="title">OmniFlux</a>
+            </div>
+            <details class="of_overview" name="of_sidebar" open="">
+                <summary>Overview</summary>
+                <div data-of_transclude="#overview">
+<p><a href="#markdown">Markdown Syntax</a><br>
+<a href="#rule-processing">Rule Processing</a></p>
+</div>
+            </details>
+            <details name="of_sidebar">
+                <summary>Index</summary>
+                <div class="of_index">
+<p><a href="#markdown">Markdown Syntax</a><br>
+<a href="#">OmniFlux - Single-Page Wiki</a><br>
+<a href="#overview">Overview</a><br>
+<a href="#rule-processing">Rule Processing</a></p>
+</div>
+            </details>
+            <details class="of_js" name="of_sidebar">
+                <summary>Download</summary>
+                Press <kbd>Ctrl</kbd>+<kbd>S</kbd> or <br>
+                <kbd>⌘ Cmd</kbd>+<kbd>S</kbd><br> to Download
+            </details>
+            <details class="of_js hidden" name="of_sidebar">
+                <summary>Download</summary>
+                <button class="of_download">Download</button>
+            </details>
+        </div>
+    </div>
+    <input type="checkbox" id="of_sidebar_toggle">
+    <label for="of_sidebar_toggle" class="of_sidebar_handle">
+        <div class="of_hamburger_bar of_burger_top"></div>
+        <div class="of_hamburger_bar of_burger_mid"></div>
+        <div class="of_hamburger_bar of_burger_bot"></div>
+    </label>
+</div>
+<div class="of_editor hidden">
+    <div class="of_menu">
+        <button class="of_cancel">Cancel</button>
+        <span class="of_hash"></span>
+        <button class="of_save">Save</button>
+    </div>
+    <textarea class="of_input" placeholder="Write here..."></textarea>
+</div></body></html>

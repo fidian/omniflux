@@ -8,14 +8,14 @@
 
     // Run a callback against all elements matching a selector.
     // The only elements with IDs are articles.
-    const querySelectorAll = (selector, callback) =>
-        doc.querySelectorAll(selector);
+    const querySelectorAll = (selector, root = doc) =>
+        root.querySelectorAll(selector);
+    const querySelector = (selector, root) =>
+        querySelectorAll(selector, root)[0];
 
-    // Add an event listener to one or more elements matching a selector.
+    // Add an event listener to a single element matching a selector.
     const on = (selector, event, handler) =>
-        querySelectorAll(selector).forEach((el) =>
-            el.addEventListener(event, handler)
-        );
+        querySelector(selector).addEventListener(event, handler);
 
     // Hide or show elements that match a selector
     const toggleHidden = (selector) =>
@@ -23,13 +23,43 @@
             el.classList.toggle("hidden")
         );
     const toggleJsButtons = () => toggleHidden(".of_js");
-    const toggleEditor = () => toggleHidden(".of_editor");
+    const toggleEditor = () => {
+        toggleHidden(".of_editor");
+        editing = !editing;
+    };
 
     // Simple HTML escaping
     const htmlEncode = (str) => {
         const element = createElement("div");
         element.textContent = str;
         return element.innerHTML;
+    };
+
+    // Convert an ID into a human readable name by replacing dashes and
+    // underscores with spaces, then capitalizing the first letter of each
+    // word.
+    const id2Name = (id) =>
+        id.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+    // Copy HTML from elements, whose query selectors are in the
+    // "data-of_transclude" attribute, to the elements with the
+    // data-of_transclude attributes.
+    const updateTranscludes = () =>
+        querySelectorAll("[data-of_transclude]").forEach((el) => {
+            el.innerHTML =
+                querySelector(el.dataset.of_transclude)?.innerHTML || "";
+        });
+
+    // Rebuild the index using the first heading from each page.
+    const updateIndex = () => {
+        const mdLinks = [...querySelectorAll("article")].map(
+            (article) =>
+                `[${querySelector("h1,h2,h3,h4,h5,h6", article)?.textContent.trim() || id2Name(article.id)}](#${article.id})`
+        );
+        mdLinks.sort((a, b) =>
+            a.localeCompare(b, undefined, { numeric: true })
+        );
+        querySelector(".of_index").innerHTML = md2Html(mdLinks.join("\n"));
     };
 
     /**
@@ -86,14 +116,14 @@
         [
             /\[(.+?)\]\((.+?)\)/,
             (_, txt, url) => [
-                `<a href="${url}"${url.startsWith("#") ? "" : ' target="blank"'} rel="noopener noreferrer">`,
+                `<a href="${url}"${url.startsWith("#") ? "" : ' target="blank" rel="noopener noreferrer"'}>`,
                 txt,
                 "</a>"
             ]
         ],
         [
             /(?<!\=["'])https?\:\/\/[^\s]+/i,
-            (url) => [`<a href="${url}">`, url, "</a>"]
+            (url) => [`<a href="${url}" target="blank" rel="noopener noreferrer">`, url, "</a>"]
         ]
     ];
     const md2HtmlInline = (str) => processRules(str.trim(), inlineRules);
@@ -209,7 +239,7 @@
     ];
 
     // When inBlock is truthy, trim the markdown.
-    function html2Md(el, inBlock) {
+    const html2Md = (el, inBlock) => {
         const treeWalker = doc.createTreeWalker(
             el,
             NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT
@@ -256,7 +286,7 @@
                   .replace(/[^\S\n]+([\n])/g, "$1")
                   .replace(/(\n{3})\n+/g, "$1")
             : md;
-    }
+    };
 
     /**
      * A few functions that bind to element events and that are reused.
@@ -284,18 +314,46 @@
         if (!currentArticleEl) location.hash = "";
     };
 
+    const saveEdits = () => {
+        const mdValue = inputEl.value;
+
+        if (!currentArticleEl) {
+            // When creating a new element, change the hash so the browser's :target
+            // selector will show the new page after it's added to the DOM. It does
+            // not find the element otherwise. This line is also necessary to show
+            // something useful after deleting a page.
+            location.hash = "";
+            currentArticleEl = createElement("article");
+            currentArticleEl.id = currentId;
+            articlesEl.append(currentArticleEl);
+        }
+
+        if (mdValue.length) {
+            currentArticleEl.innerHTML = md2Html(mdValue);
+            location.hash = currentId;
+        } else {
+            // Delete the article
+            currentArticleEl.remove();
+        }
+
+        updateTranscludes();
+        updateIndex();
+        doneEditing();
+    };
+
     /**
      * Get a list of elements that are manipulated more than once.
      *
      * Also, here is where the current state is tracked.
      */
 
-    const inputEl = querySelectorAll(".of_input")[0];
-    const hashEl = querySelectorAll(".of_hash")[0];
-    const articlesEl = querySelectorAll(".of_articles")[0];
+    const inputEl = querySelector(".of_input");
+    const hashEl = querySelector(".of_hash");
+    const articlesEl = querySelector(".of_articles");
 
     let currentId = ""; // Current page ID, derived from URL hash
     let currentArticleEl = null; // Current page's article element
+    let editing = false; // Whether the editor is open or not
 
     // Edit - this function is used when clicking the Edit button and
     // when navigating to a page that doesn't exist
@@ -304,6 +362,10 @@
     // Download
     on(".of_download", "click", () => {
         toggleJsButtons();
+        querySelectorAll(".of_sidebar_bar [open]").forEach((details) =>
+            details.removeAttribute("open")
+        );
+        querySelector(".of_overview").setAttribute("open", "");
         const html = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
         const link = createElement("a");
         link.href = URL.createObjectURL(
@@ -326,31 +388,22 @@
     on(".of_cancel", "click", doneEditing);
 
     // Save edits
-    on(".of_save", "click", () => {
-        const mdValue = inputEl.value;
-        if (!currentArticleEl) {
-            // When creating a new element, change the hash so the browser's :target
-            // selector will show the new page after it's added to the DOM. It does
-            // not find the element otherwise. This line is also necessary to show
-            // something useful after deleting a page.
-            location.hash = "";
-            currentArticleEl = createElement("article");
-            currentArticleEl.id = currentId;
-            articlesEl.append(currentArticleEl);
-        }
-        if (mdValue.length) {
-            currentArticleEl.innerHTML = md2Html(mdValue);
-            location.hash = currentId;
-        } else {
-            // Delete the article
-            currentArticleEl.remove();
-        }
-        doneEditing();
-    });
+    on(".of_save", "click", saveEdits);
 
     // Set internal state when navigating to a new page or upon
     // initial load
     window.addEventListener("hashchange", onLoad);
+    window.addEventListener("keydown", (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+            event.preventDefault();
+
+            if (editing) {
+                saveEdits();
+            } else {
+                editPage();
+            }
+        }
+    });
     onLoad();
 
     // Finally, show the buttons
