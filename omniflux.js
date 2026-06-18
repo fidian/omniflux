@@ -86,112 +86,100 @@ const autosaveAction = async () => {
  * For rules and rule processing, see
  * https://fidian.github.io/omniflux/#rule-processing
  */
-const processRule = (str, regexp, handler) => {
-    let result = [];
-    let match = str.match(regexp);
+const processRules = (str, rules, unmatchedHandler) => {
+    let result = "";
 
-    while (str && match) {
-        const before = str.slice(0, match.index);
-        const after = str.slice(match.index + match[0].length);
-        const processed = handler(...match);
-        if (Array.isArray(processed)) {
-            result.push(before, ...processed);
-            str = after;
-        } else {
-            str = before + processed + after;
+    while (str) {
+        let bestMatch = null;
+        let bestHandler = null;
+
+        for (const [regexp, handler] of rules) {
+            const match = str.match(regexp);
+
+            if (match && (!bestMatch || match.index < bestMatch.index)) {
+                bestMatch = match;
+                bestHandler = handler;
+            }
         }
-        match = str.match(regexp);
-    }
 
-    result.push(str);
+        result += unmatchedHandler(
+            bestMatch ? str.slice(0, bestMatch.index) : str
+        );
+
+        if (bestMatch) {
+            result += bestHandler(...bestMatch);
+            str = str.slice(bestMatch.index + bestMatch[0].length);
+        } else {
+            str = "";
+        }
+    }
 
     return result;
-};
-const processRules = (str, rules) => {
-    let input = [str];
-
-    for (const [regexp, handler] of rules) {
-        input = input.flatMap((item, index) =>
-            index % 2 ? item : processRule(item, regexp, handler)
-        );
-    }
-
-    return input.join("");
 };
 
 /**
  * Convert Markdown to HTML.
  */
 
+const linkAttributes = ' target="_blank" rel="noopener noreferrer"';
 const inlineRules = [
-    [/`(.+?)`/, (_, txt) => [`<code>${htmlEncode(txt)}</code>`]],
-    [/\*{3}(.+?)\*{3}/, (_, txt) => ["<b><i>", txt, "</i></b>"]],
-    [/\*\*(.+?)\*\*/, (_, txt) => ["<b>", txt, "</b>"]],
-    [/\*(.+?)\*/, (_, txt) => ["<i>", txt, "</i>"]],
-    [/~~(.+?)~~/, (_, txt) => ["<s>", txt, "</s>"]],
-    [/~(.+?)~/, (_, txt) => ["<u>", txt, "</u>"]],
+    [/`(.+?)`/, (_, txt) => `<code>${htmlEncode(txt)}</code>`],
+    [/\*{3}(.+?)\*{3}/, (_, txt) => `<b><i>${mdInline(txt)}</i></b>`],
+    [/\*\*(.+?)\*\*/, (_, txt) => `<b>${mdInline(txt)}</b>`],
+    [/\*(.+?)\*/, (_, txt) => `<i>${mdInline(txt)}</i>`],
+    [/~~(.+?)~~/, (_, txt) => `<s>${mdInline(txt)}</s>`],
+    [/~(.+?)~/, (_, txt) => `<u>${mdInline(txt)}</u>`],
     [
         /!\[(.*?)\]\((.+?)\)/,
         (_, txt, url) => `<img src="${url}" alt="${txt}" title="${txt}">`
     ],
     [
-        /\[(.+?)\]\((.+?)\)/,
-        (_, txt, url) => [
-            `<a href="${url}"${url.startsWith("#") ? "" : ' target="blank" rel="noopener noreferrer"'}>`,
-            txt,
-            "</a>"
-        ]
+        // Support images inside links
+        /\[((!\[.*?\]\(.+?\)|.)+?)\]\((.+?)\)/,
+        (_, txt, _x, url) =>
+            `<a href="${url}"${url.startsWith("#") ? "" : linkAttributes}>${mdInline(txt)}</a>`
     ],
     [
         /(?<!\=["'])https?\:\/\/[^\s]+/i,
-        (url) => [
-            `<a href="${url}" target="blank" rel="noopener noreferrer">`,
-            url,
-            "</a>"
-        ]
+        (url) => `<a href="${url}"${linkAttributes}>${url}</a>`
     ]
 ];
-const md2HtmlInline = (str) => processRules(str.trim(), inlineRules);
-const md2HtmlProcessList = (listType) => (lines) => [
+const mdInline = (str) => processRules(str.trim(), inlineRules, (txt) => txt);
+const mdList = (listType) => (lines) =>
     `<${listType}>\n<li>${lines
         .split("\n")
-        .map((item) => md2HtmlInline(item.replace(/^ *([-*+]|\d+\.) +/, "")))
-        .join(`</li>\n<li>`)}</li>\n</${listType}>\n\n`
-];
+        .map((item) => mdInline(item.replace(/^ *([-*+]|\d+\.) +/, "")))
+        .join(`</li>\n<li>`)}</li>\n</${listType}>\n\n`;
 const blockRules = [
     [
         /^```([^\n]*)\n(([^\n]*\n)+?)```$/m,
-        (_, lang, code) => [
+        (_, lang, code) =>
             `<pre><code${lang ? ` class="language-${lang}"` : ""}>${htmlEncode(code)}</code></pre>\n\n`
-        ]
     ],
-    [/^>( [^\n]+)?(\n>( [^\n]+)?)*$/m,
-        (txt) => [`\n<blockquote>\n${md2Html(txt.replace(/^> ?/gm, ""))}</blockquote>\n\n`]
+    [
+        /^>( [^\n]+)?(\n>( [^\n]+)?)*$/m,
+        (txt) =>
+            `\n<blockquote>\n${md2Html(txt.replace(/^> ?/gm, ""))}</blockquote>\n\n`
     ],
     [
         /^(#+)([^\n]+)$/m,
-        (_, h, txt) => [
-            `\n<h${h.length}>${md2HtmlInline(txt)}</h${h.length}>\n\n`
-        ]
+        (_, h, txt) => `\n<h${h.length}>${mdInline(txt)}</h${h.length}>\n\n`
     ],
-    [/^( *[-*+] +[^\n]+(\n *[-*+] +[^\n]+)*)$/m, md2HtmlProcessList("ul")],
-    [/^( *\d+\. +[^\n]+(\n *\d+\. +[^\n]+)*)$/m, md2HtmlProcessList("ol")],
+    [/^( *[-*+] +[^\n]+(\n *[-*+] +[^\n]+)*)$/m, mdList("ul")],
+    [/^( *\d+\. +[^\n]+(\n *\d+\. +[^\n]+)*)$/m, mdList("ol")],
     [
         /^([^\n]+(\n[^\n]+)*)$/m,
-        (all) => [
-            "<p>",
-            ...all
+        (all) =>
+            `<p>${all
                 .split("\n")
-                .flatMap((item) => [md2HtmlInline(item), "<br>\n"])
-                .slice(0, -1),
-            "</p>\n\n"
-        ]
-    ],
-    [/\n+/, () => ""]
+                .map((item) => mdInline(item))
+                .join("<br>\n")}</p>\n\n`
+    ]
 ];
 // Surround with newlines to make it easy for block level rules to work.
 // Add newlines for easier diffing with git.
-const md2Html = (str) => `\n${processRules(`\n${str}\n`, blockRules).trim()}\n`;
+const md2Html = (str) =>
+    `\n${processRules(`\n${str}\n`, blockRules, () => "").trim()}\n`;
 
 /**
  * Convert HTML to Markdown. Must convert everything md2html supports.
@@ -247,7 +235,11 @@ const html2MdConversions = [
             add(`${prefix}${html2Md(currentNode, 1)}\n`, 1);
         }
     ],
-    [/^BLOCKQUOTE$/, (add, currentNode) => add(`> ${html2Md(currentNode, 1).replace(/\n/g, "\n> ")}\n\n`, 1)],
+    [
+        /^BLOCKQUOTE$/,
+        (add, currentNode) =>
+            add(`> ${html2Md(currentNode, 1).replace(/\n/g, "\n> ")}\n\n`, 1)
+    ],
     [/^BR$/, (add, currentNode) => add("\n", 1)],
     [
         /^(P|DIV|UL|OL)$/,

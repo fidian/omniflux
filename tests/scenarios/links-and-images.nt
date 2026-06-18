@@ -1,0 +1,22 @@
+md2html: true
+html2md: true
+markdown:
+ > [one](#one) [one two](#one-two)
+ >
+ > ![alt](#image) [![alt](#image)](#image)
+ >
+ > [nested ![alt](#image) and text](#both)
+ >
+ > https://example.com/
+ > [Example](https://example.com)
+html:
+ >
+ > <p><a href="#one">one</a> <a href="#one-two">one two</a></p>
+ >
+ > <p><img src="#image" alt="alt" title="alt"> <a href="#image"><img src="#image" alt="alt" title="alt"></a></p>
+ >
+ > <p><a href="#both">nested <img src="#image" alt="alt" title="alt"> and text</a></p>
+ >
+ > <p><a href="https://example.com/" target="_blank" rel="noopener noreferrer">https://example.com/</a><br>
+ > <a href="https://example.com" target="_blank" rel="noopener noreferrer">Example</a></p>
+ >

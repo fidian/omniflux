@@ -207,6 +207,14 @@ body:has(.of_editor:not(.hidden)) {
     display: none;
 }
 
+code {
+    white-space: pre-wrap;
+}
+
+pre code {
+    white-space: pre;
+}
+
 pre,
 code {
     background-color: #e0e0e0;
