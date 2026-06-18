@@ -13,9 +13,11 @@ html {
 /* CSS-based navigation - see https://dev.to/fedia/15kb-single-file-wiki-46a1 */
 article {
     display: none;
+    padding: 0 0.25em;
 }
 
-article:target, .of_articles:not(:has(> :target)) > .index {
+article:target,
+.of_articles:not(:has(> :target)) > .index {
     display: block;
 }
 
@@ -37,12 +39,19 @@ body {
 }
 
 article {
-    margin: auto;
+    margin: 0 auto;
     max-width: 960px;
 
     img {
         height: auto;
         max-width: 100%;
+    }
+}
+
+@media screen and (max-width: 1060px) {
+    article {
+        margin-top: 50px;
+        scroll-margin-top: 50px;
     }
 }
 
@@ -56,7 +65,6 @@ article {
     position: fixed;
     top: 0;
     width: 100vw;
-
 }
 
 .of_menu {
@@ -86,6 +94,13 @@ body:has(.of_editor:not(.hidden)) {
     position: fixed;
     right: 0;
     top: 0;
+}
+
+@media print {
+    .of_toolbar,
+    .of_sidebar {
+        display: none;
+    }
 }
 
 .of_sidebar {
@@ -151,11 +166,11 @@ body:has(.of_editor:not(.hidden)) {
     details {
         margin: 0.25em 0;
 
-        :first-child {
+        > div > :first-child {
             margin-top: 0;
         }
 
-        :last-child {
+        > div > :last-child {
             margin-bottom: 0;
         }
 
@@ -164,6 +179,7 @@ body:has(.of_editor:not(.hidden)) {
             font-weight: bold;
             background-color: #aae;
             padding: 0 0.2em;
+            user-select: none;
         }
     }
 }
@@ -177,6 +193,7 @@ body:has(.of_editor:not(.hidden)) {
     padding: 12px 8px;
     cursor: pointer;
     gap: 5.5px;
+    border-bottom-right-radius: 10px;
 }
 
 .of_hamburger_bar {
@@ -215,19 +232,28 @@ kbd {
 }
 
 ::details-content {
-  transition: block-size 0.3s ease-out, content-visibility 0.3s allow-discrete;
-  block-size: 0;
-  overflow: clip;
-  content-visibility: visible !important;
-  padding: 0 0.4em;
+    transition:
+        block-size 0.3s ease-out,
+        content-visibility 0.3s allow-discrete;
+    block-size: 0;
+    overflow: clip;
+    content-visibility: visible !important;
+    padding: 0 0.4em;
 }
 
 details[open]::details-content {
-  block-size: auto;
+    block-size: auto;
 }
 
 @starting-style {
-  details[open]::details-content {
-    block-size: 0;
-  }
+    details[open]::details-content {
+        block-size: 0;
+    }
+}
+
+blockquote {
+    padding: 0 1em;
+    color: #656d76;
+    border-left: 0.25em solid #d0d7de;
+    margin: 0 0 16px 0;
 }

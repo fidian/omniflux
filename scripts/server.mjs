@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { createServer } from 'node:http';
-import { buildContent } from './build-content.mjs';
+import { makeContent } from './make-content.mjs';
 
 const hostname = 'localhost';
 const port = process.env.PORT ? parseInt(process.env.PORT) : 5173;
@@ -14,7 +14,7 @@ const handler = async (req, res) => {
     switch (req.method) {
         case 'GET':
             log('Reading files and merging contents');
-            const merged = await buildContent();
+            const merged = await makeContent();
             res.writeHead(200, { 'Content-Type': 'text/html' });
             res.end(merged);
             break;
