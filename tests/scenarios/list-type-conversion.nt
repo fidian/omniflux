@@ -4,7 +4,11 @@ markdown:
  > - one
  > + two
  > * three
+ >
  > 1. four
+ >   * nested
+ >   * items
+ > 2. five
 html:
  >
  > <ul>
@@ -15,5 +19,10 @@ html:
  >
  > <ol>
  > <li>four</li>
+ > <ul>
+ > <li>nested</li>
+ > <li>items</li>
+ > </ul>
+ > <li>five</li>
  > </ol>
  >

@@ -3,6 +3,7 @@
  */
 
 const doc = document;
+const bodyClassList = doc.body.classList;
 const createElement = (tag) => doc.createElement(tag);
 
 // Run a callback against all elements matching a selector.
@@ -34,8 +35,15 @@ const wikiContent = () => {
     );
     querySelector(".of_overview").setAttribute("open", "");
 
+    // Remove body classes
+    const bodyClasses = doc.body.className;
+    doc.body.className = "";
+
     // Get content
     const result = `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
+
+    // Restore body classes
+    doc.body.className = bodyClasses;
 
     // Go back to a JS-enabled version of the wiki.
     toggleJsButtons();
@@ -76,6 +84,8 @@ const autosaveAction = async () => {
     }
 
     if (autosaveFileHandle) {
+        bodyClassList.add("of_autosaving");
+        bodyClassList.remove("of_dirty");
         const writable = await autosaveFileHandle.createWritable();
         await writable.write(wikiContent());
         await writable.close();
@@ -165,8 +175,44 @@ const blockRules = [
         /^(#+)([^\n]+)$/m,
         (_, h, txt) => `\n<h${h.length}>${mdInline(txt)}</h${h.length}>\n\n`
     ],
-    [/^( *[-*+] +[^\n]+(\n *[-*+] +[^\n]+)*)$/m, mdList("ul")],
-    [/^( *\d+\. +[^\n]+(\n *\d+\. +[^\n]+)*)$/m, mdList("ol")],
+    [
+        /^( *(\d+\.|[-*+]) +[^\n]+(\n *(\d+\.|[-*+]) +[^\n]+)*)$/m,
+        (all) => {
+            const lines = all
+                .split("\n")
+                .map(
+                    (line) =>
+                        line.match(/^( *(?:\d+\.|[-*+]) +)(.+)$/) || [
+                            "",
+                            "",
+                            line
+                        ]
+                );
+            let result = "";
+            const stack = [];
+
+            for (const [_, indent, content] of lines) {
+                while ((stack[0]?.[0] || 0) > indent.length) {
+                    result += `</${stack[0][1]}>\n`;
+                    stack.shift();
+                }
+
+                if ((stack[0]?.[0] || 0) < indent.length) {
+                    const tag = indent.match(/\d/) ? "ol" : "ul";
+                    result += `<${tag}>\n`;
+                    stack.unshift([indent.length, tag]);
+                }
+
+                result += `<li>${mdInline(content.trim())}</li>\n`;
+            }
+
+            while (stack.length) {
+                result += `</${stack.shift()[1]}>\n`;
+            }
+
+            return result + "\n";
+        }
+    ],
     [
         /^([^\n]+(\n[^\n]+)*)$/m,
         (all) =>
@@ -225,12 +271,34 @@ const html2MdConversions = [
             )
     ],
     [
+        /^(UL|OL)$/,
+        (add, currentNode) => {
+            let parent = currentNode.parentElement;
+            let indent = "";
+            let tail = "\n\n";
+            while (parent?.tagName.match(/^(UL|OL)$/)) {
+                indent += "  ";
+                parent = parent.parentElement;
+                tail = "\n";
+            }
+            const listMd = html2Md(currentNode, 1);
+            add(
+                indent +
+                    html2Md(currentNode, 1)
+                        .trimEnd()
+                        .replace(/\n/g, "\n" + indent) +
+                    tail,
+                1
+            );
+        }
+    ],
+    [
         /^LI$/,
         (add, currentNode) => {
             const parent = currentNode.parentElement;
             const prefix =
                 parent.tagName === "OL"
-                    ? `${[...parent.children].indexOf(currentNode) + 1}. `
+                    ? `${[...parent.children].filter((node) => node.tagName === "LI").indexOf(currentNode) + 1}. `
                     : "- ";
             add(`${prefix}${html2Md(currentNode, 1)}\n`, 1);
         }
@@ -242,7 +310,7 @@ const html2MdConversions = [
     ],
     [/^BR$/, (add, currentNode) => add("\n", 1)],
     [
-        /^(P|DIV|UL|OL)$/,
+        /^(P|DIV)$/,
         (add, currentNode) => add(html2Md(currentNode, 1) + "\n\n", 1)
     ],
 
@@ -343,11 +411,14 @@ const solidifyState = () => {
         (article) =>
             `[${querySelector("h1,h2,h3,h4,h5,h6", article)?.textContent.trim() || id2Name(article.id)}](#${article.id})`
     );
+
     mdLinks.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
     querySelector(".of_index").innerHTML = md2Html(mdLinks.join("\n"));
 
     if (autosaveFileHandle) {
         autosaveAction();
+    } else {
+        bodyClassList.add("of_dirty");
     }
 };
 
@@ -405,6 +476,7 @@ on(".of_download", "click", () => {
     );
     link.download = suggestedFilename();
     link.click();
+    bodyClassList.remove("of_dirty");
 });
 
 // Enable File API-based autosaving. When active, any change will automatically
@@ -416,8 +488,8 @@ on(".of_autosave", "click", () => {
     }
 
     if (autosaveFileHandle) {
-        alert("Disabling autosave.");
         autosaveFileHandle = null;
+        bodyClassList.remove("of_autosaving");
         return;
     }
 

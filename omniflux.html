@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>OmniFlux</title></head><body><div class="of_articles"><article class="index">
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>OmniFlux</title></head><body class=""><div class="of_articles"><article class="index">
 <h1>OmniFlux - Single-Page Wiki</h1>
 
 <p>You're looking at a complete, self-contained wiki. This one file can be downloaded, the pages can be updated using Markdown, and then everything can be saved. It even supports autosaving when content changes! Try it now by pressing the "Edit" button in the upper right. <a href="#markdown">Learn about supported Markdown.</a></p>
@@ -62,7 +62,6 @@
 <p>These items are not sorted. Feeling adventurous? Pull requests on <a href="https://github.com/fidian/omniflux" target="_blank" rel="noopener noreferrer">GitHub</a> are welcome! For those diving into the internals, you might want to know how <a href="#rule-processing">rule processing</a> works.</p>
 
 <ol>
-<li>Support nested lists. This will be vital for a proper Table of Contents.</li>
 <li>Support tables.</li>
 <li>Add the ability to save images as base64 encoded CSS classes, then to show them and manage them.</li>
 <li>Add a sidebar section for search.</li>
@@ -118,16 +117,28 @@ Make your own haiku</p>
 <li>Use a hyphen for each item</li>
 </ul>
 
+<p>You can also use nested lists.</p>
+
+<ul>
+<li>Naughty list</li>
+<ol>
+<li>Tyler</li>
+<li>Brian</li>
+</ol>
+<li>Nice list</li>
+<ul>
+<li>Basically everyone else</li>
+</ul>
+</ul>
+
 
 <h4>Avoid</h4>
 
-<p>Nested lists do not work. Nesting other markup, such as paragraphs or blockquotes is also not supported.</p>
-
 <p>Starting the numbering of a list with any number other than 1 is not supported.</p>
 
-<p>Using <code>+</code> or <code>*</code> for list items will work, but they will be converted to <code>-</code>.</p>
+<p>Using <code>+</code> or <code>*</code> for list items will work, but they will be converted to <code>-</code> when editing the list again.</p>
 
-<p>Task lists, which use <code>[]</code> and <code>[X]</code> for a list of empty or filled checkboxes is not supported.</p>
+<p>Task lists, which use <code>[ ]</code> and <code>[x]</code> for a list of empty or filled checkboxes is not supported.</p>
 
 
 <h2>Images and Links</h2>
@@ -277,6 +288,8 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <div class="of_sidebar">
     <div class="of_sidebar_wrap">
         <div class="of_sidebar_bar">
+            <div class="of_notice of_dirty_on">Unsaved Changes</div>
+            <div class="of_notice of_autosave_on">Autosaving</div>
             <div class="of_title">
                 <a href="#" data-of_transclude="title">OmniFlux</a>
             </div>
@@ -307,11 +320,15 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
             </details>
             <details class="of_js hidden" name="of_sidebar">
                 <summary>Download</summary>
-                Save wiki locally:<br>
-                <button class="of_download">Download</button><br>
+                <div>Save wiki locally:</div>
+                <button class="of_download">Download</button>
                 <br>
-                Save on changes:<br>
-                <button class="of_autosave">Autosave</button>
+                <div class="of_autosave_on">Stop saving changes:</div>
+                <div class="of_autosave_off">Save on changes:</div>
+                <button class="of_autosave">
+                    <div class="of_autosave_on">Disable Autosave</div>
+                    <div class="of_autosave_off">Enable Autosave</div>
+                </button>
             </details>
             <details class="of_js hidden" name="of_sidebar">
                 <summary>Actions</summary>
