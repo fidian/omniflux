@@ -321,3 +321,13 @@ table {
         background-color: #eef;
     }
 }
+
+.of_overview {
+    a:hover {
+        background-color: #def;
+    }
+
+    ul, ol {
+        padding-inline-start: 1em;
+    }
+}
