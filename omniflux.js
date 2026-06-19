@@ -3,7 +3,6 @@
  */
 
 const doc = document;
-const bodyClassList = doc.body.classList;
 const createElement = (tag) => doc.createElement(tag);
 
 // Run a callback against all elements matching a selector.
@@ -15,6 +14,11 @@ const querySelector = (selector, root) => querySelectorAll(selector, root)[0];
 // Add an event listener to a single element matching a selector.
 const on = (selector, event, handler) =>
     querySelector(selector).addEventListener(event, handler);
+
+// Set or remove a flag class on body.
+const setFlag = (flag, value) => {
+    doc.body.classList.toggle(`of_${flag}_flag`, !!value);
+};
 
 // Hide or show elements that match a selector
 const toggleHidden = (selector) =>
@@ -40,7 +44,7 @@ const wikiContent = () => {
     doc.body.className = "";
 
     // Get content
-    const result = `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
+    const result = `<!DOCTYPE html>\n${doc.documentElement.outerHTML}\n`;
 
     // Restore body classes
     doc.body.className = bodyClasses;
@@ -84,8 +88,8 @@ const autosaveAction = async () => {
     }
 
     if (autosaveFileHandle) {
-        bodyClassList.add("of_autosaving");
-        bodyClassList.remove("of_dirty");
+        setFlag("autosave", 1);
+        setFlag("dirty", 0);
         const writable = await autosaveFileHandle.createWritable();
         await writable.write(wikiContent());
         await writable.close();
@@ -214,6 +218,39 @@ const blockRules = [
         }
     ],
     [
+        // Tables
+        /^\|[^\n]+\| *(\n\|[^\n]+\| *)+$/m,
+        (all) => {
+            const splitter = (line) =>
+                line
+                    .trim()
+                    .slice(1, -1)
+                    .trim()
+                    .split(/ *\| */);
+            const lines = all.trim().split("\n");
+            const alignments = splitter(lines[1]).map((align) =>
+                align.endsWith(":")
+                    ? align.startsWith(":")
+                        ? "center"
+                        : "right"
+                    : "left"
+            );
+            const headers = splitter(lines[0]).map(
+                (header, i) =>
+                    `<th align="${alignments[i]}">${mdInline(header)}</th>`
+            );
+            const rows = lines
+                .slice(2)
+                .map((line) =>
+                    splitter(line).map(
+                        (cell, i) =>
+                            `<td align="${alignments[i]}">${mdInline(cell)}</td>`
+                    )
+                );
+            return `<table>\n<thead>\n<tr>${headers.join("")}</tr>\n</thead>\n<tbody>\n${rows.map((cells) => `<tr>${cells.join("")}</tr>`).join("\n")}\n</tbody>\n</table>\n\n`;
+        }
+    ],
+    [
         /^([^\n]+(\n[^\n]+)*)$/m,
         (all) =>
             `<p>${all
@@ -313,7 +350,62 @@ const html2MdConversions = [
         /^(P|DIV)$/,
         (add, currentNode) => add(html2Md(currentNode, 1) + "\n\n", 1)
     ],
+    [
+        /^TABLE$/,
+        (add, currentNode) => {
+            // [0] is maximum content length
+            // [1] is alignment (string)
+            // [2] is alignment length (left = 4, center = 6, right = 5)
+            // [3] is the divider row text (---, :---, :---:, ---:)
+            const colDef = [];
+            const rows = [...querySelectorAll("tr", currentNode)].map((row) =>
+                [...querySelectorAll("td, th", row)].map((cell, i) => {
+                    const align = cell.getAttribute("align");
+                    const content = html2Md(cell, 1);
+                    const def = colDef[i] || [3, "left"];
+                    def[0] = Math.max(def[0], content.length);
+                    def[1] = align || def[1];
+                    colDef[i] = def;
+                    return content;
+                })
+            );
+            const showRow = (row) =>
+                `| ${row
+                    .map((cell, i) => {
+                        const len = cell.length;
+                        const [want, , align] = colDef[i];
+                        const gapLeft =
+                            align > 5
+                                ? Math.floor((want - len) / 2)
+                                : align > 4
+                                  ? want - len
+                                  : 0;
+                        return cell.padStart(len + gapLeft).padEnd(want);
+                    })
+                    .join(" | ")} |\n`;
+            // Increase minimum width for 3 hyphens and necessary colons
+            for (const def of colDef) {
+                def[2] = def[1].length;
+                def[0] = Math.max(def[0], def[2] - 1);
+                def[3] = "-".repeat(def[0]);
+                if (def[2] > 5) {
+                    def[3] = ":" + def[3].slice(1);
+                }
+                if (def[2] > 4) {
+                    def[3] = def[3].slice(0, -1) + ":";
+                }
+            }
 
+            let result = showRow(rows.shift());
+            result += `| ${colDef.map((def) => def[3]).join(" | ")} |\n`;
+
+            for (const row of rows) {
+                result += showRow(row);
+            }
+
+            add(result + "\n", 1);
+        }
+    ],
     // Strip away all unknown tags but keep their content
     [/.*/, (add, currentNode) => add(html2Md(currentNode))]
 ];
@@ -418,7 +510,7 @@ const solidifyState = () => {
     if (autosaveFileHandle) {
         autosaveAction();
     } else {
-        bodyClassList.add("of_dirty");
+        setFlag("dirty", 1);
     }
 };
 
@@ -476,7 +568,7 @@ on(".of_download", "click", () => {
     );
     link.download = suggestedFilename();
     link.click();
-    bodyClassList.remove("of_dirty");
+    setFlag("dirty", 0);
 });
 
 // Enable File API-based autosaving. When active, any change will automatically
@@ -489,7 +581,7 @@ on(".of_autosave", "click", () => {
 
     if (autosaveFileHandle) {
         autosaveFileHandle = null;
-        bodyClassList.remove("of_autosaving");
+        setFlag("autosave", 0);
         return;
     }
 

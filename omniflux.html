@@ -8,12 +8,17 @@
 
 <p>Download options:</p>
 
-<ul>
-<li>Easiest: From within the wiki - open the sidebar, click on Download, then follow the instructions.</li>
-<li>Newest: From the <a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Documentation Site</a> (about 40k, with all documentation built-in) - right-click on the link and pick "Save As".</li>
-<li>Smallest: The <a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">tiny version</a> (about 11k, fresh slate with minimal pages) - when every byte matters.</li>
-<li>Custom: Build your own version by downloading the <a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">GitHub repository</a>.</li>
-</ul>
+<table>
+<thead>
+<tr><th align="center">TL;DR</th><th align="left">Where</th><th align="left">Why / How</th></tr>
+</thead>
+<tbody>
+<tr><td align="center">Easiest</td><td align="left">Within this wiki</td><td align="left">Open the sidebar, click Download, then follow the instructions.</td></tr>
+<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Documentation Site</a></td><td align="left">Get it from the source (about 48k)</td></tr>
+<tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">When every byte matters (about 14k)</td></tr>
+<tr><td align="center">Custom</td><td align="left"><a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">GitHub repository</a></td><td align="left">Build your own!</td></tr>
+</tbody>
+</table>
 
 <p><a href="#changelog">Changelog</a> - <a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">GitHub</a> - <a href="https://github.com/fidian/omniflux/blob/master/LICENSE.md" target="_blank" rel="noopener noreferrer">License</a></p>
 
@@ -62,7 +67,6 @@
 <p>These items are not sorted. Feeling adventurous? Pull requests on <a href="https://github.com/fidian/omniflux" target="_blank" rel="noopener noreferrer">GitHub</a> are welcome! For those diving into the internals, you might want to know how <a href="#rule-processing">rule processing</a> works.</p>
 
 <ol>
-<li>Support tables.</li>
 <li>Add the ability to save images as base64 encoded CSS classes, then to show them and manage them.</li>
 <li>Add a sidebar section for search.</li>
 <li>Consider including wikilink syntax to link to another internal page, like <code>[[Page Name]]</code> -&gt; <code>#page-name</code> and <code>[[Page Name|Custom Text]]</code> -&gt; <code>#page-name</code>.</li>
@@ -208,6 +212,29 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>Make sure to use exactly 1 space. This parser will not convert lines with 0 spaces into blockquotes. Lines with more than 1 space will have the extra space parsed as though it is part of the Markdown content, which could have unintended consequences.</p>
 
 
+<h2>Tables</h2>
+
+<p>Standard Markdown works for tables, plus alignment is supported. Headings are required. Tables are automatically formatted in the Markdown to align on columns for easier editing.</p>
+
+<table>
+<thead>
+<tr><th align="left">Left</th><th align="center">Center</th><th align="right">Right</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Short</td><td align="center">Medium Length</td><td align="right"><b>Super</b> <i>Long</i> Entry</td></tr>
+<tr><td align="left">Medium Length</td><td align="center"><b>Super</b> <i>Long</i> Entry</td><td align="right">Short</td></tr>
+<tr><td align="left"><b>Super</b> <i>Long</i> Entry</td><td align="center">Short</td><td align="right">Medium Length</td></tr>
+</tbody>
+</table>
+
+<p>Markdown formatting within cells is allowed.</p>
+
+
+<h4>Avoid</h4>
+
+<p>Nested pipe characters within a table is not supported.</p>
+
+
 <h2>Completely Unsupported</h2>
 
 <p>Embedding HTML within the Markdown. This is a tricky thing to do, especially since the conversion needs to accurately be bidirectional.</p>
@@ -217,8 +244,6 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>The <code>&lt;del&gt;</code> tag isn't created when using <code>~~~text~~~</code>.</p>
 
 <p>Anchors, like <code>#[jump-here]</code> since the wiki uses CSS-based navigation that relies on the location hash and there's a concern about duplicating a page ID and a user-generated ID.</p>
-
-<p>Tables, along with aligned cells within the table.</p>
 
 <p>Footnotes.</p>
 </article><article id="rule-processing">
@@ -261,6 +286,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>Is your version not up to date? <a href="#upgrading">Learn how to upgrade!</a></p>
 
 <ul>
+<li>2026-06-19 - Tables are now supported, along with alignment of table columns.</li>
 <li>2026-06-18 - Added autosave, a delete button, renaming the wiki, changing page IDs, and importing pages from another wiki file. Updated the Markdown processor to simplify the handlers and recurse only where needed.</li>
 <li>2026-06-17 - Added a sidebar, transclusions, control/command + enter keybinding, automatic index list generation.</li>
 <li>2026-06-15 - Improve build system, add additional Markdown conversion tests.</li>

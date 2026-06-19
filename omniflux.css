@@ -148,12 +148,12 @@ body:has(.of_editor:not(.hidden)) {
     --of-sidebar-section-color: #aae;
 }
 
-body.of_autosaving {
+body.of_autosave_flag {
     --of-sidebar-color: #cfc;
     --of-sidebar-section-color: #aea;
 }
 
-body.of_dirty {
+body.of_dirty_flag {
     --of-sidebar-color: #fcc;
     --of-sidebar-section-color: #eaa;
 }
@@ -293,9 +293,27 @@ blockquote {
     background-color: var(--of-sidebar-section-color);
 }
 
-body:not(.of_dirty) .of_dirty_on,
-.of_dirty .of_dirty_off,
-body:not(.of_autosaving) .of_autosave_on,
-.of_autosaving .of_autosave_off {
+body:not(.of_dirty_flag) .of_dirty_on,
+.of_dirty_flag .of_dirty_off,
+body:not(.of_autosave_flag) .of_autosave_on,
+.of_autosave_flag .of_autosave_off {
     display: none;
+}
+
+table {
+    border-collapse: collapse;
+
+    th, td {
+        padding: 4px 10px;
+        border: 1px solid #cdd;
+    }
+
+    th {
+        font-weight: 600;
+        background-color: #bdd;
+    }
+
+    tr:nth-child(even) {
+        background-color: #eef;
+    }
 }

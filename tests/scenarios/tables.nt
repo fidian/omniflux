@@ -1,0 +1,21 @@
+md2html: true
+html2md: true
+markdown:
+ > | Left                   |         Center         |                  Right |
+ > | ---------------------- | :--------------------: | ---------------------: |
+ > | Short                  |     Medium Length      | **Super** *Long* Entry |
+ > | Medium Length          | **Super** *Long* Entry |                  Short |
+ > | **Super** *Long* Entry |         Short          |          Medium Length |
+html:
+ >
+ > <table>
+ > <thead>
+ > <tr><th align="left">Left</th><th align="center">Center</th><th align="right">Right</th></tr>
+ > </thead>
+ > <tbody>
+ > <tr><td align="left">Short</td><td align="center">Medium Length</td><td align="right"><b>Super</b> <i>Long</i> Entry</td></tr>
+ > <tr><td align="left">Medium Length</td><td align="center"><b>Super</b> <i>Long</i> Entry</td><td align="right">Short</td></tr>
+ > <tr><td align="left"><b>Super</b> <i>Long</i> Entry</td><td align="center">Short</td><td align="right">Medium Length</td></tr>
+ > </tbody>
+ > </table>
+ >
