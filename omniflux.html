@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>OmniFlux</title></head><body class=""><div class="of_articles"><article class="index">
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>OmniFlux</title></head><body><div class="of_articles"><article class="index">
 <h1>OmniFlux - Single-Page Wiki</h1>
 
 <p>You're looking at a complete, self-contained wiki. This one file can be downloaded, the pages can be updated using Markdown, and then everything can be saved. It even supports autosaving when content changes! Try it now by pressing the "Edit" button in the upper right. <a href="#markdown">Learn about supported Markdown.</a></p>
@@ -14,7 +14,7 @@
 </thead>
 <tbody>
 <tr><td align="center">Easiest</td><td align="left">Within this wiki</td><td align="left">Open the sidebar, click Download, then follow the instructions.</td></tr>
-<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Documentation Site</a></td><td align="left">Get it from the source (about 48k)</td></tr>
+<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Documentation Site</a></td><td align="left">Get it from the source and include all documentation (about 48k)</td></tr>
 <tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">When every byte matters (about 14k)</td></tr>
 <tr><td align="center">Custom</td><td align="left"><a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">GitHub repository</a></td><td align="left">Build your own!</td></tr>
 </tbody>
@@ -309,7 +309,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 </ol>
 </article></div>
 <div class="of_toolbar">
-    <button class="of_edit of_js hidden">Edit</button>
+    <button class="of_edit of_js_on">Edit</button>
 </div>
 <div class="of_sidebar">
     <div class="of_sidebar_wrap">
@@ -339,12 +339,12 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <a href="#upgrading">Upgrading OmniFlux</a></p>
 </div>
             </details>
-            <details class="of_js" name="of_sidebar">
+            <details class="of_js_off" name="of_sidebar">
                 <summary>Download</summary>
                 Press <kbd>Ctrl</kbd>+<kbd>S</kbd><br>
                 or <kbd>⌘ Cmd</kbd>+<kbd>S</kbd>
             </details>
-            <details class="of_js hidden" name="of_sidebar">
+            <details class="of_js_on" name="of_sidebar">
                 <summary>Download</summary>
                 <div>Save wiki locally:</div>
                 <button class="of_download">Download</button>
@@ -356,7 +356,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
                     <div class="of_autosave_off">Enable Autosave</div>
                 </button>
             </details>
-            <details class="of_js hidden" name="of_sidebar">
+            <details class="of_js_on" name="of_sidebar">
                 <summary>Actions</summary>
                 <div><button class="of_rename">Rename Wiki</button></div>
                 <div><button class="of_clear">Remove All Pages</button></div>
@@ -372,7 +372,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
         <div class="of_hamburger_bar of_burger_bot"></div>
     </label>
 </div>
-<div class="of_editor hidden">
+<div class="of_editor of_edit_on">
     <div class="of_menu">
         <button class="of_cancel">Cancel</button>
         <span class="of_hash"></span>

@@ -82,7 +82,7 @@ article {
     resize: none;
 }
 
-body:has(.of_editor:not(.hidden)) {
+body.of_edit_flag {
     overflow: hidden;
 }
 
@@ -293,6 +293,10 @@ blockquote {
     background-color: var(--of-sidebar-section-color);
 }
 
+body:not(.of_js_flag) .of_js_on,
+.of_js_flag .of_js_off,
+body:not(.of_edit_flag) .of_edit_on,
+.of_edit_flag .of_edit_off,
 body:not(.of_dirty_flag) .of_dirty_on,
 .of_dirty_flag .of_dirty_off,
 body:not(.of_autosave_flag) .of_autosave_on,

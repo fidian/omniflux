@@ -20,37 +20,19 @@ const setFlag = (flag, value) => {
     doc.body.classList.toggle(`of_${flag}_flag`, !!value);
 };
 
-// Hide or show elements that match a selector
-const toggleHidden = (selector) =>
-    querySelectorAll(selector).forEach((el) => el.classList.toggle("hidden"));
-const toggleJsButtons = () => toggleHidden(".of_js");
-const toggleEditor = () => {
-    toggleHidden(".of_editor");
-    editing = !editing;
-};
-
 const wikiContent = () => {
-    // Restore state to a non-JS version of the wiki.
-    toggleJsButtons();
-
     // Reset the sidebar to the default state
     querySelectorAll(".of_sidebar_bar [open]").forEach((details) =>
         details.removeAttribute("open")
     );
     querySelector(".of_overview").setAttribute("open", "");
 
-    // Remove body classes
-    const bodyClasses = doc.body.className;
-    doc.body.className = "";
-
-    // Get content
-    const result = `<!DOCTYPE html>\n${doc.documentElement.outerHTML}\n`;
-
-    // Restore body classes
-    doc.body.className = bodyClasses;
-
-    // Go back to a JS-enabled version of the wiki.
-    toggleJsButtons();
+    // Get content and remove body classes
+    const result =
+        `<!DOCTYPE html>\n${doc.documentElement.outerHTML}\n`.replace(
+            /<body class="[^"]*">/,
+            "<body>"
+        );
 
     return result;
 };
@@ -466,13 +448,15 @@ const html2Md = (el, inBlock) => {
 const editPage = () => {
     hashEl.textContent = "#" + currentId;
     inputEl.value = currentArticleEl ? html2Md(currentArticleEl, 1) : "";
-    toggleEditor();
+    editing = true;
+    setFlag("edit", 1);
     inputEl.focus();
 };
 
 const onLoad = () => {
     if (editing) {
-        toggleEditor();
+        editing = false;
+        setFlag("edit", 0);
     }
 
     querySelector("#of_sidebar_toggle").checked = false;
@@ -483,7 +467,8 @@ const onLoad = () => {
 
 const doneEditing = () => {
     hashEl.innerHTML = "";
-    toggleEditor();
+    editing = false;
+    setFlag("edit", 0);
 
     // Handle pressing "Cancel" instead of creating a new page
     if (!currentArticleEl) location.hash = "";
@@ -706,4 +691,4 @@ window.addEventListener("keydown", (event) => {
 onLoad();
 
 // Finally, show the buttons
-toggleJsButtons();
+setFlag("js", 1);
