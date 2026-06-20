@@ -176,7 +176,7 @@ Make your own haiku</p>
 <pre><code>Code fences are supported and language information is preserved.
 </code></pre>
 
-<p>While code fences support language information, no highlighting happens at this stage in order to keep the wiki small. If you want it, you will need to include <a href="https://prismjs.com/" target="_blank" rel="noopener noreferrer">Prism</a> or <a href="https://highlightjs.org/" target="_blank" rel="noopener noreferrer">highlight.js</a> yourself.</p>
+<p>While code fences support language information, no highlighting happens at this stage in order to keep the wiki small. If you want it, check out <a href="#code-highlighting">Code Highlighting</a> for instructions.</p>
 
 
 <h4>Avoid</h4>
@@ -277,6 +277,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>The rule processing order will try to find the rule that matches the earliest. If there are multiple that match, the one that is listed first in the rule set will be used. Block-level processing doesn't care too much about this, but inline markup will. Take, for instance, a linked image in Markdown: <code>[![ALT](image_url)](link_url)</code>. The pattern for the link will be processed and it needs to match the entire link (including the image portion), then that handler needs to call a function to parse <code>![ALT](image_url)</code> into HTML.</p>
 </article><article id="overview">
 <p><a href="#changelog">Changelog</a><br>
+<a href="#code-highlighting">Code Highlighting</a><br>
 <a href="#markdown">Markdown Syntax</a><br>
 <a href="#rule-processing">Rule Processing</a><br>
 <a href="#upgrading">Upgrading</a></p>
@@ -286,7 +287,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>Is your version not up to date? <a href="#upgrading">Learn how to upgrade!</a></p>
 
 <ul>
-<li>2026-06-19 - Tables are now supported, along with alignment of table columns.</li>
+<li>2026-06-19 - Tables are now supported, along with alignment of table columns. Expanded section for how to include code highlighting with Prism.js.</li>
 <li>2026-06-18 - Added autosave, a delete button, renaming the wiki, changing page IDs, and importing pages from another wiki file. Updated the Markdown processor to simplify the handlers and recurse only where needed.</li>
 <li>2026-06-17 - Added a sidebar, transclusions, control/command + enter keybinding, automatic index list generation.</li>
 <li>2026-06-15 - Improve build system, add additional Markdown conversion tests.</li>
@@ -307,6 +308,77 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <li>Import your old content by clicking "Import Pages" and selecting the saved wiki from step 1.</li>
 <li>Save the upgraded wiki.</li>
 </ol>
+</article><article id="code-highlighting">
+<h1>Code Highlighting</h1>
+
+<p>You are able to include <a href="https://prismjs.com/" target="_blank" rel="noopener noreferrer">Prism</a> or another library within the wiki in order to highlight code blocks. Code fences in Markdown will automatically add <code>class="language-xxxx"</code> to the <code>&lt;code&gt;</code> element, allowing tools like Prism to work.</p>
+
+<ol>
+<li>Go to the download page for <a href="https://prismjs.com/download" target="_blank" rel="noopener noreferrer">Prism</a>.</li>
+<li>Select the desired theme.</li>
+<li>Select additional highlighting languages you want.</li>
+<li>Keep the browser window open and edit a saved copy of this wiki.</li>
+<li>Copy and paste the extra JavaScript needed for Prism to a new <code>&lt;script&gt;</code> element added just before the closing <code>&lt;/body&gt;</code> tag. See below for an example.</li>
+<li>Copy and paste the necessary CSS into a new <code>&lt;style&gt;</code> element added just before the closing <code>&lt;/head&gt;</code> tag. See below for an example.</li>
+<li>See the section titled "Problems" for an additional <code>&lt;script&gt;</code> element.</li>
+<li>Save the wiki HTML and verify that code fences are highlighted by reloading the wiki in your browser.</li>
+</ol>
+
+<p><a href="#upgrading">Upgrades</a> will keep your extra CSS and JavaScript as long as you add them as new <code>&lt;style&gt;</code> and <code>&lt;script&gt;</code> elements.</p>
+
+
+<h2>Where to add CSS</h2>
+
+<p>Look for the closing <code>&lt;/head&gt;</code> tag.</p>
+
+<pre><code class="language-html">&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;div class="of_articles"&gt;&lt;article class="index"&gt;
+</code></pre>
+
+<p>Add your own <code>&lt;style&gt;</code> tag just before <code>&lt;/head&gt;</code> and the necessary CSS within.</p>
+
+<pre><code class="language-html">&lt;/style&gt;
+&lt;style&gt;
+/* Add your CSS here, within a new &lt;style&gt; element. */
+&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;&lt;div class="of_articles"&gt;&lt;article class="index"&gt;
+</code></pre>
+
+
+<h2>Where to add JavaScript</h2>
+
+<p>Look for the closing <code>&lt;/body&gt;</code> tag.</p>
+
+<pre><code class="language-html">&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;
+</code></pre>
+
+<p>After the <code>&lt;/script&gt;</code> tag and before <code>&lt;/body&gt;</code>, add your own <code>&lt;script&gt;</code> tag.</p>
+
+<pre><code class="language-html">&lt;/script&gt;
+&lt;script&gt;
+/* Add your JavaScript here, within a new &lt;script&gt; element. */
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;
+</code></pre>
+
+
+<h2>Problems</h2>
+
+<p>Sadly, Prism does not handle addition of <code>&lt;code&gt;</code> elements dynamically. See <a href="https://github.com/PrismJS/prism/issues/1115" target="_blank" rel="noopener noreferrer">issue #1115</a> for others wanting this same feature. However, you can have this happen by adding another <code>&lt;script&gt;</code> element. Like before, you want this one just before <code>&lt;/body&gt;</code>, which will be just after the new <code>&lt;script&gt;</code> that was added to set up Prism.</p>
+
+<pre><code>&lt;script&gt;
+MutationObserver(mutations =&gt; {
+  for (const mutation of mutations) {
+    if (mutation.type === 'childList' &amp;&amp;
+        mutation.target.nodeName === 'ARTICLE' &amp;&amp;
+        mutation.addedNodes.length &gt; 0) {
+      Prism.highlightAllUnder(mutation.target);
+    }
+  }
+}).observe(document.body, { childList: true, subtree: true });
+&lt;/script&gt;
+</code></pre>
+
+<p>Another issue is that some plugins, like toolbar plugins, will add extra elements to the HTML. This makes the HTML to Markdown conversion think that there is extra text. For instance, the "Copy to Clipboard Button" does this, which adds a "Copy" paragraph in the Markdown. Be careful when adding plugins and ensure they don't modify the DOM dramatically.</p>
 </article></div>
 <div class="of_toolbar">
     <button class="of_edit of_js_on">Edit</button>
@@ -323,6 +395,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
                 <summary>Overview</summary>
                 <div data-of_transclude="#overview">
 <p><a href="#changelog">Changelog</a><br>
+<a href="#code-highlighting">Code Highlighting</a><br>
 <a href="#markdown">Markdown Syntax</a><br>
 <a href="#rule-processing">Rule Processing</a><br>
 <a href="#upgrading">Upgrading</a></p>
@@ -332,6 +405,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
                 <summary>Index</summary>
                 <div class="of_index">
 <p><a href="#changelog">Changelog</a><br>
+<a href="#code-highlighting">Code Highlighting</a><br>
 <a href="#markdown">Markdown Syntax</a><br>
 <a href="#">OmniFlux - Single-Page Wiki</a><br>
 <a href="#overview">Overview</a><br>
