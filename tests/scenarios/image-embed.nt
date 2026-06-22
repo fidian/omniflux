@@ -1,0 +1,12 @@
+md2html: true
+html2md: true
+markdown:
+ > # 🖼 heart.png
+ >
+ > ![heart.png](data:image/png;id=of_image_bb1a06eddd41313bf9b3f8bcf1024722658b9837b89440ab06e6cd24a9352a75;width=11;height=11;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAYAAACprHcmAAAAO0lEQVQY02NggIL/QPQfTCHADCxicIXIGmZgEcNQiA/TRvEMYp0yg5AncSrEpQGnQnQNBBUiRwYDpQAAqqOIPbRpgfkAAAAASUVORK5CYII=)
+html:
+ >
+ > <h1>🖼 heart.png</h1>
+ >
+ > <p><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 11 11"><title>heart.png</title><image id="of_image_bb1a06eddd41313bf9b3f8bcf1024722658b9837b89440ab06e6cd24a9352a75" width="11" height="11" href="data:image/png;id=of_image_bb1a06eddd41313bf9b3f8bcf1024722658b9837b89440ab06e6cd24a9352a75;width=11;height=11;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAYAAACprHcmAAAAO0lEQVQY02NggIL/QPQfTCHADCxicIXIGmZgEcNQiA/TRvEMYp0yg5AncSrEpQGnQnQNBBUiRwYDpQAAqqOIPbRpgfkAAAAASUVORK5CYII="></image></svg></p>
+ >
