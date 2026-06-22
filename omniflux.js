@@ -3,13 +3,45 @@
  */
 
 const doc = document;
-const createElement = (tag) => doc.createElement(tag);
 
 // Run a callback against all elements matching a selector.
 // The only elements with IDs are articles.
 const querySelectorAll = (selector, root = doc) =>
     root.querySelectorAll(selector);
 const querySelector = (selector, root) => querySelectorAll(selector, root)[0];
+
+const dom = (tag, content, attrs, ns) => {
+    const el = ns ? doc.createElementNS(ns, tag) : doc.createElement(tag);
+
+    for (const [key, value] of Object.entries(attrs || {})) {
+        el.setAttribute(key, value);
+    }
+
+    const append = (child) => {
+        if (Array.isArray(child)) {
+            child.forEach(append);
+        } else if (child) {
+            el.append(
+                typeof child === "string" ? doc.createTextNode(child) : child
+            );
+        }
+    };
+
+    append(content);
+
+    return el;
+};
+
+const getAttribute = (el, attr) => el.getAttribute(attr);
+const setAttributes = (el, attrs) => {
+    for (const [key, value] of Object.entries(attrs)) {
+        el.setAttribute(key, value);
+    }
+};
+const cssEscape = (str) => CSS.escape(str);
+const getArticle = (id) =>
+    querySelector(`article${id ? `#${cssEscape(id)}` : ".index"}`);
+const svgns = "http://www.w3.org/2000/svg";
 
 // Add an event listener to a single element matching a selector.
 const on = (selector, event, handler) =>
@@ -46,13 +78,6 @@ const suggestedFilename = () =>
             .replace("T", "-")}.html`
     );
 
-// Simple HTML escaping
-const htmlEncode = (str) => {
-    const element = createElement("div");
-    element.textContent = str;
-    return element.innerHTML;
-};
-
 // Convert an ID into a human readable name by replacing dashes and
 // underscores with spaces, then capitalizing the first letter of each
 // word.
@@ -82,8 +107,8 @@ const autosaveAction = async () => {
  * For rules and rule processing, see
  * https://fidian.github.io/omniflux/#rule-processing
  */
-const processRules = (str, rules, unmatchedHandler) => {
-    let result = "";
+const processRules = (str, rules, preserve) => {
+    let result = [];
 
     while (str) {
         let bestMatch = null;
@@ -98,12 +123,14 @@ const processRules = (str, rules, unmatchedHandler) => {
             }
         }
 
-        result += unmatchedHandler(
-            bestMatch ? str.slice(0, bestMatch.index) : str
-        );
+        let skip = bestMatch?.index ?? str.length;
+
+        if (preserve && skip) {
+            result.push(str.slice(0, skip));
+        }
 
         if (bestMatch) {
-            result += bestHandler(...bestMatch);
+            result.push(bestHandler(...bestMatch));
             str = str.slice(bestMatch.index + bestMatch[0].length);
         } else {
             str = "";
@@ -117,55 +144,148 @@ const processRules = (str, rules, unmatchedHandler) => {
  * Convert Markdown to HTML.
  */
 
-const linkAttributes = ' target="_blank" rel="noopener noreferrer"';
+const linkAttributes = {
+    target: "_blank",
+    rel: "noopener noreferrer"
+};
 const inlineRules = [
-    [/`(.+?)`/, (_, txt) => `<code>${htmlEncode(txt)}</code>`],
-    [/\*{3}(.+?)\*{3}/, (_, txt) => `<b><i>${mdInline(txt)}</i></b>`],
-    [/\*\*(.+?)\*\*/, (_, txt) => `<b>${mdInline(txt)}</b>`],
-    [/\*(.+?)\*/, (_, txt) => `<i>${mdInline(txt)}</i>`],
-    [/~~(.+?)~~/, (_, txt) => `<s>${mdInline(txt)}</s>`],
-    [/~(.+?)~/, (_, txt) => `<u>${mdInline(txt)}</u>`],
+    [/`(.+?)`/, (_, txt) => dom("code", txt)],
+    [/\*{3}(.+?)\*{3}/, (_, txt) => dom("b", dom("i", mdInline(txt)))],
+    [/\*\*(.+?)\*\*/, (_, txt) => dom("b", mdInline(txt))],
+    [/\*(.+?)\*/, (_, txt) => dom("i", mdInline(txt))],
+    [/~~(.+?)~~/, (_, txt) => dom("s", mdInline(txt))],
+    [/~(.+?)~/, (_, txt) => dom("u", mdInline(txt))],
     [
+        // Images can be the source (to allow reuse without bloating the wiki)
+        // that uses a data URL, a reference that uses the user-controlled
+        // page ID, or a normal URL. When changed to HTML, references will instead
+        // point to the hash of the image.
+        //
+        // ![alt1](data:image/png;base64,...)
+        // <svg xmlns="..." width="800" height="600" viewBox="0 0 800 600"><title>alt1</title><image id="of_image_HASH" width="800" height="600" href="data:image/png;base64,..."/></svg>
+        //
+        // ![alt2](#page_ID)
+        // <svg xmlns="..." class="of_image" width="800" height="600" viewBox="0 0 800 600"><title>alt2</title><use href="#of_image_HASH"/></svg>
         /!\[(.*?)\]\((.+?)\)/,
-        (_, txt, url) => `<img src="${url}" alt="${txt}" title="${txt}">`
+        (_, alt, src) => {
+            if (src.startsWith("data:")) {
+                const params = src
+                    .split(";")
+                    .slice(1, -1)
+                    .reduce((acc, param) => {
+                        const [key, value] = param.split("=");
+                        acc[key] = value;
+                        return acc;
+                    }, {});
+
+                if (params.id && params.width && params.height) {
+                    return dom(
+                        "svg",
+                        [
+                            dom("title", alt, {}, svgns),
+                            dom(
+                                "image",
+                                "",
+                                {
+                                    id: params.id,
+                                    width: params.width,
+                                    height: params.height,
+                                    href: src
+                                },
+                                svgns
+                            )
+                        ],
+                        {
+                            xmlns: svgns,
+                            width: params.width,
+                            height: params.height,
+                            viewBox: `0 0 ${params.width} ${params.height}`
+                        },
+                        svgns
+                    );
+                }
+            }
+
+            if (src.startsWith("#")) {
+                const elImage = querySelector(
+                    `article#${cssEscape(src.slice(1))} svg image`
+                );
+
+                if (elImage) {
+                    const width = getAttribute(elImage, "width");
+                    const height = getAttribute(elImage, "height");
+                    const id = getAttribute(elImage, "id");
+
+                    if (width && height && id) {
+                        return dom(
+                            "svg",
+                            [
+                                dom("title", alt, {}, svgns),
+                                dom("use", "", { href: `#${id}` }, svgns)
+                            ],
+                            {
+                                xmlns: svgns,
+                                class: "of_image",
+                                width,
+                                height,
+                                viewBox: `0 0 ${width} ${height}`
+                            },
+                            svgns
+                        );
+                    }
+                }
+            }
+
+            return dom("img", "", { src, alt, title: alt });
+        }
     ],
     [
         // Support images inside links
         /\[((!\[.*?\]\(.+?\)|.)+?)\]\((.+?)\)/,
-        (_, txt, _x, url) =>
-            `<a href="${url}"${url.startsWith("#") ? "" : linkAttributes}>${mdInline(txt)}</a>`
+        (_, txt, _x, href) =>
+            dom("a", mdInline(txt), {
+                href,
+                ...(href.startsWith("#") ? {} : linkAttributes),
+                ...(href.startsWith("data:") ? { download: txt } : {})
+            })
     ],
     [
         /(?<!\=["'])https?\:\/\/[^\s]+/i,
-        (url) => `<a href="${url}"${linkAttributes}>${url}</a>`
+        (href) => dom("a", href, { href, ...linkAttributes })
     ]
 ];
-const mdInline = (str) => processRules(str.trim(), inlineRules, (txt) => txt);
-const mdList = (listType) => (lines) =>
-    `<${listType}>\n<li>${lines
-        .split("\n")
-        .map((item) => mdInline(item.replace(/^ *([-*+]|\d+\.) +/, "")))
-        .join(`</li>\n<li>`)}</li>\n</${listType}>\n\n`;
+const mdInline = (str) => processRules(str.trim(), inlineRules, 1);
+
 const blockRules = [
     [
         /^```([^\n]*)\n(([^\n]*\n)+?)```$/m,
-        (_, lang, code) =>
-            `<pre><code${lang ? ` class="language-${lang}"` : ""}>${htmlEncode(code)}</code></pre>\n\n`
+        (_, lang, code) => [
+            dom(
+                "pre",
+                dom("code", code, lang ? { class: `language-${lang}` } : {})
+            ),
+            "\n\n"
+        ]
     ],
     [
         /^>( [^\n]+)?(\n>( [^\n]+)?)*$/m,
-        (txt) =>
-            `\n<blockquote>\n${md2Html(txt.replace(/^> ?/gm, ""))}</blockquote>\n\n`
+        (txt) => [
+            "\n",
+            dom("blockquote", ["\n\n", md2Dom(txt.replace(/^> ?/gm, ""))]),
+            "\n\n"
+        ]
     ],
     [
         /^(#+)([^\n]+)$/m,
-        (_, h, txt) => `\n<h${h.length}>${mdInline(txt)}</h${h.length}>\n\n`
+        (_, h, txt) => ["\n", dom("h" + h.length, mdInline(txt)), "\n\n"]
     ],
     [
         /^( *(\d+\.|[-*+]) +[^\n]+(\n *(\d+\.|[-*+]) +[^\n]+)*)$/m,
         (all) => {
+            // Map all lines to an array of [indentSize, listType, content]
             const lines = all
                 .split("\n")
+                // Map lines to [fullMatch, listStyle, content]
                 .map(
                     (line) =>
                         line.match(/^( *(?:\d+\.|[-*+]) +)(.+)$/) || [
@@ -173,30 +293,30 @@ const blockRules = [
                             "",
                             line
                         ]
-                );
-            let result = "";
-            const stack = [];
+                )
+                // Now change to [indentSize, listType, listDomNode]
+                .map(([_, listStyle, content]) => [
+                    listStyle.length,
+                    listStyle.match(/\d/) ? "ol" : "ul",
+                    [dom("li", mdInline(content.trim())), "\n"]
+                ]);
 
-            for (const [_, indent, content] of lines) {
-                while ((stack[0]?.[0] || 0) > indent.length) {
-                    result += `</${stack[0][1]}>\n`;
-                    stack.shift();
+            const makeList = () => {
+                const [indent, type] = lines[0];
+                const content = ["\n"];
+
+                while (lines.length && lines[0][0] >= indent) {
+                    if (lines[0][1] === type && lines[0][0] === indent) {
+                        content.push(lines.shift()[2]);
+                    } else if (lines[0][0] > indent) {
+                        content.push(makeList());
+                    }
                 }
 
-                if ((stack[0]?.[0] || 0) < indent.length) {
-                    const tag = indent.match(/\d/) ? "ol" : "ul";
-                    result += `<${tag}>\n`;
-                    stack.unshift([indent.length, tag]);
-                }
+                return [dom(type, content), "\n"];
+            };
 
-                result += `<li>${mdInline(content.trim())}</li>\n`;
-            }
-
-            while (stack.length) {
-                result += `</${stack.shift()[1]}>\n`;
-            }
-
-            return result + "\n";
+            return [makeList(), "\n"];
         }
     ],
     [
@@ -217,37 +337,56 @@ const blockRules = [
                         : "right"
                     : "left"
             );
-            const headers = splitter(lines[0]).map(
-                (header, i) =>
-                    `<th align="${alignments[i]}">${mdInline(header)}</th>`
-            );
-            const rows = lines
-                .slice(2)
-                .map((line) =>
-                    splitter(line).map(
-                        (cell, i) =>
-                            `<td align="${alignments[i]}">${mdInline(cell)}</td>`
+            const headers = splitter(lines[0]);
+            const rows = lines.slice(2).map((line) => splitter(line));
+            const domRow = (tag, cells) =>
+                dom(
+                    "tr",
+                    cells.map((cell, i) =>
+                        dom(tag, mdInline(cell), {
+                            align: alignments[i]
+                        })
                     )
                 );
-            return `<table>\n<thead>\n<tr>${headers.join("")}</tr>\n</thead>\n<tbody>\n${rows.map((cells) => `<tr>${cells.join("")}</tr>`).join("\n")}\n</tbody>\n</table>\n\n`;
+
+            return [
+                dom("table", [
+                    "\n",
+                    dom("thead", ["\n", domRow("th", headers), "\n"]),
+                    "\n",
+                    dom("tbody", [
+                        "\n",
+                        rows.map((cells) => [domRow("td", cells), , "\n"])
+                    ]),
+                    "\n"
+                ]),
+                "\n\n"
+            ];
         }
     ],
     [
         /^([^\n]+(\n[^\n]+)*)$/m,
-        (all) =>
-            `<p>${all
-                .split("\n")
-                .map((item) => mdInline(item))
-                .join("<br>\n")}</p>\n\n`
+        (all) => [
+            dom(
+                "p",
+                all
+                    .split("\n")
+                    .flatMap((item, i) => [
+                        ...(i ? [dom("br"), "\n"] : []),
+                        mdInline(item)
+                    ])
+            ),
+            "\n\n"
+        ]
     ]
 ];
-// Surround with newlines to make it easy for block level rules to work.
-// Add newlines for easier diffing with git.
-const md2Html = (str) =>
-    `\n${processRules(`\n${str}\n`, blockRules, () => "").trim()}\n`;
+const md2Dom = (str) => processRules(`\n${str}\n`, blockRules);
+
+// Include newlines for better git support
+const md2Html = (str) => `\n${dom("div", md2Dom(str)).innerHTML.trim()}\n`;
 
 /**
- * Convert HTML to Markdown. Must convert everything md2html supports.
+ * Convert HTML to Markdown. Must convert everything md2Dom supports.
  */
 
 const html2MdConversions = [
@@ -259,7 +398,7 @@ const html2MdConversions = [
     [
         /^A$/,
         (add, currentNode) => {
-            const href = currentNode.getAttribute("href");
+            const href = getAttribute(currentNode, "href");
             const text = html2Md(currentNode);
             add(href === text ? href : `[${text}](${href})`);
         }
@@ -268,7 +407,7 @@ const html2MdConversions = [
         /^IMG$/,
         (add, currentNode) =>
             add(
-                `![${currentNode.getAttribute("alt")}](${currentNode.getAttribute("src")})`
+                `![${getAttribute(currentNode, "alt")}](${getAttribute(currentNode, "src")})`
             )
     ],
     [
@@ -342,11 +481,10 @@ const html2MdConversions = [
             const colDef = [];
             const rows = [...querySelectorAll("tr", currentNode)].map((row) =>
                 [...querySelectorAll("td, th", row)].map((cell, i) => {
-                    const align = cell.getAttribute("align");
                     const content = html2Md(cell, 1);
                     const def = colDef[i] || [3, "left"];
                     def[0] = Math.max(def[0], content.length);
-                    def[1] = align || def[1];
+                    def[1] = getAttribute(cell, "align") || def[1];
                     colDef[i] = def;
                     return content;
                 })
@@ -386,6 +524,31 @@ const html2MdConversions = [
             }
 
             add(result + "\n", 1);
+        }
+    ],
+    [
+        // Lowercase SVG elements
+        /^SVG$/i,
+        (add, currentNode) => {
+            const use = querySelector("use", currentNode);
+            const title =
+                querySelector("title", currentNode)?.textContent || "";
+
+            if (use) {
+                const article = querySelector(
+                    `article:has(svg image#${cssEscape(getAttribute(use, "href").slice(1))})`
+                );
+
+                if (article) {
+                    add(`![${title}](#${getAttribute(article, "id")})`);
+                }
+            } else {
+                const image = querySelector("image", currentNode);
+
+                if (image) {
+                    add(`![${title}](${getAttribute(image, "href")})`);
+                }
+            }
         }
     ],
     // Strip away all unknown tags but keep their content
@@ -446,7 +609,7 @@ const html2Md = (el, inBlock) => {
  * A few functions that bind to element events and that are reused.
  */
 const editPage = () => {
-    hashEl.textContent = "#" + currentId;
+    hashEl.textContent = "#" + (currentArticleEl?.id ?? "");
     inputEl.value = currentArticleEl ? html2Md(currentArticleEl, 1) : "";
     editing = true;
     setFlag("edit", 1);
@@ -461,7 +624,7 @@ const onLoad = () => {
 
     querySelector("#of_sidebar_toggle").checked = false;
     currentId = location.hash.slice(1);
-    currentArticleEl = doc.querySelector(`article${location.hash || ".index"}`);
+    currentArticleEl = getArticle(currentId);
     if (!currentArticleEl) editPage();
 };
 
@@ -482,14 +645,14 @@ const solidifyState = () => {
     querySelectorAll("[data-of_transclude]").forEach((el) => {
         el.innerHTML = querySelector(el.dataset.of_transclude)?.innerHTML || "";
     });
-
-    // Rebuild the index using the first heading from each page.
-    const mdLinks = [...querySelectorAll("article")].map(
-        (article) =>
-            `[${querySelector("h1,h2,h3,h4,h5,h6", article)?.textContent.trim() || id2Name(article.id)}](#${article.id})`
-    );
-
-    mdLinks.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    const mdLinks = [...querySelectorAll("article")]
+        .map((article) => [
+            querySelector("h1,h2,h3,h4,h5,h6", article)?.textContent.trim() ||
+                id2Name(article.id),
+            article.id
+        ])
+        .sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }))
+        .map(([title, id]) => `[${title}](#${id})`);
     querySelector(".of_index").innerHTML = md2Html(mdLinks.join("\n"));
 
     if (autosaveFileHandle) {
@@ -508,9 +671,7 @@ const saveEdits = () => {
         // not find the element otherwise. This line is also necessary to show
         // something useful after deleting a page.
         location.hash = "";
-        currentArticleEl = createElement("article");
-        currentArticleEl.id = currentId;
-        articlesEl.append(currentArticleEl);
+        currentArticleEl = newArticle(currentId);
     }
 
     if (mdValue.length) {
@@ -524,6 +685,48 @@ const saveEdits = () => {
     location.hash = currentId;
     solidifyState();
     doneEditing();
+};
+
+const askForFile = (props, callback) => {
+    const fileInput = dom("input", "", props);
+    fileInput.addEventListener("change", () => {
+        const file = fileInput.files[0];
+
+        if (file) {
+            callback(file);
+        }
+    });
+    fileInput.click();
+};
+
+const filenameToNewId = (name) => {
+    if (getArticle(name)) {
+        const [base, ext] = name.split(/(\.[^.]+$)/);
+        let i = 1;
+        do {
+            name = `${base}_${i}${ext}`;
+            i += 1;
+        } while (getArticle(name));
+    }
+
+    return name;
+};
+
+const newArticle = (id) => {
+    const el = dom("article", "", id ? { id } : {});
+    articlesEl.append(el);
+    return el;
+};
+
+const saveFile = (name, dataUrl, isImage) => {
+    const id = filenameToNewId(name);
+    const el = newArticle(id);
+
+    el.innerHTML = md2Html(`# ${isImage ? "🖼" : "🖫"} ${name}
+
+${isImage ? "!" : ""}[${name}](${dataUrl})`);
+    location.hash = id;
+    solidifyState();
 };
 
 /**
@@ -547,11 +750,12 @@ on(".of_edit", "click", editPage);
 
 // Download
 on(".of_download", "click", () => {
-    const link = createElement("a");
-    link.href = URL.createObjectURL(
-        new Blob([wikiContent()], { type: "text/html" })
-    );
-    link.download = suggestedFilename();
+    const link = dom("a", "", {
+        href: URL.createObjectURL(
+            new Blob([wikiContent()], { type: "text/html" })
+        ),
+        download: suggestedFilename()
+    });
     link.click();
     setFlag("dirty", 0);
 });
@@ -595,17 +799,14 @@ on(".of_rename", "click", () => {
 
 on(".of_clear", "click", () => {
     if (confirm("Are you sure you want to remove all pages from the wiki?")) {
-        querySelectorAll("article").forEach((article) => article.remove());
+        articlesEl.innerHTML = "";
         location.hash = "";
-        currentArticleEl = createElement("article");
+        currentArticleEl = newArticle();
         currentArticleEl.classList.add("index");
         currentArticleEl.innerHTML = `\n<h1>OmniFlux</h1>\n\n`;
-        articlesEl.append(currentArticleEl);
-        const overviewEl = createElement("article");
-        overviewEl.id = "overview";
+        const overviewEl = newArticle("overview");
         overviewEl.innerHTML =
             '\n<p>Edit <a href="#overview">this page</a></p>\n\n';
-        articlesEl.append(overviewEl);
         solidifyState();
     }
 });
@@ -620,13 +821,13 @@ on(".of_change_id", "click", () => {
         );
 
         if (newId && newId !== currentId) {
-            if (doc.getElementById(newId)) {
+            if (getArticle(newId)) {
                 alert("A page with that ID already exists.");
             } else {
                 currentArticleEl.id = newId;
                 location.hash = newId;
-                querySelectorAll(`a[href="#${currentId}"]`).forEach((a) =>
-                    a.setAttribute("href", `#${newId}`)
+                querySelectorAll(`a[href="#${cssEscape(currentId)}"]`).forEach(
+                    (a) => a.setAttribute("href", `#${newId}`)
                 );
                 solidifyState();
             }
@@ -637,11 +838,7 @@ on(".of_change_id", "click", () => {
 // Load all articles from another copy of the wiki and replace any existing
 // articles with matching IDs.
 on(".of_import", "click", () => {
-    const fileInput = createElement("input");
-    fileInput.type = "file";
-    fileInput.accept = "text/html";
-    fileInput.addEventListener("change", () => {
-        const file = fileInput.files[0];
+    askForFile({ type: "file", accept: "text/html" }, (file) => {
         const reader = new FileReader();
         reader.onload = (event) => {
             const parser = new DOMParser();
@@ -651,9 +848,7 @@ on(".of_import", "click", () => {
             );
             querySelectorAll("article", importedDoc).forEach(
                 (importedArticle) => {
-                    querySelector(
-                        `article${importedArticle.id ? `#${importedArticle.id}` : ".index"}`
-                    )?.remove();
+                    getArticle(importedArticle.id)?.remove();
                     articlesEl.append(importedArticle);
                 }
             );
@@ -671,7 +866,45 @@ on(".of_import", "click", () => {
         };
         reader.readAsText(file);
     });
-    fileInput.click();
+});
+
+// Upload a file into the wiki
+on(".of_upload", "click", () => {
+    askForFile({ type: "file" }, (file) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            if (file.type.startsWith("image/")) {
+                const img = new Image();
+                img.onload = async () => {
+                    // Hash reader.result to get a unique ID
+                    const binary = atob(reader.result.split(",")[1]);
+                    const bytes = new Uint8Array(
+                        [...binary].map((char) => char.charCodeAt(0))
+                    );
+                    const hashBuffer = crypto.subtle.digest("SHA-256", bytes);
+                    const hashArray = Array.from(
+                        new Uint8Array(await hashBuffer)
+                    );
+                    const hashHex = hashArray
+                        .map((b) => b.toString(16).padStart(2, "0"))
+                        .join("");
+                    const id = `of_image_${hashHex}`;
+                    let uri = reader.result.split(";");
+                    uri.splice(1, 0, `id=${id}`);
+                    uri.splice(2, 0, `width=${img.width}`);
+                    uri.splice(3, 0, `height=${img.height}`);
+                    saveFile(file.name, uri.join(";"), true);
+                };
+                img.onerror = () => {
+                    saveFile(file.name, reader.result);
+                };
+                img.src = reader.result;
+            } else {
+                saveFile(file.name, reader.result);
+            }
+        };
+    });
 });
 
 // Set internal state when navigating to a new page or upon

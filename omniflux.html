@@ -27,12 +27,14 @@
 
 <ul>
 <li>Lighter (though it's also less feature-packed) than <a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a> and <a href="https://feather.wiki/" target="_blank" rel="noopener noreferrer">Feather Wiki</a>.</li>
+<li>Image support - these can be files that are external to the wiki or uploaded and used within the wiki, like <a href="#solar-flare.jpg">solar-flare.jpg</a>.</li>
 <li>Markdown support (<i>italics</i>, <b>bold</b>, <b><i>both</i></b>, <code>code</code>, <s>strike</s>, <u>underline</u>), external images, links, ordered and unordered lists, code fences. <a href="#markdown">See all of the supported syntax.</a></li>
 <li>Generated HTML isn't one long line, allowing source code management tools like <code>git</code> to work better.</li>
 <li>Automated tests to ensure the bidirectional HTML to/from Markdown conversion works as expected, as well as other features in the wiki.</li>
 <li>Doesn't need JavaScript to browse, thanks to CSS-based navigation and sidebar, allowing it to work even in a very restrictive environment, such as a Content Security Policy (CSP) <code>script-src 'none'</code> or a browser that's locked down.</li>
 <li>Quick editing and saving using Ctrl+Enter or Cmd+Enter.</li>
 <li>Importing pages from another OmniFlux wiki, which makes <a href="#upgrading">upgrades</a> trivial. This also copies over any additional script and style elements that may have been added.</li>
+<li>Files can be uploaded into and downloaded from the wiki.</li>
 </ul>
 
 
@@ -157,6 +159,8 @@ Make your own haiku</p>
 
 <p>Linking around an external image: <a href="https://fidian.github.io/omniflux/octocat.svg" target="_blank" rel="noopener noreferrer"><img src="https://fidian.github.io/omniflux/octocat.svg" alt="Octocat" title="Octocat"></a></p>
 
+<p>Images can be uploaded into the wiki referenced later, like this solar flare: <svg xmlns="http://www.w3.org/2000/svg" class="of_image" width="406" height="381" viewBox="0 0 406 381"><title>Solar Flare</title><use href="#of_image_612b099ba6c9d3b69bdb8d85f4f103f289efa9690d83b73ca67a0c09a5c895d7"></use></svg>.</p>
+
 
 <h4>Avoid</h4>
 
@@ -167,6 +171,8 @@ Make your own haiku</p>
 <p>Email addresses are not linked automatically.</p>
 
 <p>Reference-style links are not supported, which is where a link is used in one or more spots, but the URL is maintained elsewhere.</p>
+
+<p>Uploading images into the wiki will make it significantly increase in size.</p>
 
 
 <h2>Code</h2>
@@ -203,7 +209,9 @@ Markdown inside <i>is supported</i>.</p>
 
 <p>Nested blockquotes work.<br>
 Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
+
 </blockquote>
+
 </blockquote>
 
 
@@ -251,7 +259,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 
 <p>When converting Markdown to HTML, there are a bunch of rules that need to get applied in a particular order. Also, sometimes rules need to build on themselves, such as when an image is linked. The rule processing engine is a generic way to process a string through a set of rules and have handlers decide how each interaction unfolds.</p>
 
-<p>The Markdown first will look for block-level markup. Each time a chunk is found, that chunk is processed fully. This means the HTML is created to handle the block level element and any inline elements within the block.</p>
+<p>The Markdown first will look for block-level markup. Each time a chunk is found, that chunk is processed fully. This means the Markdown is converted to DOM elements for that block level element and any inline elements within the block.</p>
 
 <p>Inline elements are a bit more tricky due to possibly wanting recursion and sometimes not. For instance, using backticks for code means anything within needs to be excluded from further processing, but one could have a bolded word in a link.</p>
 
@@ -260,14 +268,14 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 
 <p>Each rule is governed by a pattern and a handler. When the pattern matches text, the match result is passed in as arguments to the handler. This supports groups. Take, for example, this rule for strikeout text, or the second rule for erasing newlines.</p>
 
-<pre><code>[/~~(.+?)~~/, (entireMatch, txt) =&gt; ["&lt;s&gt;", txt, "&lt;/s&gt;"]]
+<pre><code>[/~~(.+?)~~/, (entireMatch, txt) =&gt; dom('s', txt)
 
-[/\n+/, () =&gt; ""]
+[/\n+/, () =&gt; []]
 </code></pre>
 
 <p>If the first pattern was matched against the string <code>"one ~~two~~ three"</code>, then the handler's <code>entireMatch</code> variable will be <code>"~~two~~"</code> and the <code>txt</code> variable will be <code>"two"</code>.</p>
 
-<p>Each handler needs to return a string of completely processed HTML.</p>
+<p>Each handler needs to return completely processed HTML as an array of DOM elements or strings that will be escaped. HTML strings are not allowed to be returned.</p>
 
 
 <h2>Markdown Processing Quick Overview</h2>
@@ -287,6 +295,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>Is your version not up to date? <a href="#upgrading">Learn how to upgrade!</a></p>
 
 <ul>
+<li>2026-06-22 - Enabled uploading of files and images into the wiki. Images are stored once and can be referenced by multiple pages.</li>
 <li>2026-06-19 - Tables are now supported, along with alignment of table columns. Expanded section for how to include code highlighting with Prism.js.</li>
 <li>2026-06-18 - Added autosave, a delete button, renaming the wiki, changing page IDs, and importing pages from another wiki file. Updated the Markdown processor to simplify the handlers and recurse only where needed.</li>
 <li>2026-06-17 - Added a sidebar, transclusions, control/command + enter keybinding, automatic index list generation.</li>
@@ -379,6 +388,16 @@ MutationObserver(mutations =&gt; {
 </code></pre>
 
 <p>Another issue is that some plugins, like toolbar plugins, will add extra elements to the HTML. This makes the HTML to Markdown conversion think that there is extra text. For instance, the "Copy to Clipboard Button" does this, which adds a "Copy" paragraph in the Markdown. Be careful when adding plugins and ensure they don't modify the DOM dramatically.</p>
+</article><article id="solar-flare.jpg">
+<h1>🖼 solar-flare.jpg</h1>
+
+<p><svg xmlns="http://www.w3.org/2000/svg" width="406" height="381" viewBox="0 0 406 381"><title>solar-flare.jpg</title><image id="of_image_612b099ba6c9d3b69bdb8d85f4f103f289efa9690d83b73ca67a0c09a5c895d7" width="406" height="381" href="data:image/jpeg;id=of_image_612b099ba6c9d3b69bdb8d85f4f103f289efa9690d83b73ca67a0c09a5c895d7;width=406;height=381;base64,/9j/4AAQSkZJRgABAQEBLAEsAAD//gATQ3JlYXRlZCB3aXRoIEdJTVD/2wBDAP//////+v//////////////////////////////////////////////////////////////////////////////2wBDAf//////////////////////////////////////////////////////////////////////////////////////wgARCAF9AZYDAREAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAEC/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/2gAMAwEAAhADEAAAAUoEABSAAAAAAAJABQAAAAAAAAAACFWWgAAAgAAAAAAIgCgAAAAAAAAAAALLQAAAQAFBAAAARAFAAWIKAAAAAAAAGpQAAIUEABSAAAAiVYgAApBQAAAAAAAA1KAKkUAQFICgEAAAAAIikKAAAAAAAAAGpRQEBYAACFABAAAAACIFBCkBQAAAAAA3AKACAACKICgEAAAABECgAgBQAAAAAG4EUAUIUACAAAEAAAAIgAAACgAAAAANSgAAAAABChSEKQAAABIAAAABQAAAAGpUBQAAAAQoAAAQoIAARAAAAApCkKAAA1KAhQpAAAAAAACAoBARAAKQAAAUgKAAFloAABUBYUAAEABAUAgIgoIAAAAAAAKAsoAoAAAKEKCACKBAAAAgLEAAAAAAAChZQAAABQChItCAFgBAAAAhYgAAAAAAAAqgAUEABQCgIABFAAgBSBCgkAAAAKFJAAVQAABQAACpFqAARQAIUEAACCAAAFCgkAKoAAAoAAAAKEAkqgAIUEAACCFBCkKoIAICqAAAABQIthYCoAIoAAAEAAAAAIlAACiIKoAApACgAqCKKgAigAACAAAAAJChYgoCyxAAFCgCkBQChIoqAFgEBQAEAAAACFESgBZYEAUABQABQAUgKgEUUkKAAAgAAAACQAAAFCkBQAAKACoAAAWCAqpFAEAAAAAQACAAAoCgAClIACoAAAWQoACFBAAAAAEALEAAFCgUAApAACoAAAUhYAQFBAAAAEKAIgAAq0gAAKAUIAAAAACkiiAoIAAAAAARAAKoAAAAFAKgAAAAEWpFEAKQAAAAAAiAChQAABSFAABQEAAAAiiAFIAAAAAARAAKoAAApAUC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"></image></svg></p>
+</article><article id="list-of-names.csv">
+<h1>🖫 list-of-names.csv</h1>
+
+<p>This is a really short CSV file with a list of names and if they have been naughty or nice.</p>
+
+<p><a href="data:text/csv;base64,TmFtZSxTdGF0dXMNClR5bGVyLE5hdWdodHkNCkJyaWFuLE5hdWdodHkNCkJhc2ljYWxseSBldmVyeW9uZSBlbHNlLE5pY2UNCg==" target="_blank" rel="noopener noreferrer" download="list-of-names.csv">list-of-names.csv</a></p>
 </article></div>
 <div class="of_toolbar">
     <button class="of_edit of_js_on">Edit</button>
@@ -404,7 +423,9 @@ MutationObserver(mutations =&gt; {
             <details name="of_sidebar">
                 <summary>Index</summary>
                 <div class="of_index">
-<p><a href="#changelog">Changelog</a><br>
+<p><a href="#list-of-names.csv">🖫 list-of-names.csv</a><br>
+<a href="#solar-flare.jpg">🖼 solar-flare.jpg</a><br>
+<a href="#changelog">Changelog</a><br>
 <a href="#code-highlighting">Code Highlighting</a><br>
 <a href="#markdown">Markdown Syntax</a><br>
 <a href="#">OmniFlux - Single-Page Wiki</a><br>
@@ -436,6 +457,7 @@ MutationObserver(mutations =&gt; {
                 <div><button class="of_clear">Remove All Pages</button></div>
                 <div><button class="of_change_id">Change Page ID</button></div>
                 <div><button class="of_import">Import Pages</button></div>
+                <div><button class="of_upload">Upload File</button></div>
             </details>
         </div>
     </div>
