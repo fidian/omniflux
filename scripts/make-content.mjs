@@ -25,6 +25,14 @@ export async function makeContent(makeBlank = false) {
         el.remove();
     }
 
+    // Remove blank lines within close body tag
+    const bodyNodes = [...dom.window.document.querySelector('body').childNodes];
+    [bodyNodes[0], bodyNodes[bodyNodes.length - 1]].forEach((child) => {
+        if (child.nodeType === 3 && child.textContent.trim() === '') {
+            child.remove();
+        }
+    });
+
     const modified = dom.serialize();
 
     if (modified !== html) {

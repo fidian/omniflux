@@ -13,8 +13,8 @@
 </thead>
 <tbody>
 <tr><td align="center">Easiest</td><td align="left">Within this wiki</td><td align="left">Open the sidebar, click Download, then follow the instructions.</td></tr>
-<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Documentation Site</a></td><td align="left">Get it from the source and include all documentation (about 48k)</td></tr>
-<tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">When every byte matters (about 14k)</td></tr>
+<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Documentation Site</a></td><td align="left">Get it from the source, includes all documentation and the solar flare image (about 64k)</td></tr>
+<tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">When every byte matters (about 16k)</td></tr>
 <tr><td align="center">Custom</td><td align="left"><a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">GitHub repository</a></td><td align="left">Build your own!</td></tr>
 </tbody>
 </table>
@@ -62,18 +62,20 @@
 
 <p>HTML to Markdown conversion walks the DOM (an approach similar to <a href="https://github.com/acornejo/downshow" target="_blank" rel="noopener noreferrer">Downshow</a>), but the similarities end there. This is an entirely different implementation.</p>
 
+<p>The ability to add a single copy of an image and reference it on multiple pages, yet still treat it as an image is thanks to <a href="https://css-tricks.com/use-and-reuse-everything-in-svg-even-animations/" target="_blank" rel="noopener noreferrer"><code>&lt;svg&gt;&lt;use /&gt;&lt;/svg&gt;</code></a> being able to grab from any element in the document.</p>
+
 
 <h2>What's Next?</h2>
 
 <p>These items are not sorted. Feeling adventurous? Pull requests on <a href="https://github.com/fidian/omniflux" target="_blank" rel="noopener noreferrer">GitHub</a> are welcome! For those diving into the internals, you might want to know how <a href="#rule-processing">rule processing</a> works.</p>
 
 <ol>
-<li>Add the ability to save images as base64 encoded CSS classes, then to show them and manage them.</li>
 <li>Add a sidebar section for search.</li>
 <li>Consider including wikilink syntax to link to another internal page, like <code>[[Page Name]]</code> -&gt; <code>#page-name</code> and <code>[[Page Name|Custom Text]]</code> -&gt; <code>#page-name</code>.</li>
 <li>Allow saving to WebDAV, similar to FeatherWiki. (Note: see this <a href="https://codeberg.org/Alamantus/FeatherWiki/src/branch/main/nests/server.mjs" target="_blank" rel="noopener noreferrer">Node.js server</a>.)</li>
 <li>Show backlinks for a page to see what other pages link to this one. It simplifies maintenance of links.</li>
 <li>Add task lists, using <code>/\[[ xX]?\]/</code> to match empty and filled checkboxes.</li>
+<li>Probably should consider a dark mode theme.</li>
 </ol>
 </article>
 <article id="markdown">
@@ -479,5 +481,4 @@ MutationObserver(mutations =&gt; {
         <button class="of_save">Save</button>
     </div>
     <textarea class="of_input" placeholder="Write here..."></textarea>
-</div>
-</body></html>
+</div></body></html>
