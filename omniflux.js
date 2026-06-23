@@ -611,7 +611,7 @@ const html2Md = (el, inBlock) => {
  * A few functions that bind to element events and that are reused.
  */
 const editPage = () => {
-    hashEl.textContent = "#" + (currentArticleEl?.id ?? "");
+    hashEl.textContent = "#" + currentId;
     inputEl.value = currentArticleEl ? html2Md(currentArticleEl, 1) : "";
     editing = true;
     setFlag("edit", 1);
