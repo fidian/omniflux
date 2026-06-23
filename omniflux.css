@@ -195,11 +195,18 @@ body.of_dirty_flag {
         }
 
         summary {
+            list-style-type: none;
             cursor: pointer;
             font-weight: bold;
             background-color: var(--of-sidebar-section-color);
             padding: 0 0.2em;
             user-select: none;
+
+            .of_icon {
+                display: inline-block;
+                width: 1.25em;
+                text-align: center;
+            }
         }
     }
 }
