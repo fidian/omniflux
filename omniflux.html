@@ -25,16 +25,19 @@
 <h2>Features</h2>
 
 <ul>
-<li>Lighter (though it's also less feature-packed) than <a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a> and <a href="https://feather.wiki/" target="_blank" rel="noopener noreferrer">Feather Wiki</a>.</li>
-<li>Image support - these can be files that are external to the wiki or uploaded and used within the wiki, like <a href="#solar-flare.jpg">solar-flare.jpg</a>.</li>
+<li>Lighter (though it's also less feature-packed) than <a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a> and <a href="https://feather.wiki/" target="_blank" rel="noopener noreferrer">Feather Wiki</a>. For more details, check out the <a href="#fair-comparison">Fair Comparison</a> between these wikis and several others.</li>
 <li>Markdown support (<i>italics</i>, <b>bold</b>, <b><i>both</i></b>, <code>code</code>, <s>strike</s>, <u>underline</u>), external images, links, ordered and unordered lists, code fences. <a href="#markdown">See all of the supported syntax.</a></li>
 <li>Generated HTML isn't one long line, allowing source code management tools like <code>git</code> to work better.</li>
 <li>Automated tests to ensure the bidirectional HTML to/from Markdown conversion works as expected, as well as other features in the wiki.</li>
 <li>Doesn't need JavaScript to browse, thanks to CSS-based navigation and sidebar, allowing it to work even in a very restrictive environment, such as a Content Security Policy (CSP) <code>script-src 'none'</code> or a browser that's locked down.</li>
 <li>Quick editing and saving using Ctrl+Enter or Cmd+Enter.</li>
 <li>Importing pages from another OmniFlux wiki, which makes <a href="#upgrading">upgrades</a> trivial. This also copies over any additional script and style elements that may have been added.</li>
-<li>Files can be uploaded into and downloaded from the wiki.</li>
+<li>Binary and text files can be uploaded into and downloaded from the wiki.</li>
+<li>Image support - these can be files that are external to the wiki or uploaded and used within the wiki, like this <a href="#solar-flare.jpg">solar-flare.jpg</a>.</li>
 </ul>
+
+<p>Linked image examples: <a href="https://github.com/fidian/omniflux" target="_blank" rel="noopener noreferrer"><img src="https://fidian.github.io/omniflux/octocat.svg" alt="Octocat" title="Octocat"></a> <a href="#solar-flare.jpg"><svg xmlns="http://www.w3.org/2000/svg" class="of_image" width="36" height="34" viewBox="0 0 36 34"><title>Solar Flare</title><use href="#of_image_0ccd8e80c53a8265c6ebe6c3def45f0a771946dc4c3e106d735359b93847b81c"></use></svg></a><br>
+Octocat is external, the solar flare is completely within the wiki.</p>
 
 
 <h2>How to Use</h2>
@@ -56,13 +59,13 @@
 
 <p>CSS-based navigation is from <a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a>. It's fantastic.</p>
 
-<p>Converting Markdown to HTML started from the <a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a> as well, but it's been highly modified and extended.</p>
+<p>The original method for converting Markdown to HTML started from the <a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a> as well because it's a great project. It's been highly modified to use DOM elements instead of strings and targeted recursion, plus the Markdown syntax has been expanded with patterns changed to be more stringent.</p>
 
 <p>The CSS-powered slide-in menu comes from <a href="https://css-tricks.com/the-checkbox-hack/" target="_blank" rel="noopener noreferrer">The "Checkbox Hack" (and things you can do with it)</a> with a fancier hamburger icon courtesy of <a href="https://codepen.io/anon/pen/OrxKWb" target="_blank" rel="noopener noreferrer">Definitly Pure HTML/CSS animated Hamburger</a>.</p>
 
 <p>HTML to Markdown conversion walks the DOM (an approach similar to <a href="https://github.com/acornejo/downshow" target="_blank" rel="noopener noreferrer">Downshow</a>), but the similarities end there. This is an entirely different implementation.</p>
 
-<p>The ability to add a single copy of an image and reference it on multiple pages, yet still treat it as an image is thanks to <a href="https://css-tricks.com/use-and-reuse-everything-in-svg-even-animations/" target="_blank" rel="noopener noreferrer"><code>&lt;svg&gt;&lt;use /&gt;&lt;/svg&gt;</code></a> being able to grab from any element in the document.</p>
+<p>The ability to add a single copy of an image and reference it on multiple pages, yet still treat it as an image is thanks to <a href="https://css-tricks.com/use-and-reuse-everything-in-svg-even-animations/" target="_blank" rel="noopener noreferrer"><code>&lt;svg&gt;&lt;use /&gt;&lt;/svg&gt;</code></a> being able to grab from any element in the document. To facilitate this, <a href="https://datatracker.ietf.org/doc/html/rfc2397#section-3" target="_blank" rel="noopener noreferrer">RFC 2397</a> was used to understand <code>data</code> URL scheme and how to embed additional information.</p>
 
 
 <h2>What's Next?</h2>
@@ -74,8 +77,9 @@
 <li>Consider including wikilink syntax to link to another internal page, like <code>[[Page Name]]</code> -&gt; <code>#page-name</code> and <code>[[Page Name|Custom Text]]</code> -&gt; <code>#page-name</code>.</li>
 <li>Allow saving to WebDAV, similar to FeatherWiki. (Note: see this <a href="https://codeberg.org/Alamantus/FeatherWiki/src/branch/main/nests/server.mjs" target="_blank" rel="noopener noreferrer">Node.js server</a>.)</li>
 <li>Show backlinks for a page to see what other pages link to this one. It simplifies maintenance of links.</li>
-<li>Add task lists, using <code>/\[[ xX]?\]/</code> to match empty and filled checkboxes.</li>
+<li>Add task lists, using <code>/\[[ xX]?\]/</code> to match empty and filled checkboxes. This will require checkbox inputs changing their "checked" attribute and triggering the save/dirty check.</li>
 <li>Probably should consider a dark mode theme.</li>
+<li>Error detection when auto saving; disable auto save on error and show an alert.</li>
 </ol>
 </article>
 <article id="markdown">
@@ -293,15 +297,16 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 </article><article id="changelog">
 <h1>Changelog</h1>
 
-<p>Is your version not up to date? <a href="#upgrading">Learn how to upgrade!</a></p>
+<p>Is your version a little stale or missing some features? <a href="#upgrading">Learn how to upgrade!</a></p>
 
 <ul>
-<li>2026-06-22 - Enabled uploading of files and images into the wiki. Images are stored once and can be referenced by multiple pages.</li>
-<li>2026-06-19 - Tables are now supported, along with alignment of table columns. Expanded section for how to include code highlighting with Prism.js.</li>
-<li>2026-06-18 - Added autosave, a delete button, renaming the wiki, changing page IDs, and importing pages from another wiki file. Updated the Markdown processor to simplify the handlers and recurse only where needed.</li>
-<li>2026-06-17 - Added a sidebar, transclusions, control/command + enter keybinding, automatic index list generation.</li>
-<li>2026-06-15 - Improve build system, add additional Markdown conversion tests.</li>
-<li>2026-06-10 - Initial release.</li>
+<li><b>2026-06-23</b> - Added icons to summary bars to help distinguish them faster. Added <a href="#fair-comparison">Fair Comparison</a> of wiki alternatives.</li>
+<li><b>2026-06-22</b> - Enabled uploading of files and images into the wiki. Images are stored once and can be referenced by multiple pages.</li>
+<li><b>2026-06-19</b> - Tables are now supported, along with alignment of table columns. Expanded section for how to include code highlighting with Prism.js.</li>
+<li><b>2026-06-18</b> - Added autosave, a delete button, renaming the wiki, changing page IDs, and importing pages from another wiki file. Updated the Markdown processor to simplify the handlers and recurse only where needed.</li>
+<li><b>2026-06-17</b> - Added a sidebar, transclusions, control/command + enter keybinding, automatic index list generation.</li>
+<li><b>2026-06-15</b> - Improve build system, add additional Markdown conversion tests.</li>
+<li><b>2026-06-10</b> - Initial release.</li>
 </ul>
 </article><article id="upgrading">
 <h1>Upgrading OmniFlux</h1>
@@ -403,6 +408,283 @@ MutationObserver(mutations =&gt; {
 <p>You can use it like this: <code>![Solar Flare](#solar-flare.jpg)</code></p>
 
 <p><svg xmlns="http://www.w3.org/2000/svg" width="36" height="34" viewBox="0 0 36 34"><title>solar-flare.jpg</title><image id="of_image_0ccd8e80c53a8265c6ebe6c3def45f0a771946dc4c3e106d735359b93847b81c" width="36" height="34" href="data:image/jpeg;id=of_image_0ccd8e80c53a8265c6ebe6c3def45f0a771946dc4c3e106d735359b93847b81c;width=36;height=34;base64,/9j/4AAQSkZJRgABAQEBLAEsAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wgARCAAiACQDAREAAhEBAxEB/8QAGQABAQEAAwAAAAAAAAAAAAAABQQDAQIG/8QAGQEAAwEBAQAAAAAAAAAAAAAAAgMEAQUA/9oADAMBAAIQAxAAAAHXl9GU9MpTgxfHsUmpXTkhEVQGZD3ElZ2LbOONMrRmYupTHVr3NeQn5agrUseFF1cxMVv/xAAfEAACAgICAwEAAAAAAAAAAAACAwABESETMRASMkH/2gAIAQEAAQUCsBjFaIPWY8LbFlRi1MsMTEHUUzErDQNVzjuVul1cTqGvN8VVA7D7V3+H9//EACARAAIBBAEFAAAAAAAAAAAAAAABAgMQESExEhMiMkH/2gAIAQMBAT8By7ShgaspJktbR7IcTBHQ1kfgzTOkWxFTeiNTCO4/hG1Xi0eD/8QAHxEAAgICAgMBAAAAAAAAAAAAAAIBESExAxIQMlFh/9oACAECAQE/AbFcVrL8Mh+CtUkNZY2RoPaCGO8E4HkTE2Px5wdPow2ji2TonZ//xAAcEAAABwEBAAAAAAAAAAAAAAAAARARICExMEH/2gAIAQEABj8C9FQ0+FjFdLaJj//EAB4QAAIDAAIDAQAAAAAAAAAAAAABESExUXEQQWHh/9oACAEBAAE/IW1vaNIWbfo+0Dt4fNoXZEHc0VNcYOeHo0keM+3gyHCyTBpwIL4ONoFq9kymJgUKxoSEQd+DAzGHeh//2gAMAwEAAgADAAAAEP6EKSMH42GIU9//xAAaEQADAAMBAAAAAAAAAAAAAAAAAREQITFh/9oACAEDAQE/EPIlOzDDoCAqoRGhoolSvMqNYJEFaHSUbh9Q3bwI6C6KpP/EABsRAQEBAQADAQAAAAAAAAAAAAEAESEQMVFB/9oACAECAQE/EDF1xh4jwz9WY6lyYRpChrJR0gE/EsW+zLWwZ2bgkfk3PFl6eD0+HtX/xAAdEAEAAgIDAQEAAAAAAAAAAAABABEhMUFRYXGh/9oACAEBAAE/EE5VQWLnxKEFKz04ahAhaoC7O4vCUwR6gXP2C8MK7+xaZkKtl+eJHepxFJyeVL+tIC6I7YUiwuJrS1qIKZOPkFtZaID0175KcZyVH1d5B39gVG8eMu0hwsxKLWY04zx9mhxWpp+RFiae5//Z"></image></svg></p>
+</article><article id="fair-comparison">
+<h1>Fair Comparison</h1>
+
+<p>All of the wikis compared here are ones that work with no installation, no server-side software, and nothing more than just a web browser. Make sure to read the reviews and pick the system that would work best for your purposes.</p>
+
+<table>
+<thead>
+<tr><th align="center">Wiki Software</th><th align="center">Status</th><th align="center">One File</th><th align="center">Editing</th><th align="center">Size</th><th align="center">Plugins</th><th align="center">Storage</th></tr>
+</thead>
+<tbody>
+<tr><td align="center"><a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a></td><td align="center">POC</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">9k</td><td align="center">No</td><td align="center">HTML + Template</td></tr>
+<tr><td align="center"><a href="https://feather.wiki/" target="_blank" rel="noopener noreferrer">Feather Wiki</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">WYSIWYG / MD</td><td align="center">56k</td><td align="center">Yes</td><td align="center">JSON</td></tr>
+<tr><td align="center"><a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></td><td align="center">New</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">16k</td><td align="center">No</td><td align="center">HTML</td></tr>
+<tr><td align="center"><a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">2,490k</td><td align="center">Yes</td><td align="center">JSON</td></tr>
+<tr><td align="center"><a href="https://stickwiki.sourceforge.net/" target="_blank" rel="noopener noreferrer">WOAS</a></td><td align="center">Old</td><td align="center">Somewhat</td><td align="center">WikiText</td><td align="center">408k</td><td align="center">No</td><td align="center">JSON</td></tr>
+<tr><td align="center"><a href="https://sourceforge.net/p/woas/home/Welcome/" target="_blank" rel="noopener noreferrer">WOAS Fork</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">WikiText</td><td align="center">732k</td><td align="center">No</td><td align="center">JSON</td></tr>
+<tr><td align="center"><a href="https://github.com/chunqiuyiyu/xie" target="_blank" rel="noopener noreferrer">Xie</a></td><td align="center">POC</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">9k</td><td align="center">No</td><td align="center">HTML</td></tr>
+</tbody>
+</table>
+
+<p>The table above and each section below will provide statistics and figures about the wikis in order to more easily compare across projects.</p>
+
+<ul>
+<li>Status: How long has the project been around? Have the bugs been worked out? (POC = proof of concept)</li>
+<li>One File: Is the wiki predominantly saved as a single file by default? Plugins and extensions may change this behavior.</li>
+<li>Editing: How are pages edited? WYSIWYG (what you see is what you get), MD (Markdown in a textarea).</li>
+<li>Size: The size of the stock, empty file on disk. Not gzipped. If minified is an option, this is the minified version.</li>
+<li>Extensible: Is the codebase meant to be expanded with plugins or extensions? Is there a documented API?</li>
+<li>Storage: How is the content stored in the file?</li>
+<li>Embed Files: Are users allowed to embed images? Can any file be added to the wiki?</li>
+<li>Local Saving: How does saving work when not using a server.</li>
+<li>Server-Side Saving: Is this software able to push files to a server somehow?</li>
+</ul>
+
+
+<h2><a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a></h2>
+
+<p><b>Goal:</b> <i>How small can a fully editable wiki possibly be?</i></p>
+
+<table>
+<thead>
+<tr><th align="left">Attribute</th><th align="left">Value</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Status</td><td align="left">Proof of Concept</td></tr>
+<tr><td align="left">One File</td><td align="left">Yes</td></tr>
+<tr><td align="left">Editing</td><td align="left">Markdown</td></tr>
+<tr><td align="left">Size</td><td align="left">9 kilobytes</td></tr>
+<tr><td align="left">Extensible</td><td align="left">No</td></tr>
+<tr><td align="left">Storage</td><td align="left">HTML + Template</td></tr>
+<tr><td align="left">Embed Files</td><td align="left">No</td></tr>
+<tr><td align="left">Local Saving</td><td align="left">Yes, file downloader</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">No</td></tr>
+</tbody>
+</table>
+
+
+<h4>Pros</h4>
+
+<p>Lightweight, CSS-based wiki that only needs JavaScript for editing. This is what inspired OmniFlux.</p>
+
+<p>Viewable without JavaScript. Relies on CSS for navigation.</p>
+
+
+<h4>Cons</h4>
+
+<p>Content is stored twice, once as rendered HTML and once as a template that contains the raw Markdown.</p>
+
+<p>Markdown conversion is somewhat buggy at times for specific examples.</p>
+
+
+<h2><a href="https://feather.wiki/" target="_blank" rel="noopener noreferrer">Feather Wiki</a></h2>
+
+<p><b>Goal:</b> <i>A practical, extensible personal wiki that lives in a single file.</i></p>
+
+<table>
+<thead>
+<tr><th align="left">Attribute</th><th align="left">Value</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Status</td><td align="left">Mature</td></tr>
+<tr><td align="left">One File</td><td align="left">Yes</td></tr>
+<tr><td align="left">Editing</td><td align="left">WYSIWYG / MD</td></tr>
+<tr><td align="left">Size</td><td align="left">56 kilobytes</td></tr>
+<tr><td align="left">Extensible</td><td align="left">Yes, through custom JavaScript</td></tr>
+<tr><td align="left">Storage</td><td align="left">JSON</td></tr>
+<tr><td align="left">Embed Files</td><td align="left">Yes, images only</td></tr>
+<tr><td align="left">Local Saving</td><td align="left">Yes, file downloader</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">Yes, can work with WebDAV</td></tr>
+</tbody>
+</table>
+
+
+<h4>Pros</h4>
+
+<p>A more traditional, page-based navigation style than TiddlyWiki. Lots of community support for various customizations.</p>
+
+<p>Much, much lighter than TiddlyWiki.</p>
+
+
+<h4>Cons</h4>
+
+<p>Many quirks on screens with different sizes, such as buttons being off screen to save edits, though a helping of additional CSS could clear most of these up.</p>
+
+<p>Unfriendly to source code management tools, such as <code>git</code> because of the extremely long lines.</p>
+
+
+<h2><a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></h2>
+
+<p><b>Goal:</b> <i>A modern knowledge base packed into a tiny standalone HTML file.</i></p>
+
+<table>
+<thead>
+<tr><th align="left">Attribute</th><th align="left">Value</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Status</td><td align="left">New</td></tr>
+<tr><td align="left">One File</td><td align="left">Yes</td></tr>
+<tr><td align="left">Editing</td><td align="left">Markdown</td></tr>
+<tr><td align="left">Size</td><td align="left">16 kilobytes</td></tr>
+<tr><td align="left">Extensible</td><td align="left">No</td></tr>
+<tr><td align="left">Storage</td><td align="left">HTML</td></tr>
+<tr><td align="left">Embed Files</td><td align="left">Yes, all kinds</td></tr>
+<tr><td align="left">Local Saving</td><td align="left">Yes, file downloader and File API</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">No</td></tr>
+</tbody>
+</table>
+
+
+<h4>Pros</h4>
+
+<p>You're looking at an OmniFlux wiki right now!</p>
+
+<p>Viewable without JavaScript. Relies on CSS for navigation.</p>
+
+
+<h4>Cons</h4>
+
+<p>It's not designed to be extensible through plugins or additional code, but any script and style elements you add will be preserved during upgrades. Because there's no API to tie into, this is not listed as being "extensible."</p>
+
+<p>With the goal of bidirectional conversion between HTML and Markdown, embedding HTML within Markdown is not supported.</p>
+
+
+<h2><a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a></h2>
+
+<p><b>Goal:</b> <i>The everything-in-one-file platform for notes, wikis, and personal knowledge management.</i></p>
+
+<table>
+<thead>
+<tr><th align="left">Attribute</th><th align="left">Value</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Status</td><td align="left">Mature</td></tr>
+<tr><td align="left">One File</td><td align="left">Yes</td></tr>
+<tr><td align="left">Editing</td><td align="left">Markdown</td></tr>
+<tr><td align="left">Size</td><td align="left">2,490 kilobytes</td></tr>
+<tr><td align="left">Extensible</td><td align="left">Yes, through custom JavaScript</td></tr>
+<tr><td align="left">Storage</td><td align="left">JSON</td></tr>
+<tr><td align="left">Embed Files</td><td align="left">Yes, all kinds</td></tr>
+<tr><td align="left">Local Saving</td><td align="left">Yes, File downloader</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">Yes, through plugins and often WebDAV</td></tr>
+</tbody>
+</table>
+
+
+<h4>Pros</h4>
+
+<p>The leader of the pack. One of the earliest (if not the first) single-page wikis.</p>
+
+<p>Strongly encourages plugins to handle all sorts of things. Extremely flexible and configurable. Works with a variety of server-side software to support saving remotely.</p>
+
+
+<h4>Cons</h4>
+
+<p>With ultimate configurability comes the largest size.</p>
+
+<p>Navigation is unlike typical websites. Each "page" opens above the current content, so small pages are encouraged.</p>
+
+
+<h2><a href="https://stickwiki.sourceforge.net/" target="_blank" rel="noopener noreferrer">WOAS</a></h2>
+
+<p><b>Goal:</b> <i>Carry an entire wiki on a USB drive and edit it anywhere.</i></p>
+
+<table>
+<thead>
+<tr><th align="left">Attribute</th><th align="left">Value</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Status</td><td align="left">Old - Non-functional in modern browsers</td></tr>
+<tr><td align="left">One File</td><td align="left">Somewhat - required JAR to save</td></tr>
+<tr><td align="left">Editing</td><td align="left">WikiText</td></tr>
+<tr><td align="left">Size</td><td align="left">408 kilobytes</td></tr>
+<tr><td align="left">Extensible</td><td align="left">No</td></tr>
+<tr><td align="left">Storage</td><td align="left">JSON</td></tr>
+<tr><td align="left">Embed Files</td><td align="left">Yes</td></tr>
+<tr><td align="left">Local Saving</td><td align="left">Yes, JAR applet</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">No</td></tr>
+</tbody>
+</table>
+
+
+<h4>Pros</h4>
+
+<p>Worked well when it came out. Supported a style of markup like Wikipedia.</p>
+
+<p>Supported AES encryption for pages.</p>
+
+
+<h4>Cons</h4>
+
+<p>Outdated and no longer loads because browsers don't allow loading Java applets any longer. Because there's an immediate check to see if file saving works, the entire wiki is not viewable.</p>
+
+
+<h2><a href="https://sourceforge.net/p/woas/home/Welcome/" target="_blank" rel="noopener noreferrer">WOAS Fork</a></h2>
+
+<p><b>Goal:</b> <i>Preserve and modernize the classic portable wiki experience.</i></p>
+
+<table>
+<thead>
+<tr><th align="left">Attribute</th><th align="left">Value</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Status</td><td align="left">Mature</td></tr>
+<tr><td align="left">One File</td><td align="left">Yes</td></tr>
+<tr><td align="left">Editing</td><td align="left">WikiText</td></tr>
+<tr><td align="left">Size</td><td align="left">732 kilobytes</td></tr>
+<tr><td align="left">Extensible</td><td align="left">No</td></tr>
+<tr><td align="left">Storage</td><td align="left">JSON</td></tr>
+<tr><td align="left">Embed Files</td><td align="left">Yes</td></tr>
+<tr><td align="left">Local Saving</td><td align="left">Yes, file downloader</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">No</td></tr>
+</tbody>
+</table>
+
+
+<h4>Pros</h4>
+
+<p>Updated version of WOAS that supports saving in newer browsers. Supports a style of markup like Wikipedia.</p>
+
+<p>Supported AES encryption for pages.</p>
+
+
+<h4>Cons</h4>
+
+<p>Fairly large for what you get, though space is cheap.</p>
+
+
+<h2><a href="https://github.com/chunqiuyiyu/xie" target="_blank" rel="noopener noreferrer">Xie</a></h2>
+
+<p><b>Goal:</b> <i>Generate self-contained wiki documents from Markdown with almost no overhead.</i></p>
+
+<table>
+<thead>
+<tr><th align="left">Attribute</th><th align="left">Value</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Status</td><td align="left">Proof of Concept</td></tr>
+<tr><td align="left">One File</td><td align="left">Yes</td></tr>
+<tr><td align="left">Editing</td><td align="left">Markdown</td></tr>
+<tr><td align="left">Size</td><td align="left">9 kilobytes</td></tr>
+<tr><td align="left">Extensible</td><td align="left">Yes, through custom JavaScript</td></tr>
+<tr><td align="left">Storage</td><td align="left">HTML</td></tr>
+<tr><td align="left">Embed Files</td><td align="left">No</td></tr>
+<tr><td align="left">Local Saving</td><td align="left">Yes, file downloader</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">No</td></tr>
+</tbody>
+</table>
+
+
+<h4>Pros</h4>
+
+<p>This shows promise as it is extremely lightweight.</p>
+
+
+<h4>Cons</h4>
+
+<p>Unfortunately, while editing pages and trying to add content, it appears to get confused on which page is being edited. Also, multiple copies of the same page get added to the DOM. However, these bugs aren't devastatingly bad and could be fixed with a little more time invested.</p>
 </article></div>
 <div class="of_toolbar">
     <button class="of_edit of_js_on">Edit</button>
@@ -432,6 +714,7 @@ MutationObserver(mutations =&gt; {
 <a href="#solar-flare.jpg">🖼 solar-flare.jpg</a><br>
 <a href="#changelog">Changelog</a><br>
 <a href="#code-highlighting">Code Highlighting</a><br>
+<a href="#fair-comparison">Fair Comparison</a><br>
 <a href="#markdown">Markdown Syntax</a><br>
 <a href="#">OmniFlux - Single-Page Wiki</a><br>
 <a href="#overview">Overview</a><br>
