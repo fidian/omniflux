@@ -101,13 +101,6 @@ body.of_edit_flag {
     }
 }
 
-@media print {
-    .of_toolbar,
-    .of_sidebar {
-        display: none;
-    }
-}
-
 .of_sidebar {
     display: flex;
     position: fixed;
@@ -121,6 +114,13 @@ body.of_edit_flag {
     &:has(#of_sidebar_toggle:checked) {
         /* Use transform for smooth animation */
         transform: translateX(0);
+    }
+}
+
+@media print {
+    .of_toolbar,
+    .of_sidebar {
+        display: none;
     }
 }
 
@@ -329,7 +329,7 @@ table {
     }
 }
 
-.of_overview {
+.of_overview, .of_index {
     a:hover {
         background-color: #def;
     }
