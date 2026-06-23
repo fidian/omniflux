@@ -1,0 +1,20 @@
+md2html: true
+html2md: true
+markdown:
+ > words
+ >
+ >
+ > ---
+ > 
+ >
+ > more words
+html:
+ >
+ > <p>words</p>
+ >
+ >
+ > <hr>
+ >
+ >
+ > <p>more words</p>
+ >

@@ -227,7 +227,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 
 <h2>Tables</h2>
 
-<p>Standard Markdown works for tables, plus alignment is supported. Headings are required. Tables are automatically formatted in the Markdown to align on columns for easier editing.</p>
+<p>Standard Markdown works for tables, plus alignment is supported. Headings are required. Tables are automatically formatted in the Markdown to align on columns for easier editing. This happens every time, so don't worry about extra whitespace or formatting while editing. OmniFlux will clean it up for you!</p>
 
 <table>
 <thead>
@@ -245,14 +245,26 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 
 <h4>Avoid</h4>
 
-<p>Nested pipe characters within a table is not supported.</p>
+<p>Nested pipe characters within a table is not supported, not even within backticks for code.</p>
+
+
+<h2>Horizontal Rules</h2>
+
+<p>Three or more dashes in a row on a line by itself produces this line.</p>
+
+
+<hr>
+
+
+
+<h4>Avoid</h4>
+
+<p>Probably avoid overusing these. Headings are a better way to separate content.</p>
 
 
 <h2>Completely Unsupported</h2>
 
 <p>Embedding HTML within the Markdown. This is a tricky thing to do, especially since the conversion needs to accurately be bidirectional.</p>
-
-<p>Horizontal rules via <code>---</code>.</p>
 
 <p>The <code>&lt;del&gt;</code> tag isn't created when using <code>~~~text~~~</code>.</p>
 
@@ -301,7 +313,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>Is your version a little stale or missing some features? <a href="#upgrading">Learn how to upgrade!</a></p>
 
 <ul>
-<li><b>2026-06-23</b> - Added icons to summary bars to help distinguish them faster. Added <a href="#fair-comparison">Fair Comparison</a> of wiki alternatives.</li>
+<li><b>2026-06-23</b> - Added icons to summary bars to help distinguish them faster. Added <a href="#fair-comparison">Fair Comparison</a> of wiki alternatives. Added horizontal rules.</li>
 <li><b>2026-06-22</b> - Enabled uploading of files and images into the wiki. Images are stored once and can be referenced by multiple pages.</li>
 <li><b>2026-06-19</b> - Tables are now supported, along with alignment of table columns. Expanded section for how to include code highlighting with Prism.js.</li>
 <li><b>2026-06-18</b> - Added autosave, a delete button, renaming the wiki, changing page IDs, and importing pages from another wiki file. Updated the Markdown processor to simplify the handlers and recurse only where needed.</li>

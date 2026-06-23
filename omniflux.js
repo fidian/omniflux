@@ -257,6 +257,7 @@ const inlineRules = [
 const mdInline = (str) => processRules(str.trim(), inlineRules, 1);
 
 const blockRules = [
+    [ /^ *-{3,} *$/m, () => ["\n", dom("hr"), "\n\n\n"] ],
     [
         /^```([^\n]*)\n(([^\n]*\n)+?)```$/m,
         (_, lang, code) => [
@@ -390,6 +391,7 @@ const md2Html = (str) => `\n${dom("div", md2Dom(str)).innerHTML.trim()}\n`;
  */
 
 const html2MdConversions = [
+    [/^HR$/, (add) => add("\n---\n\n\n", 1)],
     [/^(B|STRONG)$/, (add, currentNode) => add(`**${html2Md(currentNode)}**`)],
     [/^(I|EM)$/, (add, currentNode) => add(`*${html2Md(currentNode)}*`)],
     [/^(S|DEL)$/, (add, currentNode) => add(`~~${html2Md(currentNode)}~~`)],
