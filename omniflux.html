@@ -33,6 +33,7 @@
 <li>Quick editing and saving using Ctrl+Enter or Cmd+Enter.</li>
 <li>Uploading to a server through <a href="#saving-with-webdav">WebDAV</a>.</li>
 <li>Importing pages from another OmniFlux wiki, which makes <a href="#upgrading">upgrades</a> trivial. This also copies over any additional script and style elements that may have been added.</li>
+<li><a href="#custom-elements">Custom Elements</a> are allowed.</li>
 <li>Binary and text files can be uploaded into and downloaded from the wiki.</li>
 <li>Image support - these can be files that are external to the wiki or uploaded and used within the wiki, like this <a href="#solar-flare.jpg">solar-flare.jpg</a>.</li>
 </ul>
@@ -261,9 +262,17 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>Probably avoid overusing these. Headings are a better way to separate content.</p>
 
 
+<h2>Custom Elements</h2>
+
+<p>You can add a custom element by simply including the JavaScript and HTML. See <a href="#custom-elements">Custom Elements</a> to learn more.</p>
+
+<pre><code>&lt;custom-element&gt;Hello!&lt;/custom-element&gt;
+</code></pre>
+
+
 <h2>Completely Unsupported</h2>
 
-<p>Embedding HTML within the Markdown. This is a tricky thing to do, especially since the conversion needs to accurately be bidirectional.</p>
+<p>Embedding HTML within the Markdown is not supported, except for custom elements. This is a tricky thing to do, especially since the conversion needs to accurately be bidirectional.</p>
 
 <p>The <code>&lt;del&gt;</code> tag isn't created when using <code>~~~text~~~</code>.</p>
 
@@ -302,6 +311,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 </article><article id="overview">
 <p><a href="#changelog">Changelog</a><br>
 <a href="#code-highlighting">Code Highlighting</a><br>
+<a href="#custom-elements">Custom Elements</a><br>
 <a href="#fair-comparison">Fair Comparison</a><br>
 <a href="#markdown">Markdown Syntax</a><br>
 <a href="#rule-processing">Rule Processing</a><br>
@@ -313,6 +323,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>Is your version a little stale or missing some features? <a href="#upgrading">Learn how to upgrade!</a></p>
 
 <ul>
+<li><b>2026-06-24</b> - Added WebDAV support for saving and automatic saving. Added custom element support.</li>
 <li><b>2026-06-23</b> - Added icons to summary bars to help distinguish them faster. Added <a href="#fair-comparison">Fair Comparison</a> of wiki alternatives. Added horizontal rules.</li>
 <li><b>2026-06-22</b> - Enabled uploading of files and images into the wiki. Images are stored once and can be referenced by multiple pages.</li>
 <li><b>2026-06-19</b> - Tables are now supported, along with alignment of table columns. Expanded section for how to include code highlighting with Prism.js.</li>
@@ -711,6 +722,73 @@ MutationObserver(mutations =&gt; {
 <li>Cloud providers (eg. Nextcloud and Owncloud) and NAS devices (Synology, QNAP, TrueNAS) support it</li>
 <li>Apache has <code>mod_dav</code> to enable support</li>
 </ul>
+</article><article id="custom-elements">
+<h1>Custom Elements</h1>
+
+<p>A custom element is where the HTML standard is extended by user-provided JavaScript. This can be for appearance only or you are able to also add functionality. Check out MDN's <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements" target="_blank" rel="noopener noreferrer">Using custom elements</a> for further information.</p>
+
+<p>OmniFlux allows embedding of custom elements as block-level Markdown.</p>
+
+<pre><code class="language-md">&lt;custom-element attr="value" more="ok"&gt;
+This content is sent to the custom element.
+&lt;/custom-element&gt;
+</code></pre>
+
+<p>When converted to HTML, the custom element tag and all of its contents are copied exactly as how the Markdown showed it.</p>
+
+<p>When <a href="#upgrading">upgrading</a>, any custom <code>&lt;style&gt;</code> and <code>&lt;script&gt;</code> tags are preserved, so your custom elements will continue to work.</p>
+
+
+<h2>Example</h2>
+
+<p>Here is a sample custom element that shows the content tilting.</p>
+
+<tilt-container>OmniFlux</tilt-container>
+
+
+<h2>How to Add</h2>
+
+<p>To include the tilt container custom element, you need to add this script tag into OmniFlux, just before the <code>&lt;/body&gt;</code> element.</p>
+
+<pre><code class="language-html">&lt;script&gt;
+  customElements.define('tilt-container', class extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.shadowRoot.innerHTML = `
+        &lt;style&gt;
+          :host {
+            display: block;
+          }
+          .wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            animation: tilt 3s linear infinite;
+          }
+          @keyframes tilt {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-20deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(20deg); }
+            100% { transform: rotate(0deg); }
+          }
+        &lt;/style&gt;
+        &lt;div class="wrapper"&gt;
+          &lt;slot&gt;&lt;/slot&gt;
+        &lt;/div&gt;
+      `;
+    }
+  });
+&lt;/script&gt;
+</code></pre>
+
+<p>Once that's done, anywhere you include the custom element, you will see its effects. Here's the Markdown you'll need.</p>
+
+<pre><code class="language-md">&lt;tilt-container&gt;OmniFlux&lt;/tilt-container&gt;
+</code></pre>
 </article></div>
 <div class="of_toolbar">
     <button class="of_edit of_js_on">Edit</button>
@@ -728,6 +806,7 @@ MutationObserver(mutations =&gt; {
                 <div data-of_transclude="#overview">
 <p><a href="#changelog">Changelog</a><br>
 <a href="#code-highlighting">Code Highlighting</a><br>
+<a href="#custom-elements">Custom Elements</a><br>
 <a href="#fair-comparison">Fair Comparison</a><br>
 <a href="#markdown">Markdown Syntax</a><br>
 <a href="#rule-processing">Rule Processing</a><br>
@@ -742,6 +821,7 @@ MutationObserver(mutations =&gt; {
 <a href="#solar-flare.jpg">🖼 solar-flare.jpg</a><br>
 <a href="#changelog">Changelog</a><br>
 <a href="#code-highlighting">Code Highlighting</a><br>
+<a href="#custom-elements">Custom Elements</a><br>
 <a href="#fair-comparison">Fair Comparison</a><br>
 <a href="#markdown">Markdown Syntax</a><br>
 <a href="#">OmniFlux - Single-Page Wiki</a><br>
@@ -759,34 +839,56 @@ MutationObserver(mutations =&gt; {
             <details class="of_js_on" name="of_sidebar">
                 <summary><span class="of_icon">⇩</span> Saving</summary>
                 <div>
-                    Save wiki locally:<br>
-                    <button class="of_download">Download</button>
-                </div>
-                <div class="of_webdav_on">
-                    Save wiki to server:<br>
-                    <button class="of_put">Upload</button>
-                </div>
-                <div>Save automatically locally:</div>
-                <button class="of_autosave">
-                    <div class="of_autosave_on">Disable Autosave</div>
-                    <div class="of_autosave_off">Enable Autosave</div>
-                </button>
-                <br>
-                <div class="of_webdav_on">
-                    Save automatically to server:<br>
-                    <button class="of_autoput">
-                        <div class="of_autoput_on">Disable Auto Upload</div>
-                        <div class="of_autoput_off">Enable Auto Upload</div>
-                    </button>
+                    <p>
+                        Save wiki locally:<br>
+                        <button class="of_download">Download</button>
+                    </p>
+                    <p class="of_webdav_on">
+                        Save wiki to server:<br>
+                        <button class="of_put">Upload</button>
+                    </p>
+                    <p>
+                        Save automatically locally:<br>
+                        <button class="of_autosave">
+                            <div class="of_autosave_on">Disable Autosave</div>
+                            <div class="of_autosave_off">Enable Autosave</div>
+                        </button>
+                    </p>
+                    <p class="of_webdav_on">
+                        Save automatically to server:<br>
+                        <button class="of_autoput">
+                            <div class="of_autoput_on">Disable Auto Upload</div>
+                            <div class="of_autoput_off">Enable Auto Upload</div>
+                        </button>
+                    </p>
                 </div>
             </details>
             <details class="of_js_on" name="of_sidebar">
                 <summary><span class="of_icon">✦</span> Actions</summary>
-                <div><button class="of_rename">Rename Wiki</button></div>
-                <div><button class="of_clear">Remove All Pages</button></div>
-                <div><button class="of_change_id">Change Page ID</button></div>
-                <div><button class="of_import">Import Pages</button></div>
-                <div><button class="of_upload">Upload File</button></div>
+                <div>
+                    <p>
+                        Change sidebar and page title<br>
+                        <button class="of_rename">Rename Wiki</button>
+                    </p>
+                    <p>
+                        Remove all pages<br>
+                        Delete custom CSS and JS<br>
+                        <button class="of_clear">Clear Wiki</button>
+                    </p>
+                    <p>
+                        Change current page ID<br>
+                        Updates all links<br>
+                        <button class="of_change_id">Change Page ID</button>
+                    </p>
+                    <p>
+                        Copy in content<br>
+                        <button class="of_import">Import Pages</button>
+                    </p>
+                    <p>
+                        Embed a file<br>
+                        <button class="of_upload">Upload File</button>
+                    </p>
+                </div>
             </details>
         </div>
     </div>
@@ -805,4 +907,37 @@ MutationObserver(mutations =&gt; {
         <button class="of_save">Save</button>
     </div>
     <textarea class="of_input" placeholder="Write here..."></textarea>
-</div></body></html>
+</div>
+<script>
+  customElements.define('tilt-container', class extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.shadowRoot.innerHTML = `
+        <style>
+          :host {
+            display: block;
+          }
+          .wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            animation: tilt 3s linear infinite;
+          }
+          @keyframes tilt {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-20deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(20deg); }
+            100% { transform: rotate(0deg); }
+          }
+        </style>
+        <div class="wrapper">
+          <slot></slot>
+        </div>
+      `;
+    }
+  });
+</script></body></html>

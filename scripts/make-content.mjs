@@ -43,11 +43,11 @@ export async function makeContent(makeBlank = false) {
 
     // Add CSS
     const css = await readFile(cssFile, 'utf-8');
-    const htmlEl = dom.window.document.querySelector('html');
+    const headEl = dom.window.document.querySelector('head');
     const style = dom.window.document.createElement('style');
     style.classList.add('of_core');
     style.textContent = css;
-    htmlEl.appendChild(style);
+    headEl.appendChild(style);
 
     // Add JS
     const script = await readFile(scriptFile, 'utf-8');
@@ -59,7 +59,7 @@ export async function makeContent(makeBlank = false) {
     bodyEl.appendChild(scriptEl);
 
     if (makeBlank) {
-        for (const el of dom.window.document.querySelectorAll('article')) {
+        for (const el of dom.window.document.querySelectorAll('article, script:not(.of_core), style:not(.of_core)')) {
             el.remove();
         }
         const articles = dom.window.document.querySelector('.of_articles');

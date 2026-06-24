@@ -88,7 +88,7 @@ const id2Name = (id) =>
 
 const saveDone = () => {
     setFlag("dirty", 0);
-}
+};
 
 const autosaveAction = async () => {
     if (!autosaveFileHandle) {
@@ -406,6 +406,17 @@ const blockRules = [
             ];
         }
     ],
+    // Match custom elements and copy verbatim
+    [
+        /^<([a-z][a-z0-9]*(-[a-z0-9]+)+)( [^>]*)?>.*?<\/\1> *$/ims,
+        (match) => {
+            const e = dom("div");
+            e.innerHTML = match;
+            console.log(e);
+
+            return [e.firstChild, "\n\n"];
+        }
+    ],
     [
         /^([^\n]+(\n[^\n]+)*)$/m,
         (all) => [
@@ -570,8 +581,8 @@ const html2MdConversions = [
         }
     ],
     [
-        // Lowercase SVG elements
-        /^SVG$/i,
+        // SVG elements are in lowercase, hence "svg" and "/i" just in case
+        /^svg$/i,
         (add, currentNode) => {
             const use = querySelector("use", currentNode);
             const title =
@@ -594,6 +605,8 @@ const html2MdConversions = [
             }
         }
     ],
+    // Preserve all custom elements
+    [/-/, (add, currentNode) => add(currentNode.outerHTML + "\n\n", 1)],
     // Strip away all unknown tags but keep their content
     [/.*/, (add, currentNode) => add(html2Md(currentNode))]
 ];
@@ -847,6 +860,8 @@ on(".of_cancel", "click", doneEditing);
 // Save edits
 on(".of_save", "click", saveEdits);
 
+on(".of_put", "click", autoputAction);
+
 on(".of_delete", "click", () => {
     inputEl.value = "";
     saveEdits();
@@ -861,7 +876,7 @@ on(".of_rename", "click", () => {
 });
 
 on(".of_clear", "click", () => {
-    if (confirm("Are you sure you want to remove all pages from the wiki?")) {
+    if (confirm("Are you sure you want to empty this wiki?")) {
         articlesEl.innerHTML = "";
         location.hash = "";
         currentArticleEl = newArticle();
@@ -870,6 +885,9 @@ on(".of_clear", "click", () => {
         const overviewEl = newArticle("overview");
         overviewEl.innerHTML =
             '\n<p>Edit <a href="#overview">this page</a></p>\n\n';
+        querySelectorAll("style:not(.of_core),script:not(.of_core)").forEach(
+            (el) => el.remove()
+        );
         solidifyState();
     }
 });

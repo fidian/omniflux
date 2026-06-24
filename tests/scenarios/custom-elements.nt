@@ -1,0 +1,16 @@
+md2html: true
+html2md: true
+markdown:
+ > <custom-element>Hi</custom-element>
+ >
+ > <custom-element cow="moo" duck="quack">
+ > Hi2
+ > </custom-element>
+html:
+ >
+ > <custom-element>Hi</custom-element>
+ >
+ > <custom-element cow="moo" duck="quack">
+ > Hi2
+ > </custom-element>
+ >
