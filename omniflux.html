@@ -12,9 +12,9 @@
 <tr><th align="center">TL;DR</th><th align="left">Where</th><th align="left">Why / How</th></tr>
 </thead>
 <tbody>
-<tr><td align="center">Easiest</td><td align="left">Within this wiki</td><td align="left">Open the sidebar, click Download, then follow the instructions.</td></tr>
-<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Documentation Site</a></td><td align="left">Get it from the source, includes all documentation and the solar flare image (about 80k)</td></tr>
-<tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">When every byte matters (about 16k)</td></tr>
+<tr><td align="center">Easiest</td><td align="left">Within this wiki</td><td align="left">Open the sidebar, click Saving, then follow the instructions.</td></tr>
+<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Documentation Site</a></td><td align="left">Get it from the source, includes all documentation and the solar flare image (about 83k)</td></tr>
+<tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">When every byte matters (about 17k)</td></tr>
 <tr><td align="center">Custom</td><td align="left"><a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">GitHub repository</a></td><td align="left">Build your own!</td></tr>
 </tbody>
 </table>
@@ -31,6 +31,7 @@
 <li>Automated tests to ensure the bidirectional HTML to/from Markdown conversion works as expected, as well as other features in the wiki.</li>
 <li>Doesn't need JavaScript to browse, thanks to CSS-based navigation and sidebar, allowing it to work even in a very restrictive environment, such as a Content Security Policy (CSP) <code>script-src 'none'</code> or a browser that's locked down.</li>
 <li>Quick editing and saving using Ctrl+Enter or Cmd+Enter.</li>
+<li>Uploading to a server through <a href="#saving-with-webdav">WebDAV</a>.</li>
 <li>Importing pages from another OmniFlux wiki, which makes <a href="#upgrading">upgrades</a> trivial. This also copies over any additional script and style elements that may have been added.</li>
 <li>Binary and text files can be uploaded into and downloaded from the wiki.</li>
 <li>Image support - these can be files that are external to the wiki or uploaded and used within the wiki, like this <a href="#solar-flare.jpg">solar-flare.jpg</a>.</li>
@@ -68,18 +69,16 @@ Octocat is external, the solar flare is completely within the wiki.</p>
 <p>The ability to add a single copy of an image and reference it on multiple pages, yet still treat it as an image is thanks to <a href="https://css-tricks.com/use-and-reuse-everything-in-svg-even-animations/" target="_blank" rel="noopener noreferrer"><code>&lt;svg&gt;&lt;use /&gt;&lt;/svg&gt;</code></a> being able to grab from any element in the document. To facilitate this, <a href="https://datatracker.ietf.org/doc/html/rfc2397#section-3" target="_blank" rel="noopener noreferrer">RFC 2397</a> was used to understand <code>data</code> URL scheme and how to embed additional information.</p>
 
 
-<h2>What's Next?</h2>
+<h2>Wishlist</h2>
 
 <p>These items are not sorted. Feeling adventurous? Pull requests on <a href="https://github.com/fidian/omniflux" target="_blank" rel="noopener noreferrer">GitHub</a> are welcome! For those diving into the internals, you might want to know how <a href="#rule-processing">rule processing</a> works.</p>
 
 <ol>
 <li>Add a sidebar section for search.</li>
-<li>Consider including wikilink syntax to link to another internal page, like <code>[[Page Name]]</code> -&gt; <code>#page-name</code> and <code>[[Page Name|Custom Text]]</code> -&gt; <code>#page-name</code>.</li>
-<li>Allow saving to WebDAV, similar to FeatherWiki. (Note: see this <a href="https://codeberg.org/Alamantus/FeatherWiki/src/branch/main/nests/server.mjs" target="_blank" rel="noopener noreferrer">Node.js server</a>.)</li>
+<li>Consider including wikilink syntax to link to another internal page, like <code>[[Page Name]]</code> -&gt; <code>#page-name</code> and <code>[[Page Name|Custom Text]]</code> -&gt; <code>#page-name</code>. Should hyphens or underscores be used? If a page's first heading is renamed, should links automatically update?</li>
 <li>Show backlinks for a page to see what other pages link to this one. It simplifies maintenance of links.</li>
 <li>Add task lists, using <code>/\[[ xX]?\]/</code> to match empty and filled checkboxes. This will require checkbox inputs changing their "checked" attribute and triggering the save/dirty check.</li>
 <li>Probably should consider a dark mode theme.</li>
-<li>Error detection when auto saving; disable auto save on error and show an alert.</li>
 </ol>
 </article>
 <article id="markdown">
@@ -306,6 +305,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <a href="#fair-comparison">Fair Comparison</a><br>
 <a href="#markdown">Markdown Syntax</a><br>
 <a href="#rule-processing">Rule Processing</a><br>
+<a href="#saving-with-webdav">Saving with WebDAV</a><br>
 <a href="#upgrading">Upgrading</a></p>
 </article><article id="changelog">
 <h1>Changelog</h1>
@@ -433,7 +433,7 @@ MutationObserver(mutations =&gt; {
 <tbody>
 <tr><td align="center"><a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a></td><td align="center">POC</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">9k</td><td align="center">No</td><td align="center">HTML + Template</td></tr>
 <tr><td align="center"><a href="https://feather.wiki/" target="_blank" rel="noopener noreferrer">Feather Wiki</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">WYSIWYG / MD</td><td align="center">56k</td><td align="center">Yes</td><td align="center">JSON</td></tr>
-<tr><td align="center"><a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></td><td align="center">New</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">16k</td><td align="center">No</td><td align="center">HTML</td></tr>
+<tr><td align="center"><a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></td><td align="center">New</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">17k</td><td align="center">No</td><td align="center">HTML</td></tr>
 <tr><td align="center"><a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">2,490k</td><td align="center">Yes</td><td align="center">JSON</td></tr>
 <tr><td align="center"><a href="https://stickwiki.sourceforge.net/" target="_blank" rel="noopener noreferrer">WOAS</a></td><td align="center">Old</td><td align="center">No</td><td align="center">WikiText</td><td align="center">408k</td><td align="center">No</td><td align="center">JSON</td></tr>
 <tr><td align="center"><a href="https://sourceforge.net/p/woas/home/Welcome/" target="_blank" rel="noopener noreferrer">WOAS Fork</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">WikiText</td><td align="center">732k</td><td align="center">No</td><td align="center">JSON</td></tr>
@@ -509,7 +509,7 @@ MutationObserver(mutations =&gt; {
 <tr><td align="left">Storage</td><td align="left">JSON</td></tr>
 <tr><td align="left">Embed Files</td><td align="left">Yes, images only</td></tr>
 <tr><td align="left">Local Saving</td><td align="left">Yes, file downloader</td></tr>
-<tr><td align="left">Server-Side Saving</td><td align="left">Yes, can work with WebDAV</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">Yes, WebDAV</td></tr>
 </tbody>
 </table>
 
@@ -540,12 +540,12 @@ MutationObserver(mutations =&gt; {
 <tr><td align="left">Status</td><td align="left">New</td></tr>
 <tr><td align="left">One File</td><td align="left">Yes</td></tr>
 <tr><td align="left">Editing</td><td align="left">Markdown</td></tr>
-<tr><td align="left">Size</td><td align="left">16 kilobytes</td></tr>
+<tr><td align="left">Size</td><td align="left">17 kilobytes</td></tr>
 <tr><td align="left">Extensible</td><td align="left">No</td></tr>
 <tr><td align="left">Storage</td><td align="left">HTML</td></tr>
 <tr><td align="left">Embed Files</td><td align="left">Yes, all kinds</td></tr>
 <tr><td align="left">Local Saving</td><td align="left">Yes, file downloader and File API</td></tr>
-<tr><td align="left">Server-Side Saving</td><td align="left">No</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">Yes, WebDAV</td></tr>
 </tbody>
 </table>
 
@@ -581,7 +581,7 @@ MutationObserver(mutations =&gt; {
 <tr><td align="left">Storage</td><td align="left">JSON</td></tr>
 <tr><td align="left">Embed Files</td><td align="left">Yes, all kinds</td></tr>
 <tr><td align="left">Local Saving</td><td align="left">Yes, File downloader</td></tr>
-<tr><td align="left">Server-Side Saving</td><td align="left">Yes, through plugins and often WebDAV</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">Yes, WebDAV or via plugins</td></tr>
 </tbody>
 </table>
 
@@ -698,6 +698,19 @@ MutationObserver(mutations =&gt; {
 <h4>Cons</h4>
 
 <p>Unfortunately, while editing pages and trying to add content, it appears to get confused on which page is being edited. Also, multiple copies of the same page get added to the DOM. However, these bugs aren't devastatingly bad and could be fixed with a little more time invested.</p>
+</article><article id="saving-with-webdav">
+<h1>Saving with WebDAV</h1>
+
+<p>WebDAV (Web-based Distributed Authoring and Versioning) is a set of extensions to the standard HTTP protocol. While basic HTTP is generally read-only (used for viewing web pages), WebDAV allows users to collaboratively edit, manage, and move files on a remote web server over the internet.</p>
+
+<p>OmniFlux can use a WebDAV server (or a lightweight version that simply supports <code>PUT</code>) to upload a copy of itself back to the server. Here is a small list of supported software:</p>
+
+<ul>
+<li>All of the <a href="https://codeberg.org/Alamantus/FeatherWiki/src/branch/main/nests" target="_blank" rel="noopener noreferrer">"nests"</a> from Feather Wiki, which come in different versions.</li>
+<li><a href="https://github.com/fstanis/awesome-webdav#servers" target="_blank" rel="noopener noreferrer">awesome-webdav</a> has a list of servers that support WebDAV</li>
+<li>Cloud providers (eg. Nextcloud and Owncloud) and NAS devices (Synology, QNAP, TrueNAS) support it</li>
+<li>Apache has <code>mod_dav</code> to enable support</li>
+</ul>
 </article></div>
 <div class="of_toolbar">
     <button class="of_edit of_js_on">Edit</button>
@@ -718,6 +731,7 @@ MutationObserver(mutations =&gt; {
 <a href="#fair-comparison">Fair Comparison</a><br>
 <a href="#markdown">Markdown Syntax</a><br>
 <a href="#rule-processing">Rule Processing</a><br>
+<a href="#saving-with-webdav">Saving with WebDAV</a><br>
 <a href="#upgrading">Upgrading</a></p>
 </div>
             </details>
@@ -733,25 +747,38 @@ MutationObserver(mutations =&gt; {
 <a href="#">OmniFlux - Single-Page Wiki</a><br>
 <a href="#overview">Overview</a><br>
 <a href="#rule-processing">Rule Processing</a><br>
+<a href="#saving-with-webdav">Saving with WebDAV</a><br>
 <a href="#upgrading">Upgrading OmniFlux</a></p>
 </div>
             </details>
             <details class="of_js_off" name="of_sidebar">
-                <summary><span class="of_icon">⇩</span> Download</summary>
+                <summary><span class="of_icon">⇩</span> Saving</summary>
                 Press <kbd>Ctrl</kbd>+<kbd>S</kbd><br>
                 or <kbd>⌘ Cmd</kbd>+<kbd>S</kbd>
             </details>
             <details class="of_js_on" name="of_sidebar">
-                <summary><span class="of_icon">⇩</span> Download</summary>
-                <div>Save wiki locally:</div>
-                <button class="of_download">Download</button>
-                <br>
-                <div class="of_autosave_on">Stop saving changes:</div>
-                <div class="of_autosave_off">Save on changes:</div>
+                <summary><span class="of_icon">⇩</span> Saving</summary>
+                <div>
+                    Save wiki locally:<br>
+                    <button class="of_download">Download</button>
+                </div>
+                <div class="of_webdav_on">
+                    Save wiki to server:<br>
+                    <button class="of_put">Upload</button>
+                </div>
+                <div>Save automatically locally:</div>
                 <button class="of_autosave">
                     <div class="of_autosave_on">Disable Autosave</div>
                     <div class="of_autosave_off">Enable Autosave</div>
                 </button>
+                <br>
+                <div class="of_webdav_on">
+                    Save automatically to server:<br>
+                    <button class="of_autoput">
+                        <div class="of_autoput_on">Disable Auto Upload</div>
+                        <div class="of_autoput_off">Enable Auto Upload</div>
+                    </button>
+                </div>
             </details>
             <details class="of_js_on" name="of_sidebar">
                 <summary><span class="of_icon">✦</span> Actions</summary>

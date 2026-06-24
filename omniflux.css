@@ -148,7 +148,8 @@ body.of_edit_flag {
     --of-sidebar-section-color: #aae;
 }
 
-body.of_autosave_flag {
+body.of_autosave_flag,
+body.of_autoput_flag {
     --of-sidebar-color: #cfc;
     --of-sidebar-section-color: #aea;
 }
@@ -302,19 +303,24 @@ blockquote {
 
 body:not(.of_js_flag) .of_js_on,
 .of_js_flag .of_js_off,
+body:not(.of_webdav_flag) .of_webdav_on,
+.of_webdav_flag .of_webdav_off,
 body:not(.of_edit_flag) .of_edit_on,
 .of_edit_flag .of_edit_off,
 body:not(.of_dirty_flag) .of_dirty_on,
 .of_dirty_flag .of_dirty_off,
 body:not(.of_autosave_flag) .of_autosave_on,
-.of_autosave_flag .of_autosave_off {
+.of_autosave_flag .of_autosave_off,
+body:not(.of_autoput_flag) .of_autoput_on,
+.of_autoput_flag .of_autoput_off {
     display: none;
 }
 
 table {
     border-collapse: collapse;
 
-    th, td {
+    th,
+    td {
         padding: 4px 10px;
         border: 1px solid #cdd;
     }
@@ -329,12 +335,14 @@ table {
     }
 }
 
-.of_overview, .of_index {
+.of_overview,
+.of_index {
     a:hover {
         background-color: #def;
     }
 
-    ul, ol {
+    ul,
+    ol {
         padding-inline-start: 1em;
     }
 }

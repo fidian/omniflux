@@ -3,6 +3,7 @@
  */
 
 const doc = document;
+const pathname = location.pathname;
 
 // Run a callback against all elements matching a selector.
 // The only elements with IDs are articles.
@@ -70,7 +71,7 @@ const wikiContent = () => {
 };
 
 const suggestedFilename = () =>
-    (location.pathname.split("/").pop() || doc.title).replace(
+    (pathname.split("/").pop() || doc.title).replace(
         /([-\d]*\.html?)?$/,
         `-${new Date()
             .toISOString()
@@ -85,6 +86,10 @@ const id2Name = (id) =>
     id.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ||
     doc.title;
 
+const saveDone = () => {
+    setFlag("dirty", 0);
+}
+
 const autosaveAction = async () => {
     if (!autosaveFileHandle) {
         autosaveFileHandle = await window
@@ -96,10 +101,46 @@ const autosaveAction = async () => {
 
     if (autosaveFileHandle) {
         setFlag("autosave", 1);
-        setFlag("dirty", 0);
-        const writable = await autosaveFileHandle.createWritable();
-        await writable.write(wikiContent());
-        await writable.close();
+        try {
+            const writable = await autosaveFileHandle.createWritable();
+            await writable.write(wikiContent());
+            await writable.close();
+            saveDone();
+        } catch (err) {
+            autosaveFileHandle = null;
+            setFlag("autosave", 0);
+            console.error("Autosave failed:", err);
+
+            alert("Autosave failed. Check the console for details.");
+        }
+    }
+};
+
+const autoputAction = async () => {
+    const fail = (msg) => {
+        autoput = 0;
+        setFlag("autoput", 0);
+        console.error("WebDAV PUT failed:", msg);
+
+        alert("WebDAV PUT failed. Check the console for details.");
+    };
+
+    try {
+        const response = await fetch(pathname, {
+            method: "PUT",
+            body: wikiContent(),
+            headers: {
+                "Content-Type": "text/html"
+            }
+        });
+
+        if (response.ok) {
+            saveDone();
+        } else {
+            fail(await response.text());
+        }
+    } catch (err) {
+        fail(err);
     }
 };
 
@@ -257,7 +298,7 @@ const inlineRules = [
 const mdInline = (str) => processRules(str.trim(), inlineRules, 1);
 
 const blockRules = [
-    [ /^ *-{3,} *$/m, () => ["\n", dom("hr"), "\n\n\n"] ],
+    [/^ *-{3,} *$/m, () => ["\n", dom("hr"), "\n\n\n"]],
     [
         /^```([^\n]*)\n(([^\n]*\n)+?)```$/m,
         (_, lang, code) => [
@@ -656,11 +697,14 @@ const solidifyState = () => {
         .sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }))
         .map(([title, id]) => `[${title}](#${id})`);
     querySelector(".of_index").innerHTML = md2Html(mdLinks.join("\n"));
+    setFlag("dirty", 1);
 
     if (autosaveFileHandle) {
         autosaveAction();
-    } else {
-        setFlag("dirty", 1);
+    }
+
+    if (autoput) {
+        autoputAction();
     }
 };
 
@@ -685,8 +729,8 @@ const saveEdits = () => {
     }
 
     location.hash = currentId;
-    solidifyState();
     doneEditing();
+    solidifyState();
 };
 
 const askForFile = (props, callback) => {
@@ -731,6 +775,15 @@ ${isImage ? "!" : ""}[${name}](${dataUrl})`);
     solidifyState();
 };
 
+const detectWebDAV = async () => {
+    if (location.protocol.startsWith("http")) {
+        const response = await fetch(pathname, { method: "OPTIONS" });
+        if (response.headers.get("DAV")) {
+            setFlag("webdav", 1);
+        }
+    }
+};
+
 /**
  * Get a list of elements that are manipulated more than once.
  *
@@ -745,6 +798,7 @@ let currentId = ""; // Current page ID, derived from URL hash
 let currentArticleEl = null; // Current page's article element
 let editing = false; // Whether the editor is open or not
 let autosaveFileHandle; // If truthy, autosave is enabled
+let autoput = 0; // If truthy, WebDAV-based autosave is enabled
 
 // Edit - this function is used when clicking the Edit button and
 // when navigating to a page that doesn't exist
@@ -759,7 +813,7 @@ on(".of_download", "click", () => {
         download: suggestedFilename()
     });
     link.click();
-    setFlag("dirty", 0);
+    saveDone();
 });
 
 // Enable File API-based autosaving. When active, any change will automatically
@@ -778,6 +832,13 @@ on(".of_autosave", "click", () => {
 
     // Save immediately, which prompts the user for a file.
     autosaveAction();
+});
+
+// Enable WebDAV-based autosaving.
+on(".of_autoput", "click", () => {
+    autoput = !autoput;
+    setFlag("autoput", autoput);
+    autoputAction();
 });
 
 // Cancel editing
@@ -927,3 +988,6 @@ onLoad();
 
 // Finally, show the buttons
 setFlag("js", 1);
+
+// Detect WebDAV support
+detectWebDAV();
