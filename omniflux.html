@@ -13,8 +13,8 @@
 </thead>
 <tbody>
 <tr><td align="center">Easiest</td><td align="left">Within this wiki</td><td align="left">Open the sidebar, click Saving, then follow the instructions.</td></tr>
-<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Documentation Site</a></td><td align="left">Get it from the source, includes all documentation and the solar flare image (about 83k)</td></tr>
-<tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">When every byte matters (about 17k)</td></tr>
+<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Docs</a></td><td align="left">Get it from the source. Includes all documentation, a custom element, and the solar flare image (about 89k). Right-click and "Save Link As."</td></tr>
+<tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">Minified, no content. When every byte matters (about 18k).</td></tr>
 <tr><td align="center">Custom</td><td align="left"><a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">GitHub repository</a></td><td align="left">Build your own!</td></tr>
 </tbody>
 </table>
@@ -444,7 +444,7 @@ MutationObserver(mutations =&gt; {
 <tbody>
 <tr><td align="center"><a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a></td><td align="center">POC</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">9k</td><td align="center">No</td><td align="center">HTML + Template</td></tr>
 <tr><td align="center"><a href="https://feather.wiki/" target="_blank" rel="noopener noreferrer">Feather Wiki</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">WYSIWYG / MD</td><td align="center">56k</td><td align="center">Yes</td><td align="center">JSON</td></tr>
-<tr><td align="center"><a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></td><td align="center">New</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">17k</td><td align="center">No</td><td align="center">HTML</td></tr>
+<tr><td align="center"><a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></td><td align="center">New</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">18k</td><td align="center">No</td><td align="center">HTML</td></tr>
 <tr><td align="center"><a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">2,490k</td><td align="center">Yes</td><td align="center">JSON</td></tr>
 <tr><td align="center"><a href="https://stickwiki.sourceforge.net/" target="_blank" rel="noopener noreferrer">WOAS</a></td><td align="center">Old</td><td align="center">No</td><td align="center">WikiText</td><td align="center">408k</td><td align="center">No</td><td align="center">JSON</td></tr>
 <tr><td align="center"><a href="https://sourceforge.net/p/woas/home/Welcome/" target="_blank" rel="noopener noreferrer">WOAS Fork</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">WikiText</td><td align="center">732k</td><td align="center">No</td><td align="center">JSON</td></tr>
@@ -551,7 +551,7 @@ MutationObserver(mutations =&gt; {
 <tr><td align="left">Status</td><td align="left">New</td></tr>
 <tr><td align="left">One File</td><td align="left">Yes</td></tr>
 <tr><td align="left">Editing</td><td align="left">Markdown</td></tr>
-<tr><td align="left">Size</td><td align="left">17 kilobytes</td></tr>
+<tr><td align="left">Size</td><td align="left">18 kilobytes</td></tr>
 <tr><td align="left">Extensible</td><td align="left">No</td></tr>
 <tr><td align="left">Storage</td><td align="left">HTML</td></tr>
 <tr><td align="left">Embed Files</td><td align="left">Yes, all kinds</td></tr>
@@ -572,7 +572,7 @@ MutationObserver(mutations =&gt; {
 
 <p>It's not designed to be extensible through plugins or additional code, but any script and style elements you add will be preserved during upgrades. Because there's no API to tie into, this is not listed as being "extensible."</p>
 
-<p>With the goal of bidirectional conversion between HTML and Markdown, embedding HTML within Markdown is not supported.</p>
+<p>With the goal of bidirectional conversion between HTML and Markdown, embedding arbitrary HTML within Markdown is not supported (custom elements are allowed).</p>
 
 
 <h2><a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a></h2>
@@ -727,7 +727,7 @@ MutationObserver(mutations =&gt; {
 
 <p>A custom element is where the HTML standard is extended by user-provided JavaScript. This can be for appearance only or you are able to also add functionality. Check out MDN's <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements" target="_blank" rel="noopener noreferrer">Using custom elements</a> for further information.</p>
 
-<p>OmniFlux allows embedding of custom elements as block-level Markdown.</p>
+<p>OmniFlux allows embedding of custom elements as block-level Markdown. They are not allowed as inline elements.</p>
 
 <pre><code class="language-md">&lt;custom-element attr="value" more="ok"&gt;
 This content is sent to the custom element.
