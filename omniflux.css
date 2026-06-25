@@ -10,6 +10,25 @@ html {
     }
 }
 
+:root {
+    --of-sidebar-color: #ccf;
+    --of-sidebar-section-color: #aae;
+    --of-sidebar-hover: #def;
+}
+
+body.of_autosave_flag,
+body.of_autoput_flag {
+    --of-sidebar-color: #cfc;
+    --of-sidebar-section-color: #aea;
+    --of-sidebar-hover: #beb;
+}
+
+body.of_dirty_flag {
+    --of-sidebar-color: #fcc;
+    --of-sidebar-section-color: #eaa;
+    --of-sidebar-hover: #fed;
+}
+
 /* CSS-based navigation - see https://dev.to/fedia/15kb-single-file-wiki-46a1 */
 article {
     display: none;
@@ -141,22 +160,6 @@ body.of_edit_flag {
             transform: translateY(-10.3px) rotate(-135deg);
         }
     }
-}
-
-:root {
-    --of-sidebar-color: #ccf;
-    --of-sidebar-section-color: #aae;
-}
-
-body.of_autosave_flag,
-body.of_autoput_flag {
-    --of-sidebar-color: #cfc;
-    --of-sidebar-section-color: #aea;
-}
-
-body.of_dirty_flag {
-    --of-sidebar-color: #fcc;
-    --of-sidebar-section-color: #eaa;
 }
 
 .of_sidebar_wrap {
@@ -342,11 +345,17 @@ table {
 .of_overview,
 .of_index {
     a:hover {
-        background-color: #def;
+        background-color: var(--of-sidebar-hover);
     }
 
     ul,
     ol {
         padding-inline-start: 1em;
+    }
+}
+
+@media screen and (prefers-color-scheme: dark) {
+    html {
+        filter: invert(1) hue-rotate(180deg);
     }
 }
