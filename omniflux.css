@@ -354,6 +354,10 @@ table {
     opacity: 1;
 }
 
+li:has(> input) {
+    list-style: none;
+}
+
 body:not(.of_js_flag) .of_js_on,
 .of_js_flag .of_js_off,
 body:not(.of_webdav_flag) .of_webdav_on,

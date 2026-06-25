@@ -13,8 +13,8 @@
 </thead>
 <tbody>
 <tr><td align="center">Easiest</td><td align="left">Within this wiki</td><td align="left">Open the sidebar, click Saving, then follow the instructions.</td></tr>
-<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Docs</a></td><td align="left">Get it from the source. Includes all documentation, a custom element, and the solar flare image (about 89k). Right-click and "Save Link As."</td></tr>
-<tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">Minified, no content. When every byte matters (about 18k).</td></tr>
+<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Docs</a></td><td align="left">Get it from the source. Includes all documentation, a custom element, and the solar flare image (about 91k). Right-click and "Save Link As."</td></tr>
+<tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">Minified, no content. When every byte matters (about 19k).</td></tr>
 <tr><td align="center">Custom</td><td align="left"><a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">GitHub repository</a></td><td align="left">Build your own!</td></tr>
 </tbody>
 </table>
@@ -129,14 +129,22 @@ Make your own haiku</p>
 </ul>
 </ul>
 
+<p>Task lists are allowed and they can be nested.</p>
+
+<ul>
+<li><input type="checkbox"> Not done</li>
+<li><input type="checkbox" checked=""> Done</li>
+<ol>
+<li><input type="checkbox" checked=""> Done child</li>
+</ol>
+</ul>
+
 
 <h4>Avoid</h4>
 
 <p>Starting the numbering of a list with any number other than 1 is not supported.</p>
 
 <p>Using <code>+</code> or <code>*</code> for list items will work, but they will be converted to <code>-</code> when editing the list again.</p>
-
-<p>Task lists, which use <code>[ ]</code> and <code>[x]</code> for a list of empty or filled checkboxes is not supported.</p>
 
 
 <h2>Images and Links</h2>
@@ -310,7 +318,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>Is your version a little stale or missing some features? <a href="#upgrading">Learn how to upgrade!</a></p>
 
 <ul>
-<li><b>2026-06-25</b> - Added search, backlinks, dark mode.</li>
+<li><b>2026-06-25</b> - Added search, backlinks, dark mode, task lists.</li>
 <li><b>2026-06-24</b> - Added WebDAV support for saving and automatic saving. Added custom element support.</li>
 <li><b>2026-06-23</b> - Added icons to summary bars to help distinguish them faster. Added <a href="#fair-comparison">Fair Comparison</a> of wiki alternatives. Added horizontal rules.</li>
 <li><b>2026-06-22</b> - Enabled uploading of files and images into the wiki. Images are stored once and can be referenced by multiple pages.</li>
@@ -432,7 +440,7 @@ MutationObserver(mutations =&gt; {
 <tbody>
 <tr><td align="center"><a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a></td><td align="center">POC</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">9k</td><td align="center">No</td><td align="center">HTML + Template</td></tr>
 <tr><td align="center"><a href="https://feather.wiki/" target="_blank" rel="noopener noreferrer">Feather Wiki</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">WYSIWYG / MD</td><td align="center">56k</td><td align="center">Yes</td><td align="center">JSON</td></tr>
-<tr><td align="center"><a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></td><td align="center">New</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">18k</td><td align="center">No</td><td align="center">HTML</td></tr>
+<tr><td align="center"><a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></td><td align="center">New</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">19k</td><td align="center">No</td><td align="center">HTML</td></tr>
 <tr><td align="center"><a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">2,490k</td><td align="center">Yes</td><td align="center">JSON</td></tr>
 <tr><td align="center"><a href="https://stickwiki.sourceforge.net/" target="_blank" rel="noopener noreferrer">WOAS</a></td><td align="center">Old</td><td align="center">No</td><td align="center">WikiText</td><td align="center">408k</td><td align="center">No</td><td align="center">JSON</td></tr>
 <tr><td align="center"><a href="https://sourceforge.net/p/woas/home/Welcome/" target="_blank" rel="noopener noreferrer">WOAS Fork</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">WikiText</td><td align="center">732k</td><td align="center">No</td><td align="center">JSON</td></tr>
@@ -539,7 +547,7 @@ MutationObserver(mutations =&gt; {
 <tr><td align="left">Status</td><td align="left">New</td></tr>
 <tr><td align="left">One File</td><td align="left">Yes</td></tr>
 <tr><td align="left">Editing</td><td align="left">Markdown</td></tr>
-<tr><td align="left">Size</td><td align="left">18 kilobytes</td></tr>
+<tr><td align="left">Size</td><td align="left">19 kilobytes</td></tr>
 <tr><td align="left">Extensible</td><td align="left">No</td></tr>
 <tr><td align="left">Storage</td><td align="left">HTML</td></tr>
 <tr><td align="left">Embed Files</td><td align="left">Yes, all kinds</td></tr>

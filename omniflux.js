@@ -335,6 +335,21 @@ const blockRules = [
     [
         /^( *(\d+\.|[-*+]) +[^\n]+(\n *(\d+\.|[-*+]) +[^\n]+)*)$/m,
         (all) => {
+            // Convert the list item and handle task lists
+            const listItem = (content) => {
+                const taskMatch = content.match(/^\[([ xX])\] (.+)$/);
+                return taskMatch
+                    ? [
+                          dom("input", "", {
+                              type: "checkbox",
+                              ...(taskMatch[1] !== " " ? { checked: "" } : {})
+                          }),
+                          " ",
+                          mdInline(taskMatch[2].trim())
+                      ]
+                    : mdInline(content);
+            };
+
             // Map all lines to an array of [indentSize, listType, content]
             const lines = all
                 .split("\n")
@@ -351,7 +366,7 @@ const blockRules = [
                 .map(([_, listStyle, content]) => [
                     listStyle.length,
                     listStyle.match(/\d/) ? "ol" : "ul",
-                    [dom("li", mdInline(content.trim())), "\n"]
+                    [dom("li", listItem(content.trim())), "\n"]
                 ]);
 
             const makeList = () => {
@@ -519,12 +534,17 @@ const html2MdConversions = [
         /^LI$/,
         (add, currentNode) => {
             const parent = currentNode.parentElement;
-            const prefix =
+            let prefix =
                 parent.tagName === "OL"
                     ? `${[...parent.children].filter((node) => node.tagName === "LI").indexOf(currentNode) + 1}. `
                     : "- ";
             add(`${prefix}${html2Md(currentNode, 1)}\n`, 1);
         }
+    ],
+    [
+        // Only allowed inside of a list item
+        /^INPUT$/,
+        (add, currentNode) => add(currentNode.checked ? "[x]" : "[ ]")
     ],
     [
         /^BLOCKQUOTE$/,
@@ -720,15 +740,18 @@ const articleList = (articles) =>
     md2Html(
         [...articles]
             .map((article) => [
-                querySelector("h1,h2,h3,h4,h5,h6", article)?.textContent.trim() ||
-                    id2Name(article.id),
+                querySelector(
+                    "h1,h2,h3,h4,h5,h6",
+                    article
+                )?.textContent.trim() || id2Name(article.id),
                 article.id
             ])
-            .sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }))
+            .sort((a, b) =>
+                a[0].localeCompare(b[0], undefined, { numeric: true })
+            )
             .map(([title, id]) => `[${title}](#${id})`)
             .join("\n")
     );
-
 
 // Update everything after something is changed
 const solidifyState = () => {
@@ -1045,6 +1068,15 @@ window.addEventListener("keydown", (event) => {
         } else {
             editPage();
         }
+    }
+});
+
+// Preserve checkbox state into HTML
+document.addEventListener("change", ({ target }) => {
+    // Skip the sidebar toggle
+    if (target?.type === "checkbox" && !target.id) {
+        target.toggleAttribute("checked", target.checked);
+        solidifyState();
     }
 });
 onLoad();
