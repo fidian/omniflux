@@ -68,16 +68,6 @@ Octocat is external, the solar flare is completely within the wiki.</p>
 <p>HTML to Markdown conversion walks the DOM (an approach similar to <a href="https://github.com/acornejo/downshow" target="_blank" rel="noopener noreferrer">Downshow</a>), but the similarities end there. This is an entirely different implementation.</p>
 
 <p>The ability to add a single copy of an image and reference it on multiple pages, yet still treat it as an image is thanks to <a href="https://css-tricks.com/use-and-reuse-everything-in-svg-even-animations/" target="_blank" rel="noopener noreferrer"><code>&lt;svg&gt;&lt;use /&gt;&lt;/svg&gt;</code></a> being able to grab from any element in the document. To facilitate this, <a href="https://datatracker.ietf.org/doc/html/rfc2397#section-3" target="_blank" rel="noopener noreferrer">RFC 2397</a> was used to understand <code>data</code> URL scheme and how to embed additional information.</p>
-
-
-<h2>Wishlist</h2>
-
-<p>These items are not sorted. Feeling adventurous? Pull requests on <a href="https://github.com/fidian/omniflux" target="_blank" rel="noopener noreferrer">GitHub</a> are welcome! For those diving into the internals, you might want to know how <a href="#rule-processing">rule processing</a> works.</p>
-
-<ol>
-<li>Consider including wikilink syntax to link to another internal page, like <code>[[Page Name]]</code> -&gt; <code>#page-name</code> and <code>[[Page Name|Custom Text]]</code> -&gt; <code>#page-name</code>. Should hyphens or underscores be used? If a page's first heading is renamed, should links automatically update?</li>
-<li>Add task lists, using <code>/\[[ xX]?\]/</code> to match empty and filled checkboxes. This will require checkbox inputs changing their "checked" attribute and triggering the save/dirty check.</li>
-</ol>
 </article>
 <article id="markdown">
 <h1>Markdown Syntax</h1>
@@ -269,7 +259,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 
 <h2>Completely Unsupported</h2>
 
-<p>Embedding HTML within the Markdown is not supported, except for custom elements. This is a tricky thing to do, especially since the conversion needs to accurately be bidirectional.</p>
+<p>Embedding HTML within the Markdown is not supported, except for custom elements. This is a tricky thing to do, especially since the conversion needs to accurately be bidirectional. However, you can accomplish this using the <code>raw-html</code> <a href="#custom-elements">Custom Element</a> example.</p>
 
 <p>The <code>&lt;del&gt;</code> tag isn't created when using <code>~~~text~~~</code>.</p>
 
@@ -736,15 +726,44 @@ This content is sent to the custom element.
 
 <p>When <a href="#upgrading">upgrading</a>, any custom <code>&lt;style&gt;</code> and <code>&lt;script&gt;</code> tags are preserved, so your custom elements will continue to work.</p>
 
+<p>Embedding HTML as Markdown is not supported by OmniFlux's parser, but one can accomplish nearly the same thing using a custom element.</p>
 
-<h2>Example</h2>
 
-<p>Here is a sample custom element that shows the content tilting.</p>
+<h2><code>raw-html</code> Example</h2>
+
+<p>In this scenario, the <code>raw-html</code> custom element will <i>not be defined</i> and it will still work. That's because any custom element wrapping Markdown will be preserved exactly as-is.</p>
+
+<p>Here is an example of wrapping content with <code>raw-html</code> tags.</p>
+
+<pre><code class="language-md">&lt;raw-html&gt;&lt;p style="font-size:3em"&gt;BIG!&lt;/p&gt;&lt;/raw-html&gt;
+</code></pre>
+
+<p>And it looks like this:</p>
+
+<raw-html><p style="font-size:3em">BIG!</p></raw-html>
+
+<p>But why does this work?</p>
+
+<ol>
+<li>OmniFlux detects that there is a custom element, <code>&lt;raw-html&gt;...&lt;/raw-html&gt;</code>.</li>
+<li>OmniFlux doesn't know what custom elements are defined.</li>
+<li>The safest path here is to copy the HTML from the Markdown to the resulting document.</li>
+<li>The browser sees the custom element and it's not defined, so <code>&lt;raw-html&gt;</code> and its matching close tag are ignored, but the contents are preserved.</li>
+</ol>
+
+<p>It's a really great situation that requires no code editing in order to embed HTML. The only downfall is if the custom element gets defined, which could then break all pages that use it.</p>
+
+
+<h2>Tilt Example</h2>
+
+<p>This is an example of creating a custom element and embedding it into the wiki, then using that same custom element to show something fancy. This is what the Markdown would look like to embed a custom element.</p>
+
+<pre><code class="language-md">&lt;tilt-container&gt;OmniFlux&lt;/tilt-container&gt;
+</code></pre>
+
+<p>It will render like this.</p>
 
 <tilt-container>OmniFlux</tilt-container>
-
-
-<h2>How to Add</h2>
 
 <p>To include the tilt container custom element, you need to add this script tag into OmniFlux, just before the <code>&lt;/body&gt;</code> element.</p>
 
@@ -781,11 +800,6 @@ This content is sent to the custom element.
     }
   });
 &lt;/script&gt;
-</code></pre>
-
-<p>Once that's done, anywhere you include the custom element, you will see its effects. Here's the Markdown you'll need.</p>
-
-<pre><code class="language-md">&lt;tilt-container&gt;OmniFlux&lt;/tilt-container&gt;
 </code></pre>
 </article></div>
 <div class="of_toolbar">
