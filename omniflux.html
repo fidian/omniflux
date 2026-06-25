@@ -77,7 +77,6 @@ Octocat is external, the solar flare is completely within the wiki.</p>
 <ol>
 <li>Consider including wikilink syntax to link to another internal page, like <code>[[Page Name]]</code> -&gt; <code>#page-name</code> and <code>[[Page Name|Custom Text]]</code> -&gt; <code>#page-name</code>. Should hyphens or underscores be used? If a page's first heading is renamed, should links automatically update?</li>
 <li>Add task lists, using <code>/\[[ xX]?\]/</code> to match empty and filled checkboxes. This will require checkbox inputs changing their "checked" attribute and triggering the save/dirty check.</li>
-<li>Animate the burger menu into a checkmark when saving.</li>
 </ol>
 </article>
 <article id="markdown">
@@ -917,6 +916,9 @@ This content is sent to the custom element.
         <button class="of_save">Save</button>
     </div>
     <textarea class="of_input" placeholder="Write here..."></textarea>
+</div>
+<div class="of_saved">
+    ✔ Saved
 </div>
 <script>
   customElements.define('tilt-container', class extends HTMLElement {

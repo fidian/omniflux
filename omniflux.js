@@ -96,6 +96,9 @@ const id2Name = (id) =>
 
 const saveDone = () => {
     setFlag("dirty", 0);
+    setFlag("saved", 1);
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => setFlag("saved", 0), 2000);
 };
 
 const autosaveAction = async () => {
@@ -841,6 +844,7 @@ let currentArticleEl = null; // Current page's article element
 let editing = false; // Whether the editor is open or not
 let autosaveFileHandle; // If truthy, autosave is enabled
 let autoput = 0; // If truthy, WebDAV-based autosave is enabled
+let saveTimeout; // For showing the "saved" message
 
 // Edit - this function is used when clicking the Edit button and
 // when navigating to a page that doesn't exist

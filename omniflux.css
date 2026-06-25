@@ -308,21 +308,6 @@ blockquote {
     background-color: var(--of-sidebar-section-color);
 }
 
-body:not(.of_js_flag) .of_js_on,
-.of_js_flag .of_js_off,
-body:not(.of_webdav_flag) .of_webdav_on,
-.of_webdav_flag .of_webdav_off,
-body:not(.of_edit_flag) .of_edit_on,
-.of_edit_flag .of_edit_off,
-body:not(.of_dirty_flag) .of_dirty_on,
-.of_dirty_flag .of_dirty_off,
-body:not(.of_autosave_flag) .of_autosave_on,
-.of_autosave_flag .of_autosave_off,
-body:not(.of_autoput_flag) .of_autoput_on,
-.of_autoput_flag .of_autoput_off {
-    display: none;
-}
-
 table {
     border-collapse: collapse;
 
@@ -352,6 +337,38 @@ table {
     ol {
         padding-inline-start: 1em;
     }
+}
+
+.of_saved {
+    position: fixed;
+    right: 0.4em;
+    bottom: 0.4em;
+    padding: 0.6em 1em;
+    border: 2px solid #0c0;
+    background-color: #cfc;
+    transition: all 0.3s ease-in-out;
+    opacity: 0;
+}
+
+.of_saved_flag .of_saved {
+    opacity: 1;
+}
+
+body:not(.of_js_flag) .of_js_on,
+.of_js_flag .of_js_off,
+body:not(.of_webdav_flag) .of_webdav_on,
+.of_webdav_flag .of_webdav_off,
+body:not(.of_edit_flag) .of_edit_on,
+.of_edit_flag .of_edit_off,
+body:not(.of_dirty_flag) .of_dirty_on,
+.of_dirty_flag .of_dirty_off,
+body:not(.of_autosave_flag) .of_autosave_on,
+.of_autosave_flag .of_autosave_off,
+body:not(.of_autoput_flag) .of_autoput_on,
+.of_autoput_flag .of_autoput_off,
+body:not(.of_saved_flag) .of_saved_on,
+.of_saved_flag .of_saved_off {
+    display: none;
 }
 
 @media screen and (prefers-color-scheme: dark) {
