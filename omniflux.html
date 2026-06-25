@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>OmniFlux</title></head><body><div class="of_articles"><article class="index">
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>OmniFlux</title></head><body class=""><div class="of_articles"><article class="index">
 <h1>OmniFlux - Single-Page Wiki</h1>
 
 <p>You're looking at a complete, self-contained wiki. This one file can be downloaded, the pages can be updated using Markdown, and then everything can be saved. It even supports autosaving when content changes! Try it now by pressing the "Edit" button in the upper right. <a href="#markdown">Learn about supported Markdown.</a></p>
@@ -75,11 +75,10 @@ Octocat is external, the solar flare is completely within the wiki.</p>
 <p>These items are not sorted. Feeling adventurous? Pull requests on <a href="https://github.com/fidian/omniflux" target="_blank" rel="noopener noreferrer">GitHub</a> are welcome! For those diving into the internals, you might want to know how <a href="#rule-processing">rule processing</a> works.</p>
 
 <ol>
-<li>Add a sidebar section for search.</li>
 <li>Consider including wikilink syntax to link to another internal page, like <code>[[Page Name]]</code> -&gt; <code>#page-name</code> and <code>[[Page Name|Custom Text]]</code> -&gt; <code>#page-name</code>. Should hyphens or underscores be used? If a page's first heading is renamed, should links automatically update?</li>
-<li>Show backlinks for a page to see what other pages link to this one. It simplifies maintenance of links.</li>
 <li>Add task lists, using <code>/\[[ xX]?\]/</code> to match empty and filled checkboxes. This will require checkbox inputs changing their "checked" attribute and triggering the save/dirty check.</li>
 <li>Probably should consider a dark mode theme.</li>
+<li>Animate the burger menu into a checkmark when saving.</li>
 </ol>
 </article>
 <article id="markdown">
@@ -323,6 +322,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>Is your version a little stale or missing some features? <a href="#upgrading">Learn how to upgrade!</a></p>
 
 <ul>
+<li><b>2026-06-25</b> - Added search, backlinks.</li>
 <li><b>2026-06-24</b> - Added WebDAV support for saving and automatic saving. Added custom element support.</li>
 <li><b>2026-06-23</b> - Added icons to summary bars to help distinguish them faster. Added <a href="#fair-comparison">Fair Comparison</a> of wiki alternatives. Added horizontal rules.</li>
 <li><b>2026-06-22</b> - Enabled uploading of files and images into the wiki. Images are stored once and can be referenced by multiple pages.</li>
@@ -815,6 +815,13 @@ This content is sent to the custom element.
 </div>
             </details>
             <details name="of_sidebar">
+                <summary><span class="of_icon">🔍</span> Search</summary>
+                <div>
+                    <input type="text" class="of_search" placeholder="Search...">
+                    <div class="of_search_results"></div>
+                </div>
+            </details>
+            <details name="of_sidebar">
                 <summary><span class="of_icon">○</span> Index</summary>
                 <div class="of_index">
 <p><a href="#list-of-names.csv">🖫 list-of-names.csv</a><br>
@@ -830,6 +837,10 @@ This content is sent to the custom element.
 <a href="#saving-with-webdav">Saving with WebDAV</a><br>
 <a href="#upgrading">Upgrading OmniFlux</a></p>
 </div>
+            </details>
+            <details name="of_sidebar">
+                <summary><span class="of_icon">🔗</span> Backlinks</summary>
+                <div class="of_backlinks"></div>
             </details>
             <details class="of_js_off" name="of_sidebar">
                 <summary><span class="of_icon">⇩</span> Saving</summary>

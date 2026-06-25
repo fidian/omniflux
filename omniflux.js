@@ -54,20 +54,28 @@ const setFlag = (flag, value) => {
 };
 
 const wikiContent = () => {
+    const copy = doc.documentElement.cloneNode(true);
+
     // Reset the sidebar to the default state
-    querySelectorAll(".of_sidebar_bar [open]").forEach((details) =>
+    querySelectorAll(".of_sidebar_bar [open]", copy).forEach((details) =>
         details.removeAttribute("open")
     );
-    querySelector(".of_overview").setAttribute("open", "");
+    querySelector(".of_overview", copy).setAttribute("open", "");
 
-    // Get content and remove body classes
-    const result =
-        `<!DOCTYPE html>\n${doc.documentElement.outerHTML}\n`.replace(
-            /<body class="[^"]*">/,
-            "<body>"
-        );
+    // Remove flag classes
+    const classList = querySelector("body", copy).classList;
+    [...classList].forEach((cls) => {
+        if (cls.match(/^of_/)) {
+            classList.remove(cls);
+        }
+    });
 
-    return result;
+    // Clear search results, backlinks
+    querySelectorAll(".of_search_results,.of_backlinks", copy).forEach(
+        (el) => (el.innerHTML = "")
+    );
+
+    return `<!DOCTYPE html>\n${copy.outerHTML}\n`;
 };
 
 const suggestedFilename = () =>
@@ -681,6 +689,18 @@ const onLoad = () => {
     querySelector("#of_sidebar_toggle").checked = false;
     currentId = location.hash.slice(1);
     currentArticleEl = getArticle(currentId);
+    const usedBy = [
+        currentId,
+        querySelector("image[id]", currentArticleEl)?.getAttribute("id")
+    ]
+        .filter((x) => x != null) // Do not use !==
+        .map((x) => `[href="#${cssEscape(x)}"]`)
+        .join(",");
+    const backLinks = [...querySelectorAll(`article:has(${usedBy})`)];
+    querySelector(".of_backlinks").innerHTML = backLinks.length
+        ? articleList(backLinks)
+        : "No pages link here.";
+
     if (!currentArticleEl) editPage();
 };
 
@@ -693,6 +713,20 @@ const doneEditing = () => {
     if (!currentArticleEl) location.hash = "";
 };
 
+const articleList = (articles) =>
+    md2Html(
+        [...articles]
+            .map((article) => [
+                querySelector("h1,h2,h3,h4,h5,h6", article)?.textContent.trim() ||
+                    id2Name(article.id),
+                article.id
+            ])
+            .sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }))
+            .map(([title, id]) => `[${title}](#${id})`)
+            .join("\n")
+    );
+
+
 // Update everything after something is changed
 const solidifyState = () => {
     // Copy HTML from elements, whose query selectors are in the
@@ -701,15 +735,9 @@ const solidifyState = () => {
     querySelectorAll("[data-of_transclude]").forEach((el) => {
         el.innerHTML = querySelector(el.dataset.of_transclude)?.innerHTML || "";
     });
-    const mdLinks = [...querySelectorAll("article")]
-        .map((article) => [
-            querySelector("h1,h2,h3,h4,h5,h6", article)?.textContent.trim() ||
-                id2Name(article.id),
-            article.id
-        ])
-        .sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }))
-        .map(([title, id]) => `[${title}](#${id})`);
-    querySelector(".of_index").innerHTML = md2Html(mdLinks.join("\n"));
+    querySelector(".of_index").innerHTML = articleList(
+        querySelectorAll("article")
+    );
     setFlag("dirty", 1);
 
     if (autosaveFileHandle) {
@@ -806,6 +834,7 @@ const detectWebDAV = async () => {
 const inputEl = querySelector(".of_input");
 const hashEl = querySelector(".of_hash");
 const articlesEl = querySelector(".of_articles");
+const searchResultsEl = querySelector(".of_search_results");
 
 let currentId = ""; // Current page ID, derived from URL hash
 let currentArticleEl = null; // Current page's article element
@@ -986,6 +1015,18 @@ on(".of_upload", "click", () => {
             }
         };
     });
+});
+
+// Searching
+on(".of_search", "input", (event) => {
+    const matchWords = event.target.value.trim().toLowerCase().split(/\s+/);
+    searchResultsEl.innerHTML = articleList(
+        [...querySelectorAll("article")].filter((article) => {
+            const text = article.textContent.toLowerCase();
+            return matchWords.every((word) => text.includes(word));
+        })
+    );
+    searchResultsEl.innerHTML = md2Html(results.join("\n"));
 });
 
 // Set internal state when navigating to a new page or upon
