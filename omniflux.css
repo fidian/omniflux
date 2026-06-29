@@ -187,9 +187,11 @@ body.of_edit_flag {
 .of_sidebar_bar {
     direction: ltr;
 
-    details {
+    summary {
         margin: 0.25em 0;
+    }
 
+    details {
         > div {
             line-height: 1.25;
 
@@ -214,6 +216,7 @@ body.of_edit_flag {
                 display: inline-block;
                 width: 1.25em;
                 text-align: center;
+                font-variant-emoji: text;
             }
         }
     }
@@ -348,6 +351,7 @@ table {
     background-color: #cfc;
     transition: all 0.3s ease-in-out;
     opacity: 0;
+    pointer-events: none;
 }
 
 .of_saved_flag .of_saved {
@@ -358,20 +362,22 @@ li:has(> input) {
     list-style: none;
 }
 
-body:not(.of_js_flag) .of_js_on,
-.of_js_flag .of_js_off,
-body:not(.of_webdav_flag) .of_webdav_on,
-.of_webdav_flag .of_webdav_off,
-body:not(.of_edit_flag) .of_edit_on,
-.of_edit_flag .of_edit_off,
-body:not(.of_dirty_flag) .of_dirty_on,
-.of_dirty_flag .of_dirty_off,
-body:not(.of_autosave_flag) .of_autosave_on,
-.of_autosave_flag .of_autosave_off,
-body:not(.of_autoput_flag) .of_autoput_on,
 .of_autoput_flag .of_autoput_off,
+.of_autosave_flag .of_autosave_off,
+.of_broken_flag .of_broken_off,
+.of_dirty_flag .of_dirty_off,
+.of_edit_flag .of_edit_off,
+.of_js_flag .of_js_off,
+.of_saved_flag .of_saved_off,
+.of_webdav_flag .of_webdav_off,
+body:not(.of_autoput_flag) .of_autoput_on,
+body:not(.of_autosave_flag) .of_autosave_on,
+body:not(.of_broken_flag) .of_broken_on,
+body:not(.of_dirty_flag) .of_dirty_on,
+body:not(.of_edit_flag) .of_edit_on,
+body:not(.of_js_flag) .of_js_on,
 body:not(.of_saved_flag) .of_saved_on,
-.of_saved_flag .of_saved_off {
+body:not(.of_webdav_flag) .of_webdav_on {
     display: none;
 }
 
