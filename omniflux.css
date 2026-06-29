@@ -79,11 +79,11 @@ article {
     display: flex;
     flex-direction: column;
     font: 1.25em sans-serif;
-    height: 100vh;
+    height: 100%;
     left: 0;
     position: fixed;
     top: 0;
-    width: 100vw;
+    width: 100%;
 }
 
 .of_menu {
@@ -107,9 +107,10 @@ body.of_edit_flag {
 
 .of_toolbar {
     display: flex;
+    width: 100%;
     justify-content: flex-end;
     left: 0;
-    margin: 0.5rem;
+    padding: 0.5rem;
     position: fixed;
     right: 0;
     top: 0;
@@ -126,7 +127,7 @@ body.of_edit_flag {
     top: 0;
     align-items: flex-start;
     left: 0;
-    height: 100vh;
+    height: 100%;
     transform: translateX(calc(-100% + 50px));
     transition: transform 0.3s cubic-bezier(0.77, 0.2, 0.05, 1);
 
@@ -385,4 +386,10 @@ body:not(.of_webdav_flag) .of_webdav_on {
     html {
         filter: invert(1) hue-rotate(180deg);
     }
+}
+
+article table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
 }

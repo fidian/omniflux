@@ -3,7 +3,8 @@
     "scripts": {
         "build": "node scripts/build.mjs",
         "start": "node scripts/server.mjs",
-        "test": "playwright test"
+        "test": "playwright test",
+        "tunnel": "echo \"Your tunnel password: $(curl https://loca.lt/mytunnelpassword)\" && npx localtunnel -p 5173"
     },
     "devDependencies": {
         "@playwright/test": "^1.60.0",
