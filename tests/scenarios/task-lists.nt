@@ -1,0 +1,30 @@
+md2html: true
+html2md: true
+markdown:
+ > - [ ] Item 1
+ > - [x] Item 2
+ >
+ > 1. [ ] Do thing
+ >   - [x] Child 1
+ >   - [x] Child 2
+ > 2. [] not a task
+ > 3. [×] not a task
+ > 4. [.] not a task
+html:
+ >
+ > <ul>
+ > <li><input type="checkbox"> Item 1</li>
+ > <li><input type="checkbox" checked=""> Item 2</li>
+ > </ul>
+ >
+ > <ol>
+ > <li><input type="checkbox"> Do thing</li>
+ > <ul>
+ > <li><input type="checkbox" checked=""> Child 1</li>
+ > <li><input type="checkbox" checked=""> Child 2</li>
+ > </ul>
+ > <li>[] not a task</li>
+ > <li>[×] not a task</li>
+ > <li>[.] not a task</li>
+ > </ol>
+ >
