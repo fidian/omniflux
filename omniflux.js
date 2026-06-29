@@ -192,6 +192,31 @@ const processRules = (str, rules, preserve) => {
     return result;
 };
 
+const articleTitle = (articleEl) =>
+    querySelector("h1,h2,h3,h4,h5,h6", articleEl)?.textContent.trim() ||
+    id2Name(articleEl.id);
+
+// Sorts an array of arrays, where item[0] is the title.
+const sortArticleList = (a, b) =>
+    a[0].localeCompare(b[0], undefined, { numeric: true });
+
+// Creates a list of links to articles
+const linksToArticles = (linkList) => {
+    // Group by article
+    const articles = new Map();
+    for (const link of linkList) {
+        const article = link.closest("article");
+        const info = articles.get(article) || [
+            articleTitle(article),
+            article.id,
+            []
+        ];
+        info[2].push(link);
+        articles.set(article, info);
+    }
+    return [...articles.values()];
+};
+
 /**
  * Convert Markdown to HTML.
  */
@@ -753,7 +778,7 @@ const articleList = (articles) =>
             .join("\n")
     );
 
-// Update everything after something is changed
+// Update everything after content is changed and saved.
 const solidifyState = () => {
     // Copy HTML from elements, whose query selectors are in the
     // "data-of_transclude" attribute, to the elements with the
@@ -761,9 +786,24 @@ const solidifyState = () => {
     querySelectorAll("[data-of_transclude]").forEach((el) => {
         el.innerHTML = querySelector(el.dataset.of_transclude)?.innerHTML || "";
     });
-    querySelector(".of_index").innerHTML = articleList(
-        querySelectorAll("article")
+    querySelector(".of_index").innerHTML = md2Html(
+        [...querySelectorAll("article")]
+            .map((article) => [articleTitle(article), article.id])
+            .sort(sortArticleList)
+            .map(([title, id]) => `[${title}](#${id})`)
+            .join("\n")
     );
+    const brokenLinks = [...querySelectorAll("article a[href^='#']")].filter(
+        (a) => !getArticle(a.getAttribute("href").slice(1))
+    );
+    querySelector(".of_broken").innerHTML = linksToArticles(brokenLinks)
+        .sort(sortArticleList)
+        .map(
+            ([title, id, links]) =>
+                `<div><a href="#${id}">${title}</a><ul><li>${links.map((link) => link.outerHTML).join("</li><li>")}</li></ul></div>`
+        )
+        .join("\n");
+    setFlag("broken", brokenLinks.length);
     setFlag("dirty", 1);
 
     if (autosaveFileHandle) {
@@ -868,6 +908,7 @@ let editing = false; // Whether the editor is open or not
 let autosaveFileHandle; // If truthy, autosave is enabled
 let autoput = 0; // If truthy, WebDAV-based autosave is enabled
 let saveTimeout; // For showing the "saved" message
+let searchTimeout; // For debounce
 
 // Edit - this function is used when clicking the Edit button and
 // when navigating to a page that doesn't exist
@@ -1028,9 +1069,13 @@ on(".of_upload", "click", () => {
                         .join("");
                     const id = `of_image_${hashHex}`;
                     let uri = reader.result.split(";");
-                    uri.splice(1, 0, `id=${id}`);
-                    uri.splice(2, 0, `width=${img.width}`);
-                    uri.splice(3, 0, `height=${img.height}`);
+                    uri.splice(
+                        1,
+                        0,
+                        `id=${id}`,
+                        `width=${img.width}`,
+                        `height=${img.height}`
+                    );
                     saveFile(file.name, uri.join(";"), true);
                 };
                 img.onerror = () => {
@@ -1046,14 +1091,28 @@ on(".of_upload", "click", () => {
 
 // Searching
 on(".of_search", "input", (event) => {
-    const matchWords = event.target.value.trim().toLowerCase().split(/\s+/);
-    searchResultsEl.innerHTML = articleList(
-        [...querySelectorAll("article")].filter((article) => {
-            const text = article.textContent.toLowerCase();
-            return matchWords.every((word) => text.includes(word));
-        })
-    );
-    searchResultsEl.innerHTML = md2Html(results.join("\n"));
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        const value = event.target.value.trim().toLowerCase();
+
+        if (!value.length) {
+            searchResultsEl.innerHTML = "";
+            return;
+        }
+
+        if (!value.match(/\w{3}/)) {
+            searchResultsEl.innerHTML = "Not enough characters to search.";
+            return;
+        }
+
+        const matchWords = value.split(/\s+/);
+        searchResultsEl.innerHTML = articleList(
+            [...querySelectorAll("article")].filter((article) => {
+                const text = article.textContent.toLowerCase();
+                return matchWords.every((word) => text.includes(word));
+            })
+        ) || "No results.";
+    }, 300);
 });
 
 // Set internal state when navigating to a new page or upon

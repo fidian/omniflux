@@ -13,8 +13,8 @@
 </thead>
 <tbody>
 <tr><td align="center">Easiest</td><td align="left">Within this wiki</td><td align="left">Open the sidebar, click Saving, then follow the instructions.</td></tr>
-<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Docs</a></td><td align="left">Get it from the source. Includes all documentation, a custom element, and the solar flare image (about 91k). Right-click and "Save Link As."</td></tr>
-<tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">Minified, no content. When every byte matters (about 19k).</td></tr>
+<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Docs</a></td><td align="left">Get it from the source. Includes all documentation, a custom element, and the solar flare image (about 94k). Right-click and "Save Link As."</td></tr>
+<tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">Minified, no content. When every byte matters (about 20k).</td></tr>
 <tr><td align="center">Custom</td><td align="left"><a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">GitHub repository</a></td><td align="left">Build your own!</td></tr>
 </tbody>
 </table>
@@ -29,11 +29,12 @@
 <li>Markdown support (<i>italics</i>, <b>bold</b>, <b><i>both</i></b>, <code>code</code>, <s>strike</s>, <u>underline</u>), external images, links, ordered and unordered lists, code fences. <a href="#markdown">See all of the supported syntax.</a></li>
 <li>Generated HTML isn't one long line, allowing source code management tools like <code>git</code> to work better.</li>
 <li>Automated tests to ensure the bidirectional HTML to/from Markdown conversion works as expected, as well as other features in the wiki.</li>
-<li>Doesn't need JavaScript to browse, thanks to CSS-based navigation and sidebar, allowing it to work even in a very restrictive environment, such as a Content Security Policy (CSP) <code>script-src 'none'</code> or a browser that's locked down.</li>
+<li>Doesn't need JavaScript to browse, thanks to CSS-based navigation and a CSS-only sidebar, allowing it to work even in a very restrictive environment, such as with a Content Security Policy (CSP) <code>script-src 'none'</code> or a browser where JavaScript is disabled.</li>
 <li>Quick editing and saving using Ctrl+Enter or Cmd+Enter.</li>
 <li>Uploading to a server through <a href="#saving-with-webdav">WebDAV</a>.</li>
 <li>Importing pages from another OmniFlux wiki, which makes <a href="#upgrading">upgrades</a> trivial. This also copies over any additional script and style elements that may have been added.</li>
 <li><a href="#custom-elements">Custom Elements</a> are allowed.</li>
+<li>Detection of broken internal links. When there are none, the sidebar item is removed.</li>
 <li>Binary and text files can be uploaded into and downloaded from the wiki.</li>
 <li>Image support - these can be files that are external to the wiki or uploaded and used within the wiki, like this <a href="#solar-flare.jpg">solar-flare.jpg</a>.</li>
 </ul>
@@ -50,24 +51,24 @@ Octocat is external, the solar flare is completely within the wiki.</p>
 
 <p>Create a new page by making a link to it. Edit any page and paste in the Markdown to link to a page, like this example: <code>[New Page](#new-page)</code>. By clicking the link, you will see the edit screen to create the content for the page as shown here: <a href="#new-page">New Page</a>.</p>
 
-<p>The "Contents" section in the sidebar is under your control. Change the <a href="#contents">Contents</a> page and it will automatically get copied to the sidebar.</p>
+<p>The "Overview" section in the sidebar is under your control. Change the <a href="#overview">Overview</a> page and it will automatically get copied to the sidebar.</p>
 
 <p>The sidebar generates the "Index" entries for every page in the wiki. It will use the first heading found on the page, like <code># Page Title</code>. If no heading is found, it converts the ID into a page title.</p>
 
-<p>To delete a page, edit it and remove all of its content and save. Or you can edit a page and press the Delete button. The page will be removed from the index and the sidebar.</p>
+<p>To delete a page, start by editing it. From there, either remove all content and press Save, or you can press the Delete button. The page will be removed from the index and the sidebar.</p>
 
 
 <h2>Credits</h2>
 
 <p>CSS-based navigation is from <a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a>. It's fantastic.</p>
 
-<p>The original method for converting Markdown to HTML started from the <a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a> as well because it's a great project. It's been highly modified to use DOM elements instead of strings and targeted recursion, plus the Markdown syntax has been expanded with patterns changed to be more stringent.</p>
+<p>The original method for converting Markdown to HTML started from the <a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a> as well, but has diverged significantly. Now, DOM elements are used and the code takes advantage of limited recursion. Also, the Markdown syntax has been expanded and previous patterns were changed to be more stringent.</p>
 
-<p>The CSS-powered slide-in menu comes from <a href="https://css-tricks.com/the-checkbox-hack/" target="_blank" rel="noopener noreferrer">The "Checkbox Hack" (and things you can do with it)</a> with a fancier hamburger icon courtesy of <a href="https://codepen.io/anon/pen/OrxKWb" target="_blank" rel="noopener noreferrer">Definitly Pure HTML/CSS animated Hamburger</a>.</p>
+<p>The CSS-powered slide-in menu comes from <a href="https://css-tricks.com/the-checkbox-hack/" target="_blank" rel="noopener noreferrer">The "Checkbox Hack" (and things you can do with it)</a> with a fancier hamburger icon courtesy of <a href="https://codepen.io/anon/pen/OrxKWb" target="_blank" rel="noopener noreferrer">Definitely Pure HTML/CSS animated Hamburger</a>.</p>
 
 <p>HTML to Markdown conversion walks the DOM (an approach similar to <a href="https://github.com/acornejo/downshow" target="_blank" rel="noopener noreferrer">Downshow</a>), but the similarities end there. This is an entirely different implementation.</p>
 
-<p>The ability to add a single copy of an image and reference it on multiple pages, yet still treat it as an image is thanks to <a href="https://css-tricks.com/use-and-reuse-everything-in-svg-even-animations/" target="_blank" rel="noopener noreferrer"><code>&lt;svg&gt;&lt;use /&gt;&lt;/svg&gt;</code></a> being able to grab from any element in the document. To facilitate this, <a href="https://datatracker.ietf.org/doc/html/rfc2397#section-3" target="_blank" rel="noopener noreferrer">RFC 2397</a> was used to understand <code>data</code> URL scheme and how to embed additional information.</p>
+<p>The ability to add a single copy of an image and reference it on multiple pages, yet still treat it as an image is leveraging <a href="https://css-tricks.com/use-and-reuse-everything-in-svg-even-animations/" target="_blank" rel="noopener noreferrer"><code>&lt;svg&gt;&lt;use /&gt;&lt;/svg&gt;</code></a>, which is able to reference any element in the document. <a href="https://datatracker.ietf.org/doc/html/rfc2397#section-3" target="_blank" rel="noopener noreferrer">RFC 2397</a> explains the <code>data</code> URL scheme and shows how to embed additional information.</p>
 </article>
 <article id="markdown">
 <h1>Markdown Syntax</h1>
@@ -318,6 +319,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>Is your version a little stale or missing some features? <a href="#upgrading">Learn how to upgrade!</a></p>
 
 <ul>
+<li><b>2026-06-29</b> - Debounced search and require at least 3 characters. Added detection of broken internal links. Fixed minor issues with CSS.</li>
 <li><b>2026-06-25</b> - Added search, backlinks, dark mode, task lists.</li>
 <li><b>2026-06-24</b> - Added WebDAV support for saving and automatic saving. Added custom element support.</li>
 <li><b>2026-06-23</b> - Added icons to summary bars to help distinguish them faster. Added <a href="#fair-comparison">Fair Comparison</a> of wiki alternatives. Added horizontal rules.</li>
@@ -433,6 +435,8 @@ MutationObserver(mutations =&gt; {
 
 <p>All of the wikis compared here are ones that work with no installation, no server-side software, and nothing more than just a web browser. Make sure to read the reviews and pick the system that would work best for your purposes.</p>
 
+<p>If you know of other self-contained wikis in this same vein, please let me know by <a href="https://github.com/fidian/omniflux/issues" target="_blank" rel="noopener noreferrer">opening an issue</a>.</p>
+
 <table>
 <thead>
 <tr><th align="center">Wiki Software</th><th align="center">Status</th><th align="center">One File</th><th align="center">Editing</th><th align="center">Size</th><th align="center">Plugins</th><th align="center">Storage</th></tr>
@@ -440,7 +444,7 @@ MutationObserver(mutations =&gt; {
 <tbody>
 <tr><td align="center"><a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a></td><td align="center">POC</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">9k</td><td align="center">No</td><td align="center">HTML + Template</td></tr>
 <tr><td align="center"><a href="https://feather.wiki/" target="_blank" rel="noopener noreferrer">Feather Wiki</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">WYSIWYG / MD</td><td align="center">56k</td><td align="center">Yes</td><td align="center">JSON</td></tr>
-<tr><td align="center"><a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></td><td align="center">New</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">19k</td><td align="center">No</td><td align="center">HTML</td></tr>
+<tr><td align="center"><a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></td><td align="center">New</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">20k</td><td align="center">No</td><td align="center">HTML</td></tr>
 <tr><td align="center"><a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">2,490k</td><td align="center">Yes</td><td align="center">JSON</td></tr>
 <tr><td align="center"><a href="https://stickwiki.sourceforge.net/" target="_blank" rel="noopener noreferrer">WOAS</a></td><td align="center">Old</td><td align="center">No</td><td align="center">WikiText</td><td align="center">408k</td><td align="center">No</td><td align="center">JSON</td></tr>
 <tr><td align="center"><a href="https://sourceforge.net/p/woas/home/Welcome/" target="_blank" rel="noopener noreferrer">WOAS Fork</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">WikiText</td><td align="center">732k</td><td align="center">No</td><td align="center">JSON</td></tr>
@@ -460,6 +464,7 @@ MutationObserver(mutations =&gt; {
 <li>Embed Files: Are users allowed to embed images? Can any file be added to the wiki?</li>
 <li>Local Saving: How does saving work when not using a server.</li>
 <li>Server-Side Saving: Is this software able to push files to a server somehow?</li>
+<li>Searching: Does the wiki provide built-in or extensibility to allow searching?</li>
 </ul>
 
 
@@ -481,6 +486,7 @@ MutationObserver(mutations =&gt; {
 <tr><td align="left">Embed Files</td><td align="left">No</td></tr>
 <tr><td align="left">Local Saving</td><td align="left">Yes, file downloader</td></tr>
 <tr><td align="left">Server-Side Saving</td><td align="left">No</td></tr>
+<tr><td align="left">Searching</td><td align="left">No</td></tr>
 </tbody>
 </table>
 
@@ -517,6 +523,7 @@ MutationObserver(mutations =&gt; {
 <tr><td align="left">Embed Files</td><td align="left">Yes, images only</td></tr>
 <tr><td align="left">Local Saving</td><td align="left">Yes, file downloader</td></tr>
 <tr><td align="left">Server-Side Saving</td><td align="left">Yes, WebDAV</td></tr>
+<tr><td align="left">Searching</td><td align="left">Yes, through plugins</td></tr>
 </tbody>
 </table>
 
@@ -547,12 +554,13 @@ MutationObserver(mutations =&gt; {
 <tr><td align="left">Status</td><td align="left">New</td></tr>
 <tr><td align="left">One File</td><td align="left">Yes</td></tr>
 <tr><td align="left">Editing</td><td align="left">Markdown</td></tr>
-<tr><td align="left">Size</td><td align="left">19 kilobytes</td></tr>
+<tr><td align="left">Size</td><td align="left">20 kilobytes</td></tr>
 <tr><td align="left">Extensible</td><td align="left">No</td></tr>
 <tr><td align="left">Storage</td><td align="left">HTML</td></tr>
 <tr><td align="left">Embed Files</td><td align="left">Yes, all kinds</td></tr>
 <tr><td align="left">Local Saving</td><td align="left">Yes, file downloader and File API</td></tr>
 <tr><td align="left">Server-Side Saving</td><td align="left">Yes, WebDAV</td></tr>
+<tr><td align="left">Searching</td><td align="left">Yes, built-in</td></tr>
 </tbody>
 </table>
 
@@ -589,6 +597,7 @@ MutationObserver(mutations =&gt; {
 <tr><td align="left">Embed Files</td><td align="left">Yes, all kinds</td></tr>
 <tr><td align="left">Local Saving</td><td align="left">Yes, File downloader</td></tr>
 <tr><td align="left">Server-Side Saving</td><td align="left">Yes, WebDAV or via plugins</td></tr>
+<tr><td align="left">Searching</td><td align="left">Yes, built-in</td></tr>
 </tbody>
 </table>
 
@@ -625,6 +634,7 @@ MutationObserver(mutations =&gt; {
 <tr><td align="left">Embed Files</td><td align="left">Yes</td></tr>
 <tr><td align="left">Local Saving</td><td align="left">Yes, JAR applet</td></tr>
 <tr><td align="left">Server-Side Saving</td><td align="left">No</td></tr>
+<tr><td align="left">Searching</td><td align="left">Yes (unverified)</td></tr>
 </tbody>
 </table>
 
@@ -659,6 +669,7 @@ MutationObserver(mutations =&gt; {
 <tr><td align="left">Embed Files</td><td align="left">Yes</td></tr>
 <tr><td align="left">Local Saving</td><td align="left">Yes, file downloader</td></tr>
 <tr><td align="left">Server-Side Saving</td><td align="left">No</td></tr>
+<tr><td align="left">Searching</td><td align="left">Yes</td></tr>
 </tbody>
 </table>
 
@@ -693,6 +704,7 @@ MutationObserver(mutations =&gt; {
 <tr><td align="left">Embed Files</td><td align="left">No</td></tr>
 <tr><td align="left">Local Saving</td><td align="left">Yes, file downloader</td></tr>
 <tr><td align="left">Server-Side Saving</td><td align="left">No</td></tr>
+<tr><td align="left">Searching</td><td align="left">No</td></tr>
 </tbody>
 </table>
 
@@ -861,6 +873,10 @@ This content is sent to the custom element.
             <details name="of_sidebar">
                 <summary><span class="of_icon">🔗</span> Backlinks</summary>
                 <div class="of_backlinks"></div>
+            </details>
+            <details name="of_sidebar">
+                <summary class="of_broken_on"><span class="of_icon">💥</span> Broken Links</summary>
+                <div class="of_broken"><div><a href="#">OmniFlux - Single-Page Wiki</a><ul><li><a href="#new-page">New Page</a></li></ul></div></div>
             </details>
             <details class="of_js_off" name="of_sidebar">
                 <summary><span class="of_icon">⇩</span> Saving</summary>
