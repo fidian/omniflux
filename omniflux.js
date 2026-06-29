@@ -1044,6 +1044,7 @@ on(".of_import", "click", () => {
                     doc.body.appendChild(script);
                 }
             );
+            doc.title = importedDoc.title;
             solidifyState();
         };
         reader.readAsText(file);
