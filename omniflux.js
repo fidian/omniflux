@@ -722,7 +722,31 @@ const html2Md = (el, inBlock) => {
  */
 const editPage = () => {
     hashEl.textContent = "#" + currentId;
-    inputEl.value = currentArticleEl ? html2Md(currentArticleEl, 1) : "";
+
+    if (currentArticleEl) {
+        let v = html2Md(currentArticleEl, 1);
+
+        // position cursor after the content that is above the viewport
+        const div = dom("div");
+
+        for (const el of currentArticleEl.children) {
+            if (el.getBoundingClientRect().bottom < 0) {
+                div.innerHTML += el.outerHTML;
+            }
+        }
+
+        let spot = html2Md(div, 1).length;
+
+        while (spot && v[spot] === "\n") {
+            spot += 1;
+        }
+
+        inputEl.value = v;
+        inputEl.setSelectionRange(spot, spot);
+    } else {
+        inputEl.value = '';
+    }
+
     editing = true;
     setFlag("edit", 1);
     inputEl.focus();
@@ -790,7 +814,7 @@ const updateBrokenLinks = () => {
         )
         .join("\n");
     setFlag("broken", brokenLinks.length);
-}
+};
 
 // Update everything after content is changed and saved.
 const solidifyState = () => {
@@ -1111,12 +1135,13 @@ on(".of_search", "input", (event) => {
         }
 
         const matchWords = value.split(/\s+/);
-        searchResultsEl.innerHTML = articleList(
-            [...querySelectorAll("article")].filter((article) => {
-                const text = article.textContent.toLowerCase();
-                return matchWords.every((word) => text.includes(word));
-            })
-        ) || "No results.";
+        searchResultsEl.innerHTML =
+            articleList(
+                [...querySelectorAll("article")].filter((article) => {
+                    const text = article.textContent.toLowerCase();
+                    return matchWords.every((word) => text.includes(word));
+                })
+            ) || "No results.";
     }, 300);
 });
 
