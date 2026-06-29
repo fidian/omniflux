@@ -778,6 +778,20 @@ const articleList = (articles) =>
             .join("\n")
     );
 
+const updateBrokenLinks = () => {
+    const brokenLinks = [...querySelectorAll("article a[href^='#']")].filter(
+        (a) => !getArticle(a.getAttribute("href").slice(1))
+    );
+    querySelector(".of_broken").innerHTML = linksToArticles(brokenLinks)
+        .sort(sortArticleList)
+        .map(
+            ([title, id, links]) =>
+                `<div><a href="#${id}">${title}</a><ul><li>${links.map((link) => link.outerHTML).join("</li><li>")}</li></ul></div>`
+        )
+        .join("\n");
+    setFlag("broken", brokenLinks.length);
+}
+
 // Update everything after content is changed and saved.
 const solidifyState = () => {
     // Copy HTML from elements, whose query selectors are in the
@@ -793,17 +807,7 @@ const solidifyState = () => {
             .map(([title, id]) => `[${title}](#${id})`)
             .join("\n")
     );
-    const brokenLinks = [...querySelectorAll("article a[href^='#']")].filter(
-        (a) => !getArticle(a.getAttribute("href").slice(1))
-    );
-    querySelector(".of_broken").innerHTML = linksToArticles(brokenLinks)
-        .sort(sortArticleList)
-        .map(
-            ([title, id, links]) =>
-                `<div><a href="#${id}">${title}</a><ul><li>${links.map((link) => link.outerHTML).join("</li><li>")}</li></ul></div>`
-        )
-        .join("\n");
-    setFlag("broken", brokenLinks.length);
+    updateBrokenLinks();
     setFlag("dirty", 1);
 
     if (autosaveFileHandle) {
@@ -1139,6 +1143,7 @@ document.addEventListener("change", ({ target }) => {
     }
 });
 onLoad();
+updateBrokenLinks(); // of_broken_flag is not preserved during save
 
 // Finally, show the buttons
 setFlag("js", 1);
