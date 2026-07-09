@@ -13,7 +13,7 @@
 </thead>
 <tbody>
 <tr><td align="center">Easiest</td><td align="left">Within this wiki</td><td align="left">Open the sidebar, click Saving, then follow the instructions.</td></tr>
-<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Docs</a></td><td align="left">Get it from the source. Includes all documentation, a custom element, and the solar flare image (about 95k). Right-click and "Save Link As."</td></tr>
+<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Docs</a></td><td align="left">Get it from the source. Includes all documentation, a custom element, commented JavaScript and CSS, plus the solar flare image (about 104k). Right-click and "Save Link As."</td></tr>
 <tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">Minified, no content. When every byte matters (about 20k).</td></tr>
 <tr><td align="center">Custom</td><td align="left"><a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">GitHub repository</a></td><td align="left">Build your own!</td></tr>
 </tbody>
@@ -35,6 +35,7 @@
 <li>Importing pages from another OmniFlux wiki, which makes <a href="#upgrading">upgrades</a> trivial. This also copies over any additional script and style elements that may have been added.</li>
 <li><a href="#custom-elements">Custom Elements</a> are allowed.</li>
 <li>Detection of broken internal links. When there are none, the sidebar item is removed.</li>
+<li>The JavaScript has TypeScript annotations to provide information to intelligent editors.</li>
 <li>Binary and text files can be uploaded into and downloaded from the wiki.</li>
 <li>Image support - these can be files that are external to the wiki or uploaded and used within the wiki, like this <a href="#solar-flare.jpg">solar-flare.jpg</a>.</li>
 </ul>
@@ -319,6 +320,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>Is your version a little stale or missing some features? <a href="#upgrading">Learn how to upgrade!</a></p>
 
 <ul>
+<li><b>2026-07-08</b> - Included TypeScript annotations into the JavaScript to allow intelligent editors the ability to have more context. This is preserved in the non-minified build.</li>
 <li><b>2026-06-29</b> - Debounced search and require at least 3 characters. Added detection of broken internal links. Fixed minor issues with CSS, especially around mobile devices. Place cursor near content viewed when editing a page.</li>
 <li><b>2026-06-25</b> - Added search, backlinks, dark mode, task lists.</li>
 <li><b>2026-06-24</b> - Added WebDAV support for saving and automatic saving. Added custom element support.</li>

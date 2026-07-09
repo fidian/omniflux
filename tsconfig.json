@@ -6,7 +6,7 @@
         "lib": ["ES2020", "DOM", "DOM.Iterable"],
         "skipLibCheck": true,
         "experimentalDecorators": true,
-        "types": [ "@types/node" ],
+        "types": [ "@types/node", "@types/browser", "@types/wicg-file-system-access" ],
 
         /* Bundler mode */
         "moduleResolution": "bundler",

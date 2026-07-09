@@ -1,23 +1,73 @@
+// @ts-check
+
+/**
+ * State
+ */
+
+let currentId = ""; // Current page ID, derived from URL hash
+/** @type {HTMLElement | undefined} */
+let currentArticleEl; // Current page's article element
+let editing = false; // Whether the editor is open or not
+/** @type {FileSystemFileHandle | null | void} */
+let autosaveFileHandle = null; // If truthy, autosave is enabled
+let autoput = false; // If truthy, WebDAV-based autosave is enabled
+/** @type {ReturnType<typeof setTimeout>} */
+let saveTimeout; // For showing the "saved" message
+/** @type {ReturnType<typeof setTimeout>} */
+let searchTimeout; // For debounce
+
 /**
  * Minification variables and functions
  */
 
+const win = window;
 const doc = document;
 const pathname = location.pathname;
+const svgns = "http://www.w3.org/2000/svg";
+const linkAttributes = {
+    target: "_blank",
+    rel: "noopener noreferrer"
+};
 
-// Run a callback against all elements matching a selector.
-// The only elements with IDs are articles.
+/**
+ * Find elements and keep track of some that are manipulated more than once.
+ */
+/** @type {(selector: string, root?: Document | HTMLElement) => NodeListOf<HTMLElement>} */
 const querySelectorAll = (selector, root = doc) =>
     root.querySelectorAll(selector);
+/**
+ * This is typed to always return Element even though undefined is possible.
+ * This is a deliberate choice to reduce comments in the code. Use with caution.
+ * @type {(selector: string, root?: Document | HTMLElement) => HTMLElement}
+ */
 const querySelector = (selector, root) => querySelectorAll(selector, root)[0];
+const inputEl = /** @type {HTMLInputElement} */ (querySelector(".of_input"));
+const hashEl = querySelector(".of_hash");
+const articlesEl = querySelector(".of_articles");
+const searchResultsEl = querySelector(".of_search_results");
 
+/**
+ * @typedef {string | Element | RecursiveContentArray} RecursiveContent
+ */
+
+/**
+ * @typedef {RecursiveContent[]} RecursiveContentArray
+ */
+
+/**
+ * Create a DOM node
+ * @type {(tag: string, content?: RecursiveContent, attrs?: object, ns?: string) => HTMLElement}
+ */
 const dom = (tag, content, attrs, ns) => {
-    const el = ns ? doc.createElementNS(ns, tag) : doc.createElement(tag);
+    const el = /** @type {HTMLElement} */ (
+        ns ? doc.createElementNS(ns, tag) : doc.createElement(tag)
+    );
 
     for (const [key, value] of Object.entries(attrs || {})) {
         el.setAttribute(key, value);
     }
 
+    /** @type {(child?: RecursiveContent) => void} */
     const append = (child) => {
         if (Array.isArray(child)) {
             child.forEach(append);
@@ -33,28 +83,52 @@ const dom = (tag, content, attrs, ns) => {
     return el;
 };
 
+/** @type {(el: Element, attr: string) => string | null} */
 const getAttribute = (el, attr) => el.getAttribute(attr);
+
+/** @type {(el: Element, attrs: Record<string, string>) => void} */
 const setAttributes = (el, attrs) => {
     for (const [key, value] of Object.entries(attrs)) {
         el.setAttribute(key, value);
     }
 };
+
+/**
+ * Change an ID into something safe for CSS
+ * @type {(str: string) => string}
+ */
 const cssEscape = (str) => CSS.escape(str);
+
+/** @type {(id: string) => HTMLElement | undefined} */
 const getArticle = (id) =>
     querySelector(`article${id ? `#${cssEscape(id)}` : ".index"}`);
-const svgns = "http://www.w3.org/2000/svg";
 
-// Add an event listener to a single element matching a selector.
-const on = (selector, event, handler) =>
-    querySelector(selector).addEventListener(event, handler);
+/**
+ * Add an event listener to a known target or to a single element matching a selector.
+ * @type {(target: string | Document | Window | Element, event: string, handler: (event: any) => void) => void}
+ */
+const on = (target, event, handler) =>
+    (typeof target === "string"
+        ? querySelector(target)
+        : target
+    ).addEventListener(event, handler);
 
-// Set or remove a flag class on body.
-const setFlag = (flag, value) => {
+/**
+ * Set or remove a flag class on body.
+ * @type {(flag: string, value?: boolean) => void}
+ */
+const setFlag = (flag, value = false) => {
     doc.body.classList.toggle(`of_${flag}_flag`, !!value);
 };
 
+/**
+ * Convert the wiki into safe HTML for saving.
+ * @type {() => string}
+ */
 const wikiContent = () => {
-    const copy = doc.documentElement.cloneNode(true);
+    const copy = /** @type {HTMLElement} */ (
+        doc.documentElement.cloneNode(true)
+    );
 
     // Reset the sidebar to the default state
     querySelectorAll(".of_sidebar_bar [open]", copy).forEach((details) =>
@@ -78,6 +152,12 @@ const wikiContent = () => {
     return `<!DOCTYPE html>\n${copy.outerHTML}\n`;
 };
 
+/**
+ * When saving locally for the first time, try to use the document title as a
+ * name. Otherwise default to the existing filename. Update the timestamp at
+ * the end.
+ * @type {() => string}
+ */
 const suggestedFilename = () =>
     (pathname.split("/").pop() || doc.title).replace(
         /([-\d]*\.html?)?$/,
@@ -87,23 +167,34 @@ const suggestedFilename = () =>
             .replace("T", "-")}.html`
     );
 
-// Convert an ID into a human readable name by replacing dashes and
-// underscores with spaces, then capitalizing the first letter of each
-// word.
+/**
+ * Convert an ID into a human readable name by replacing dashes and
+ * underscores with spaces, then capitalizing the first letter of each
+ * word.
+ * @type {(id: string) => string}
+ */
 const id2Name = (id) =>
     id.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ||
     doc.title;
 
+/**
+ * Save has happened. Update flags, show toaster.
+ * @type {() => void}
+ */
 const saveDone = () => {
-    setFlag("dirty", 0);
-    setFlag("saved", 1);
+    setFlag("dirty");
+    setFlag("saved", true);
     clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(() => setFlag("saved", 0), 2000);
+    saveTimeout = setTimeout(() => setFlag("saved"), 2000);
 };
 
+/**
+ * Triggered when autosaving locally and a change was made.
+ * @type {() => Promise<void>}
+ */
 const autosaveAction = async () => {
     if (!autosaveFileHandle) {
-        autosaveFileHandle = await window
+        autosaveFileHandle = await win
             .showSaveFilePicker({
                 suggestedName: suggestedFilename()
             })
@@ -111,7 +202,7 @@ const autosaveAction = async () => {
     }
 
     if (autosaveFileHandle) {
-        setFlag("autosave", 1);
+        setFlag("autosave", true);
         try {
             const writable = await autosaveFileHandle.createWritable();
             await writable.write(wikiContent());
@@ -119,7 +210,7 @@ const autosaveAction = async () => {
             saveDone();
         } catch (err) {
             autosaveFileHandle = null;
-            setFlag("autosave", 0);
+            setFlag("autosave");
             console.error("Autosave failed:", err);
 
             alert("Autosave failed. Check the console for details.");
@@ -128,9 +219,10 @@ const autosaveAction = async () => {
 };
 
 const autoputAction = async () => {
+    /** @type {(msg: any) => void} */
     const fail = (msg) => {
-        autoput = 0;
-        setFlag("autoput", 0);
+        autoput = false;
+        setFlag("autoput");
         console.error("WebDAV PUT failed:", msg);
 
         alert("WebDAV PUT failed. Check the console for details.");
@@ -156,10 +248,21 @@ const autoputAction = async () => {
 };
 
 /**
+ * @typedef {(...args: string[]) => RecursiveContent} Md2HtmlRuleHandler
+ */
+
+/**
+ * @typedef {[RegExp, Md2HtmlRuleHandler][]} Md2HtmlRuleSet
+ */
+
+/**
  * For rules and rule processing, see
  * https://fidian.github.io/omniflux/#rule-processing
+ * @template T
+ * @type {(str: string, rules: Md2HtmlRuleSet, preserve?: boolean) => RecursiveContent}
  */
 const processRules = (str, rules, preserve) => {
+    /** @type {RecursiveContent} */
     let result = [];
 
     while (str) {
@@ -169,7 +272,12 @@ const processRules = (str, rules, preserve) => {
         for (const [regexp, handler] of rules) {
             const match = str.match(regexp);
 
-            if (match && (!bestMatch || match.index < bestMatch.index)) {
+            if (
+                match &&
+                (!bestMatch ||
+                    /** @type {number} */ (match.index) <
+                        /** @type {number} */ (bestMatch.index))
+            ) {
                 bestMatch = match;
                 bestHandler = handler;
             }
@@ -182,8 +290,15 @@ const processRules = (str, rules, preserve) => {
         }
 
         if (bestMatch) {
-            result.push(bestHandler(...bestMatch));
-            str = str.slice(bestMatch.index + bestMatch[0].length);
+            result.push(
+                /** @type NonNullable<typeof bestHandler> */ (bestHandler)(
+                    ...bestMatch
+                )
+            );
+            str = str.slice(
+                /** @type {number} */ (bestMatch.index) +
+                    /** @type {number} */ (bestMatch[0].length)
+            );
         } else {
             str = "";
         }
@@ -192,20 +307,31 @@ const processRules = (str, rules, preserve) => {
     return result;
 };
 
+/**
+ * Find a heading in an article and use it as a title. If none exist, fallback to the ID and attempt to convert it.
+ * @type {(articleEl: HTMLElement) => string}
+ */
 const articleTitle = (articleEl) =>
     querySelector("h1,h2,h3,h4,h5,h6", articleEl)?.textContent.trim() ||
     id2Name(articleEl.id);
 
-// Sorts an array of arrays, where item[0] is the title.
+/**
+ * Sorts an array of arrays, where item[0] is the title.
+ * @type {(a: [string, ...any[]], b: [string, ...any[]]) => number}
+ */
 const sortArticleList = (a, b) =>
     a[0].localeCompare(b[0], undefined, { numeric: true });
 
-// Creates a list of links to articles
+/**
+ * Creates a list of links to articles. Result's array is a title, the ID, then
+ * the links that point to the article.
+ * @type {(linkList: Element[]) => [string, string, Element[]][]}
+ */
 const linksToArticles = (linkList) => {
     // Group by article
     const articles = new Map();
     for (const link of linkList) {
-        const article = link.closest("article");
+        const article = /** @type {HTMLElement} */ (link.closest("article"));
         const info = articles.get(article) || [
             articleTitle(article),
             article.id,
@@ -221,10 +347,7 @@ const linksToArticles = (linkList) => {
  * Convert Markdown to HTML.
  */
 
-const linkAttributes = {
-    target: "_blank",
-    rel: "noopener noreferrer"
-};
+/** @type Md2HtmlRuleSet */
 const inlineRules = [
     [/`(.+?)`/, (_, txt) => dom("code", txt)],
     [/\*{3}(.+?)\*{3}/, (_, txt) => dom("b", dom("i", mdInline(txt)))],
@@ -249,11 +372,17 @@ const inlineRules = [
                 const params = src
                     .split(";")
                     .slice(1, -1)
-                    .reduce((acc, param) => {
-                        const [key, value] = param.split("=");
-                        acc[key] = value;
-                        return acc;
-                    }, {});
+                    .reduce(
+                        /** @type {(acc: Record<string, string>, param: string) => Record<string, string>} */ (
+                            acc,
+                            param
+                        ) => {
+                            const [key, value] = param.split("=");
+                            acc[key] = value;
+                            return acc;
+                        },
+                        {}
+                    );
 
                 if (params.id && params.width && params.height) {
                     return dom(
@@ -331,8 +460,16 @@ const inlineRules = [
         (href) => dom("a", href, { href, ...linkAttributes })
     ]
 ];
-const mdInline = (str) => processRules(str.trim(), inlineRules, 1);
 
+/**
+ * Convert inline Markdown to HTML elements.
+ * This is difficult to type correctly.
+ * @type {(str: string) => RecursiveContent}
+ */
+const mdInline = (str) =>
+    /** @type {any} */ (processRules)(str.trim(), inlineRules, 1);
+
+/** @type {Md2HtmlRuleSet} */
 const blockRules = [
     [/^ *-{3,} *$/m, () => ["\n", dom("hr"), "\n\n\n"]],
     [
@@ -360,7 +497,10 @@ const blockRules = [
     [
         /^( *(\d+\.|[-*+]) +[^\n]+(\n *(\d+\.|[-*+]) +[^\n]+)*)$/m,
         (all) => {
-            // Convert the list item and handle task lists
+            /**
+             * Convert the list item and handle task lists
+             * @type {(content: string) => RecursiveContent}
+             */
             const listItem = (content) => {
                 const taskMatch = content.match(/^\[([ xX])\] (.+)$/);
                 return taskMatch
@@ -375,7 +515,14 @@ const blockRules = [
                     : mdInline(content);
             };
 
-            // Map all lines to an array of [indentSize, listType, content]
+            /**
+             * @typedef {[number, string, (string | Element)[]]} ListItem
+             */
+
+            /**
+             * Map all lines to an array of [indentSize, listType, content]
+             * @type {ListItem[]}
+             */
             const lines = all
                 .split("\n")
                 // Map lines to [fullMatch, listStyle, content]
@@ -394,13 +541,17 @@ const blockRules = [
                     [dom("li", listItem(content.trim())), "\n"]
                 ]);
 
+            /** @type {() => RecursiveContent} */
             const makeList = () => {
                 const [indent, type] = lines[0];
+                /** @type {RecursiveContent} */
                 const content = ["\n"];
 
                 while (lines.length && lines[0][0] >= indent) {
                     if (lines[0][1] === type && lines[0][0] === indent) {
-                        content.push(lines.shift()[2]);
+                        content.push(
+                            /** @type {ListItem} */ (lines.shift())[2]
+                        );
                     } else if (lines[0][0] > indent) {
                         content.push(makeList());
                     }
@@ -416,6 +567,10 @@ const blockRules = [
         // Tables
         /^\|[^\n]+\| *(\n\|[^\n]+\| *)+$/m,
         (all) => {
+            /**
+             * Split and process single lines of the table
+             * @type {(line: string) => string[]}
+             */
             const splitter = (line) =>
                 line
                     .trim()
@@ -432,6 +587,11 @@ const blockRules = [
             );
             const headers = splitter(lines[0]);
             const rows = lines.slice(2).map((line) => splitter(line));
+
+            /**
+             * Make a row with a set of cells
+             * @type {(tag: string, cells: string[]) => Element}
+             */
             const domRow = (tag, cells) =>
                 dom(
                     "tr",
@@ -449,7 +609,7 @@ const blockRules = [
                     "\n",
                     dom("tbody", [
                         "\n",
-                        rows.map((cells) => [domRow("td", cells), , "\n"])
+                        rows.map((cells) => [domRow("td", cells), "\n"])
                     ]),
                     "\n"
                 ]),
@@ -463,9 +623,8 @@ const blockRules = [
         (match) => {
             const e = dom("div");
             e.innerHTML = match;
-            console.log(e);
 
-            return [e.firstChild, "\n\n"];
+            return [/** @type {Element} */ (e.firstChild), "\n\n"];
         }
     ],
     [
@@ -484,17 +643,33 @@ const blockRules = [
         ]
     ]
 ];
+
+/**
+ * Convert Markdown to DOM nodes
+ * @type {(str: string) => RecursiveContent}
+ */
 const md2Dom = (str) => processRules(`\n${str}\n`, blockRules);
 
-// Include newlines for better git support
+/**
+ * Convert Markdown to HTML. Include newlines for better git support.
+ * @type {(str: string) => string}
+ */
 const md2Html = (str) => `\n${dom("div", md2Dom(str)).innerHTML.trim()}\n`;
 
 /**
- * Convert HTML to Markdown. Must convert everything md2Dom supports.
+ * @typedef {(add: (str: string, isBlock?: boolean) => void, currentNode: HTMLElement) => void} Html2MdRuleHandler
  */
 
+/**
+ * @typedef {[RegExp, Html2MdRuleHandler][]} Html2MdRuleSet
+ */
+
+/**
+ * Convert HTML to Markdown. Must convert everything md2Dom supports.
+ * @type {Html2MdRuleSet}
+ */
 const html2MdConversions = [
-    [/^HR$/, (add) => add("\n---\n\n\n", 1)],
+    [/^HR$/, (add) => add("\n---\n\n\n", true)],
     [/^(B|STRONG)$/, (add, currentNode) => add(`**${html2Md(currentNode)}**`)],
     [/^(I|EM)$/, (add, currentNode) => add(`*${html2Md(currentNode)}*`)],
     [/^(S|DEL)$/, (add, currentNode) => add(`~~${html2Md(currentNode)}~~`)],
@@ -518,19 +693,20 @@ const html2MdConversions = [
     [
         /^PRE$/,
         (add, currentNode) => {
-            const codeTarget = currentNode.querySelector("code") || currentNode;
+            const codeTarget =
+                querySelector("code", currentNode) || currentNode;
             const codeContent = codeTarget.textContent;
             const lang =
                 codeTarget.className.match(/language-(\S+)/)?.[1] || "";
-            add(`\`\`\`${lang}\n${codeContent}\`\`\`\n\n`, 1);
+            add(`\`\`\`${lang}\n${codeContent}\`\`\`\n\n`, true);
         }
     ],
     [
         /^H[1-6]$/,
         (add, currentNode) =>
             add(
-                `\n${"#".repeat(parseInt(currentNode.tagName[1]))} ${html2Md(currentNode, 1)}\n\n`,
-                1
+                `\n${"#".repeat(parseInt(currentNode.tagName[1]))} ${html2Md(currentNode, true)}\n\n`,
+                true
             )
     ],
     [
@@ -544,54 +720,71 @@ const html2MdConversions = [
                 parent = parent.parentElement;
                 tail = "\n";
             }
-            const listMd = html2Md(currentNode, 1);
+            const listMd = html2Md(currentNode, true);
             add(
                 indent +
-                    html2Md(currentNode, 1)
+                    html2Md(currentNode, true)
                         .trimEnd()
                         .replace(/\n/g, "\n" + indent) +
                     tail,
-                1
+                true
             );
         }
     ],
     [
         /^LI$/,
         (add, currentNode) => {
-            const parent = currentNode.parentElement;
+            const parent = /** @type {Element} */ (currentNode.parentElement);
             let prefix =
                 parent.tagName === "OL"
                     ? `${[...parent.children].filter((node) => node.tagName === "LI").indexOf(currentNode) + 1}. `
                     : "- ";
-            add(`${prefix}${html2Md(currentNode, 1)}\n`, 1);
+            add(`${prefix}${html2Md(currentNode, true)}\n`, true);
         }
     ],
     [
         // Only allowed inside of a list item
         /^INPUT$/,
-        (add, currentNode) => add(currentNode.checked ? "[x]" : "[ ]")
+        (add, currentNode) =>
+            add(
+                /** @type {HTMLInputElement} */ (currentNode).checked
+                    ? "[x]"
+                    : "[ ]"
+            )
     ],
     [
         /^BLOCKQUOTE$/,
         (add, currentNode) =>
-            add(`> ${html2Md(currentNode, 1).replace(/\n/g, "\n> ")}\n\n`, 1)
+            add(
+                `> ${html2Md(currentNode, true).replace(/\n/g, "\n> ")}\n\n`,
+                true
+            )
     ],
-    [/^BR$/, (add, currentNode) => add("\n", 1)],
+    [/^BR$/, (add, currentNode) => add("\n", true)],
     [
         /^(P|DIV)$/,
-        (add, currentNode) => add(html2Md(currentNode, 1) + "\n\n", 1)
+        (add, currentNode) => add(html2Md(currentNode, true) + "\n\n", true)
     ],
     [
         /^TABLE$/,
         (add, currentNode) => {
-            // [0] is maximum content length
-            // [1] is alignment (string)
-            // [2] is alignment length (left = 4, center = 6, right = 5)
-            // [3] is the divider row text (---, :---, :---:, ---:)
+            /**
+             * [0] is maximum content length
+             * [1] is alignment (string)
+             * [2] is alignment length (left = 4, center = 6, right = 5)
+             * [3] is the divider row text (---, :---, :---:, ---:)
+             * @typedef {[number, string, number, string]} ColInfo
+             */
+
+            /** @type {ColInfo[]} */
             const colDef = [];
+
+            /** @typedef {string[]} RowInfo */
+
+            /** @type {RowInfo[]} */
             const rows = [...querySelectorAll("tr", currentNode)].map((row) =>
                 [...querySelectorAll("td, th", row)].map((cell, i) => {
-                    const content = html2Md(cell, 1);
+                    const content = html2Md(cell, true);
                     const def = colDef[i] || [3, "left"];
                     def[0] = Math.max(def[0], content.length);
                     def[1] = getAttribute(cell, "align") || def[1];
@@ -599,6 +792,8 @@ const html2MdConversions = [
                     return content;
                 })
             );
+
+            /** @type {(row: RowInfo) => string} */
             const showRow = (row) =>
                 `| ${row
                     .map((cell, i) => {
@@ -613,6 +808,7 @@ const html2MdConversions = [
                         return cell.padStart(len + gapLeft).padEnd(want);
                     })
                     .join(" | ")} |\n`;
+
             // Increase minimum width for 3 hyphens and necessary colons
             for (const def of colDef) {
                 def[2] = def[1].length;
@@ -626,14 +822,14 @@ const html2MdConversions = [
                 }
             }
 
-            let result = showRow(rows.shift());
+            let result = showRow(/** @type {RowInfo} */ (rows.shift()));
             result += `| ${colDef.map((def) => def[3]).join(" | ")} |\n`;
 
             for (const row of rows) {
                 result += showRow(row);
             }
 
-            add(result + "\n", 1);
+            add(result + "\n", true);
         }
     ],
     [
@@ -646,7 +842,7 @@ const html2MdConversions = [
 
             if (use) {
                 const article = querySelector(
-                    `article:has(svg image#${cssEscape(getAttribute(use, "href").slice(1))})`
+                    `article:has(svg image#${cssEscape(/** @type {string} */ (getAttribute(use, "href")).slice(1))})`
                 );
 
                 if (article) {
@@ -662,44 +858,59 @@ const html2MdConversions = [
         }
     ],
     // Preserve all custom elements
-    [/-/, (add, currentNode) => add(currentNode.outerHTML + "\n\n", 1)],
+    [/-/, (add, currentNode) => add(currentNode.outerHTML + "\n\n", true)],
     // Strip away all unknown tags but keep their content
     [/.*/, (add, currentNode) => add(html2Md(currentNode))]
 ];
 
-// When inBlock is truthy, trim the markdown.
+/**
+ * Convert HTML back to Markdown.
+ * When inBlock is truthy, trim the markdown.
+ * @type {(el: Element, inBlock?: boolean) => string}
+ */
 const html2Md = (el, inBlock) => {
+    let trimFront = inBlock;
+    let md = "";
     const treeWalker = doc.createTreeWalker(
         el,
         NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT
     );
+    /**
+     * Adds content to the output buffer.
+     * @type {(text: string, isBlock?: boolean) => void}
+     */
     const add = (text, isBlock) => {
         if (trimFront && !isBlock) {
             text = text.trimStart();
 
             if (text.length) {
-                trimFront = 0;
+                trimFront = false;
             }
         }
 
         md += text;
 
         if (isBlock) {
-            trimFront = 1;
+            trimFront = true;
         }
     };
-    let md = "";
-    let trimFront = inBlock;
     let currentNode = treeWalker.nextNode();
 
     while (currentNode) {
         if (currentNode.nodeType === Node.TEXT_NODE) {
-            add(currentNode.textContent.replace(/\s+/g, " "));
+            add(
+                /** @type {string} */ (currentNode.textContent).replace(
+                    /\s+/g,
+                    " "
+                )
+            );
             currentNode = treeWalker.nextNode();
         } else {
             for (const [regex, handler] of html2MdConversions) {
-                if (regex.test(currentNode.tagName)) {
-                    handler(add, currentNode);
+                if (
+                    regex.test(/** @type {HTMLElement} */ (currentNode).tagName)
+                ) {
+                    handler(add, /** @type {HTMLElement} */ (currentNode));
                     break;
                 }
             }
@@ -724,7 +935,7 @@ const editPage = () => {
     hashEl.textContent = "#" + currentId;
 
     if (currentArticleEl) {
-        let v = html2Md(currentArticleEl, 1);
+        let v = html2Md(currentArticleEl, true);
 
         // position cursor after the content that is above the viewport
         const div = dom("div");
@@ -735,7 +946,7 @@ const editPage = () => {
             }
         }
 
-        let spot = html2Md(div, 1).length;
+        let spot = html2Md(div, true).length;
 
         while (spot && v[spot] === "\n") {
             spot += 1;
@@ -744,21 +955,23 @@ const editPage = () => {
         inputEl.value = v;
         inputEl.setSelectionRange(spot, spot);
     } else {
-        inputEl.value = '';
+        inputEl.value = "";
     }
 
     editing = true;
-    setFlag("edit", 1);
+    setFlag("edit", true);
     inputEl.focus();
 };
 
 const onLoad = () => {
     if (editing) {
         editing = false;
-        setFlag("edit", 0);
+        setFlag("edit");
     }
 
-    querySelector("#of_sidebar_toggle").checked = false;
+    /** @type {HTMLInputElement} */ (
+        querySelector("#of_sidebar_toggle")
+    ).checked = false;
     currentId = location.hash.slice(1);
     currentArticleEl = getArticle(currentId);
     const usedBy = [
@@ -779,12 +992,13 @@ const onLoad = () => {
 const doneEditing = () => {
     hashEl.innerHTML = "";
     editing = false;
-    setFlag("edit", 0);
+    setFlag("edit");
 
     // Handle pressing "Cancel" instead of creating a new page
     if (!currentArticleEl) location.hash = "";
 };
 
+/** @type {(articles: HTMLElement[]) => string} */
 const articleList = (articles) =>
     md2Html(
         [...articles]
@@ -804,7 +1018,8 @@ const articleList = (articles) =>
 
 const updateBrokenLinks = () => {
     const brokenLinks = [...querySelectorAll("article a[href^='#']")].filter(
-        (a) => !getArticle(a.getAttribute("href").slice(1))
+        (a) =>
+            !getArticle(/** @type {string} */ (a.getAttribute("href")).slice(1))
     );
     querySelector(".of_broken").innerHTML = linksToArticles(brokenLinks)
         .sort(sortArticleList)
@@ -813,7 +1028,7 @@ const updateBrokenLinks = () => {
                 `<div><a href="#${id}">${title}</a><ul><li>${links.map((link) => link.outerHTML).join("</li><li>")}</li></ul></div>`
         )
         .join("\n");
-    setFlag("broken", brokenLinks.length);
+    setFlag("broken", brokenLinks.length > 0);
 };
 
 // Update everything after content is changed and saved.
@@ -822,17 +1037,25 @@ const solidifyState = () => {
     // "data-of_transclude" attribute, to the elements with the
     // data-of_transclude attributes.
     querySelectorAll("[data-of_transclude]").forEach((el) => {
-        el.innerHTML = querySelector(el.dataset.of_transclude)?.innerHTML || "";
+        el.innerHTML =
+            querySelector(/** @type {string} */ (el.dataset.of_transclude))
+                ?.innerHTML || "";
     });
     querySelector(".of_index").innerHTML = md2Html(
         [...querySelectorAll("article")]
-            .map((article) => [articleTitle(article), article.id])
+            .map(
+                (article) =>
+                    /** @type {[string, string]} */ ([
+                        articleTitle(article),
+                        article.id
+                    ])
+            )
             .sort(sortArticleList)
             .map(([title, id]) => `[${title}](#${id})`)
             .join("\n")
     );
     updateBrokenLinks();
-    setFlag("dirty", 1);
+    setFlag("dirty", true);
 
     if (autosaveFileHandle) {
         autosaveAction();
@@ -868,10 +1091,11 @@ const saveEdits = () => {
     solidifyState();
 };
 
+/** @type {(props: object, callback: (file: File) => void) => void} */
 const askForFile = (props, callback) => {
-    const fileInput = dom("input", "", props);
-    fileInput.addEventListener("change", () => {
-        const file = fileInput.files[0];
+    const fileInput = /** @type {HTMLInputElement} */ (dom("input", "", props));
+    on(fileInput, "change", () => {
+        const file = /** @type {FileList} */ (fileInput.files)[0];
 
         if (file) {
             callback(file);
@@ -880,6 +1104,7 @@ const askForFile = (props, callback) => {
     fileInput.click();
 };
 
+/** @type {(name: string) => string} */
 const filenameToNewId = (name) => {
     if (getArticle(name)) {
         const [base, ext] = name.split(/(\.[^.]+$)/);
@@ -893,12 +1118,14 @@ const filenameToNewId = (name) => {
     return name;
 };
 
+/** @type {(id?: string) => HTMLElement} */
 const newArticle = (id) => {
     const el = dom("article", "", id ? { id } : {});
     articlesEl.append(el);
     return el;
 };
 
+/** @type {(name: string, dataUrl: string, isImage?: boolean) => void} */
 const saveFile = (name, dataUrl, isImage) => {
     const id = filenameToNewId(name);
     const el = newArticle(id);
@@ -914,29 +1141,10 @@ const detectWebDAV = async () => {
     if (location.protocol.startsWith("http")) {
         const response = await fetch(pathname, { method: "OPTIONS" });
         if (response.headers.get("DAV")) {
-            setFlag("webdav", 1);
+            setFlag("webdav", true);
         }
     }
 };
-
-/**
- * Get a list of elements that are manipulated more than once.
- *
- * Also, here is where the current state is tracked.
- */
-
-const inputEl = querySelector(".of_input");
-const hashEl = querySelector(".of_hash");
-const articlesEl = querySelector(".of_articles");
-const searchResultsEl = querySelector(".of_search_results");
-
-let currentId = ""; // Current page ID, derived from URL hash
-let currentArticleEl = null; // Current page's article element
-let editing = false; // Whether the editor is open or not
-let autosaveFileHandle; // If truthy, autosave is enabled
-let autoput = 0; // If truthy, WebDAV-based autosave is enabled
-let saveTimeout; // For showing the "saved" message
-let searchTimeout; // For debounce
 
 // Edit - this function is used when clicking the Edit button and
 // when navigating to a page that doesn't exist
@@ -957,14 +1165,14 @@ on(".of_download", "click", () => {
 // Enable File API-based autosaving. When active, any change will automatically
 // be saved to the local filesystem, overwriting the existing file.
 on(".of_autosave", "click", () => {
-    if (!window.showSaveFilePicker) {
+    if (!win.showSaveFilePicker) {
         alert("File System Access API not supported in this browser.");
         return;
     }
 
     if (autosaveFileHandle) {
         autosaveFileHandle = null;
-        setFlag("autosave", 0);
+        setFlag("autosave");
         return;
     }
 
@@ -1030,7 +1238,7 @@ on(".of_change_id", "click", () => {
             if (getArticle(newId)) {
                 alert("A page with that ID already exists.");
             } else {
-                currentArticleEl.id = newId;
+                /** @type {HTMLElement} */ (currentArticleEl).id = newId;
                 location.hash = newId;
                 querySelectorAll(`a[href="#${cssEscape(currentId)}"]`).forEach(
                     (a) => a.setAttribute("href", `#${newId}`)
@@ -1049,7 +1257,7 @@ on(".of_import", "click", () => {
         reader.onload = (event) => {
             const parser = new DOMParser();
             const importedDoc = parser.parseFromString(
-                event.target.result,
+                /** @type {string} */ (reader.result),
                 "text/html"
             );
             querySelectorAll("article", importedDoc).forEach(
@@ -1079,13 +1287,14 @@ on(".of_import", "click", () => {
 on(".of_upload", "click", () => {
     askForFile({ type: "file" }, (file) => {
         const reader = new FileReader();
+        const result = () => /** @type {string} */ (reader.result);
         reader.readAsDataURL(file);
         reader.onload = () => {
             if (file.type.startsWith("image/")) {
                 const img = new Image();
                 img.onload = async () => {
                     // Hash reader.result to get a unique ID
-                    const binary = atob(reader.result.split(",")[1]);
+                    const binary = atob(result().split(",")[1]);
                     const bytes = new Uint8Array(
                         [...binary].map((char) => char.charCodeAt(0))
                     );
@@ -1097,7 +1306,7 @@ on(".of_upload", "click", () => {
                         .map((b) => b.toString(16).padStart(2, "0"))
                         .join("");
                     const id = `of_image_${hashHex}`;
-                    let uri = reader.result.split(";");
+                    let uri = result().split(";");
                     uri.splice(
                         1,
                         0,
@@ -1108,71 +1317,102 @@ on(".of_upload", "click", () => {
                     saveFile(file.name, uri.join(";"), true);
                 };
                 img.onerror = () => {
-                    saveFile(file.name, reader.result);
+                    saveFile(file.name, result());
                 };
-                img.src = reader.result;
+                img.src = result();
             } else {
-                saveFile(file.name, reader.result);
+                saveFile(file.name, result());
             }
         };
     });
 });
 
 // Searching
-on(".of_search", "input", (event) => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        const value = event.target.value.trim().toLowerCase();
+on(
+    ".of_search",
+    "input",
+    /** @type {(event: InputEvent) => void} */ (
+        (event) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const value = /** @type {HTMLInputElement} */ (
+                    event.target
+                ).value
+                    .trim()
+                    .toLowerCase();
 
-        if (!value.length) {
-            searchResultsEl.innerHTML = "";
-            return;
+                if (!value.length) {
+                    searchResultsEl.innerHTML = "";
+                    return;
+                }
+
+                if (!value.match(/\w{3}/)) {
+                    searchResultsEl.innerHTML =
+                        "Not enough characters to search.";
+                    return;
+                }
+
+                const matchWords = value.split(/\s+/);
+                searchResultsEl.innerHTML =
+                    articleList(
+                        [...querySelectorAll("article")].filter((article) => {
+                            const text = article.textContent.toLowerCase();
+                            return matchWords.every((word) =>
+                                text.includes(word)
+                            );
+                        })
+                    ) || "No results.";
+            }, 300);
         }
-
-        if (!value.match(/\w{3}/)) {
-            searchResultsEl.innerHTML = "Not enough characters to search.";
-            return;
-        }
-
-        const matchWords = value.split(/\s+/);
-        searchResultsEl.innerHTML =
-            articleList(
-                [...querySelectorAll("article")].filter((article) => {
-                    const text = article.textContent.toLowerCase();
-                    return matchWords.every((word) => text.includes(word));
-                })
-            ) || "No results.";
-    }, 300);
-});
+    )
+);
 
 // Set internal state when navigating to a new page or upon
 // initial load
-window.addEventListener("hashchange", onLoad);
-window.addEventListener("keydown", (event) => {
-    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-        event.preventDefault();
+on(win, "hashchange", onLoad);
+on(
+    win,
+    "keydown",
+    /** @type {(event: KeyboardEvent) => void} */ (
+        (event) => {
+            if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+                event.preventDefault();
 
-        if (editing) {
-            saveEdits();
-        } else {
-            editPage();
+                if (editing) {
+                    saveEdits();
+                } else {
+                    editPage();
+                }
+            }
         }
-    }
-});
+    )
+);
 
 // Preserve checkbox state into HTML
-document.addEventListener("change", ({ target }) => {
-    // Skip the sidebar toggle
-    if (target?.type === "checkbox" && !target.id) {
-        target.toggleAttribute("checked", target.checked);
-        solidifyState();
-    }
-});
+on(
+    doc,
+    "change",
+    /** @type {(event: InputEvent) => void} */ (
+        ({ target }) => {
+            // Skip the sidebar toggle
+            if (
+                /** @type {HTMLInputElement} */ (target)?.type === "checkbox" &&
+                !(/** @type {HTMLInputElement} */ (target).id)
+            ) {
+                /** @type {HTMLInputElement} */ (target).toggleAttribute(
+                    "checked",
+                    /** @type {HTMLInputElement} */ (target).checked
+                );
+                solidifyState();
+            }
+        }
+    )
+);
 onLoad();
-updateBrokenLinks(); // of_broken_flag is not preserved during save
+updateBrokenLinks(); // of_broken_flag is intentionally not preserved during save
 
 // Finally, show the buttons
-setFlag("js", 1);
+setFlag("js", true);
 
 // Detect WebDAV support
 detectWebDAV();

@@ -8,6 +8,7 @@
     "devDependencies": {
         "@playwright/test": "^1.60.0",
         "@types/node": "^25.9.2",
+        "@types/wicg-file-system-access": "^2023.10.7",
         "html-minifier-next": "^7.0.0",
         "jsdom": "^29.1.1",
         "nestedtext": "^1.2.0",

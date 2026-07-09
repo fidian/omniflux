@@ -10,6 +10,8 @@ html {
     }
 }
 
+/* Sidebar colors change based on if there are changes or if the content is
+ * automatically saving. */
 :root {
     --of-sidebar-color: #ccf;
     --of-sidebar-section-color: #aae;
@@ -29,7 +31,7 @@ body.of_dirty_flag {
     --of-sidebar-hover: #fed;
 }
 
-/* CSS-based navigation - see https://dev.to/fedia/15kb-single-file-wiki-46a1 */
+/* CSS-based navigation - https://dev.to/fedia/15kb-single-file-wiki-46a1 */
 article {
     display: none;
     padding: 0 0.25em;
@@ -40,10 +42,12 @@ article:target,
     display: block;
 }
 
+/* Make animations easier */
 :root {
     interpolate-size: allow-keywords;
 }
 
+/* Size content so 100% includes borders */
 * {
     box-sizing: border-box;
 }
@@ -61,12 +65,15 @@ article {
     margin: 0 auto;
     max-width: 960px;
 
+    /* Restrict images so they fit in the article */
     img {
         height: auto;
         max-width: 100%;
     }
 }
 
+/* When on a small display, push the content down so the sidebar tab isn't
+ * overlapping the title. */
 @media screen and (max-width: 1060px) {
     article {
         margin-top: 50px;
@@ -101,6 +108,7 @@ article {
     resize: none;
 }
 
+/* When editing, hide the scrollbar */
 body.of_edit_flag {
     overflow: hidden;
 }
@@ -137,6 +145,7 @@ body.of_edit_flag {
     }
 }
 
+/* Clean up pages when printed */
 @media print {
     .of_toolbar,
     .of_sidebar {
@@ -144,11 +153,13 @@ body.of_edit_flag {
     }
 }
 
+/* Hidden input that is used for CSS-based opening and closing of the sidebar
+ * panel. */
 #of_sidebar_toggle {
     display: none;
 
     &:checked ~ label {
-        /* https://codepen.io/anon/pen/OrxKWb */
+        /* Animated burger menu bars - https://codepen.io/anon/pen/OrxKWb */
         .of_burger_top {
             transform: translateY(10.3px) rotate(135deg);
         }
@@ -186,6 +197,7 @@ body.of_edit_flag {
 }
 
 .of_sidebar_bar {
+    /* Scrollbar on the left */
     direction: ltr;
 
     summary {
@@ -196,6 +208,8 @@ body.of_edit_flag {
         > div {
             line-height: 1.25;
 
+            /* Hide margins for first and last child so content is closer to
+             * the expandable section label. */
             > :first-child {
                 margin-top: 0;
             }
@@ -213,6 +227,7 @@ body.of_edit_flag {
             padding: 0 0.2em;
             user-select: none;
 
+            /* Make icons a consistent size so the text labels line up. */
             .of_icon {
                 display: inline-block;
                 width: 1.25em;
@@ -242,10 +257,6 @@ body.of_edit_flag {
     transition: all 0.2s ease-in-out;
 }
 
-.hidden {
-    display: none;
-}
-
 code {
     white-space: pre-wrap;
 }
@@ -265,6 +276,7 @@ pre {
     border: 1px solid #bbb;
 }
 
+/* Keyboard shortcuts */
 kbd {
     background-color: #f7f7f7;
     border: 1px solid #ccc;
@@ -278,6 +290,7 @@ kbd {
     white-space: nowrap;
 }
 
+/* Animate the content open/close in the sidebar's accordion */
 ::details-content {
     transition:
         block-size 0.3s ease-out,
@@ -343,6 +356,7 @@ table {
     }
 }
 
+/* Toaster message when save is successful */
 .of_saved {
     position: fixed;
     right: 0.4em;
@@ -359,10 +373,12 @@ table {
     opacity: 1;
 }
 
+/* Task lists - hide the bullets */
 li:has(> input) {
     list-style: none;
 }
 
+/* Using flags to show or hide content */
 .of_autoput_flag .of_autoput_off,
 .of_autosave_flag .of_autosave_off,
 .of_broken_flag .of_broken_off,
@@ -382,12 +398,14 @@ body:not(.of_webdav_flag) .of_webdav_on {
     display: none;
 }
 
+/* If in dark mode, apply a filter to make the page dark. */
 @media screen and (prefers-color-scheme: dark) {
     html {
         filter: invert(1) hue-rotate(180deg);
     }
 }
 
+/* Limit a table's width and scroll if necessary */
 article table {
     display: block;
     overflow-x: auto;
