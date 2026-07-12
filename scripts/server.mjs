@@ -7,7 +7,7 @@ import { createServer } from 'node:http';
 import { makeContent } from './make-content.mjs';
 import { writeFile } from 'node:fs/promises';
 
-const hostname = 'localhost';
+const hostname = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? parseInt(process.env.PORT) : 5173;
 
 function log(...args) {
