@@ -1292,12 +1292,14 @@ on(".of_import", "click", () => {
                     articlesEl.append(importedArticle);
                 }
             );
-            querySelectorAll("style:not(.of_core)", importedDoc).forEach(
+            // Copy styles that are not embedded in an article
+            querySelectorAll("style:not(.of_core,article *)", importedDoc).forEach(
                 (style) => {
                     doc.head.appendChild(style);
                 }
             );
-            querySelectorAll("script:not(.of_core)", importedDoc).forEach(
+            // Copy scripts that are not embedded in an article
+            querySelectorAll("script:not(.of_core,article *)", importedDoc).forEach(
                 (script) => {
                     doc.body.appendChild(script);
                 }
