@@ -1,7 +1,11 @@
 md2html: true
 html2md: true
 markdown:
- > [one](#one) [one two](#one-two)
+ > [1](#one) [1 2](#one-two)
+ >
+ > [[One]] [[One Two]]
+ >
+ > [[Â_Ţöūγḩ-57ℝįñģ _123]]
  >
  > ![alt](#image) [![alt](#image)](#image)
  >
@@ -11,7 +15,11 @@ markdown:
  > [Example](https://example.com)
 html:
  >
- > <p><a href="#one">one</a> <a href="#one-two">one two</a></p>
+ > <p><a href="#one">1</a> <a href="#one-two">1 2</a></p>
+ >
+ > <p><a href="#one">One</a> <a href="#one-two">One Two</a></p>
+ >
+ > <p><a href="#a_tou-h-57-ing-_123">Â_Ţöūγḩ-57ℝįñģ _123</a></p>
  >
  > <p><img src="#image" alt="alt" title="alt"> <a href="#image"><img src="#image" alt="alt" title="alt"></a></p>
  >

@@ -13,8 +13,8 @@
 </thead>
 <tbody>
 <tr><td align="center">Easiest</td><td align="left">Within this wiki</td><td align="left">Open the sidebar, click Saving, then follow the instructions.</td></tr>
-<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Docs</a></td><td align="left">Get it from the source. Includes all documentation, a custom element, commented JavaScript and CSS, plus the solar flare image (about 104k). Right-click and "Save Link As."</td></tr>
-<tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">Minified, no content. When every byte matters (about 20k).</td></tr>
+<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Docs</a></td><td align="left">Get it from the source. Includes all documentation, a custom element, commented JavaScript and CSS, plus the solar flare image (about 107k). Right-click and "Save Link As."</td></tr>
+<tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">Minified, no content. When every byte matters (about 21k).</td></tr>
 <tr><td align="center">Custom</td><td align="left"><a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">GitHub repository</a></td><td align="left">Build your own!</td></tr>
 </tbody>
 </table>
@@ -83,6 +83,10 @@ Octocat is external, the solar flare is completely within the wiki.</p>
 
 <p>Use <i>italics</i>, <b>bold</b>, and <b><i>both</i></b>. This works even<b>within</b>words. Also, <s>strikethrough</s> and <u>underline</u>. You can even <u><i>combine</i></u> these.</p>
 
+<pre><code class="language-md">*italics*, **bold**, and ***both***.
+~~strikethrough~~, ~underline~, and ~*combined*~.
+</code></pre>
+
 <p>Paragraphs are one long line. These will become a single paragraph. Do not use newlines inside of a paragraph unless you want the paragraph broken onto another line, like the following message:</p>
 
 <p>When you use newlines<br>
@@ -99,6 +103,9 @@ Make your own haiku</p>
 
 <p>Headings 1 through 6 are supported. Put the corresponding number of <code>#</code> symbols at the beginning of a line.</p>
 
+<pre><code class="language-md">## Headings
+</code></pre>
+
 
 <h4>Avoid</h4>
 
@@ -112,10 +119,18 @@ Make your own haiku</p>
 <li>Just prefix each list item with a number and a period.</li>
 </ol>
 
+<pre><code class="language-md">1. First Item
+2. Second Item
+</code></pre>
+
 <ul>
 <li>Unordered lists are also supported.</li>
 <li>Use a hyphen for each item</li>
 </ul>
+
+<pre><code class="language-md">- First Item
+- Second Item
+</code></pre>
 
 <p>You can also use nested lists.</p>
 
@@ -131,7 +146,14 @@ Make your own haiku</p>
 </ul>
 </ul>
 
-<p>Task lists are allowed and they can be nested.</p>
+<pre><code class="language-md">- Naughty List
+  1. Tyler
+  2. Brian
+- Nice list
+  - Basically everyone else
+</code></pre>
+
+<p>Task lists are allowed and they can be nested. When you click on a task to mark it complete or incomplete, it updates the wiki. If autosave is enabled, the updated wiki is also saved.</p>
 
 <ul>
 <li><input type="checkbox"> Not done</li>
@@ -140,6 +162,10 @@ Make your own haiku</p>
 <li><input type="checkbox" checked=""> Done child</li>
 </ol>
 </ul>
+
+<pre><code class="language-md">- [ ] Not done
+- [x] Done
+</code></pre>
 
 
 <h4>Avoid</h4>
@@ -155,13 +181,29 @@ Make your own haiku</p>
 
 <p>Link to an external page: <a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></p>
 
-<p>Link to an internal page: <a href="#">Main Page</a> or <a href="#markdown">Markdown Info</a></p>
+<pre><code class="language-md">[Link Text](https://example.com/)
+</code></pre>
+
+<p>Linking to an internal page is accomplished in two different ways. When the link text matches the ID, you can surround in double brackets, like <a href="#changelog">Changelog</a> and <a href="#fair-comparison">Fair Comparison</a>, When you want a custom name for a page, you link using a standard link, like <a href="#">Main Page</a> and <a href="#markdown">Markdown Info</a>.</p>
+
+<pre><code class="language-md">[[Changelog]] and [[Fair Comparison]]
+[Main Page](#) and [Markdown Info](#markdown)
+</code></pre>
 
 <p>External image: <img src="https://fidian.github.io/omniflux/octocat.svg" alt="Octocat" title="Octocat"> (the "alt text" is also converted to a title)</p>
 
+<pre><code class="language-md">![Octocat](https://fidian.github.io/omniflux/octocat.svg)
+</code></pre>
+
 <p>Linking around an external image: <a href="https://fidian.github.io/omniflux/octocat.svg" target="_blank" rel="noopener noreferrer"><img src="https://fidian.github.io/omniflux/octocat.svg" alt="Octocat" title="Octocat"></a></p>
 
-<p>Images can be uploaded into the wiki referenced later, like this solar flare: <svg xmlns="http://www.w3.org/2000/svg" class="of_image" width="36" height="34" viewBox="0 0 36 34"><title>Solar Flare</title><use href="#of_image_0ccd8e80c53a8265c6ebe6c3def45f0a771946dc4c3e106d735359b93847b81c"></use></svg></p>
+<pre><code class="language-md">[![Octocat](https://fidian.github.io/omniflux/octocat.svg)](https://fidian.github.io/omniflux/octocat.svg)
+</code></pre>
+
+<p>Images that are uploaded into the wiki can be referenced and used in any page, like this solar flare: <svg xmlns="http://www.w3.org/2000/svg" class="of_image" width="36" height="34" viewBox="0 0 36 34"><title>Solar Flare</title><use href="#of_image_0ccd8e80c53a8265c6ebe6c3def45f0a771946dc4c3e106d735359b93847b81c"></use></svg></p>
+
+<pre><code class="language-md">![Solar Flare](#solar-flare.jpg)
+</code></pre>
 
 
 <h4>Avoid</h4>
@@ -179,7 +221,9 @@ Make your own haiku</p>
 
 <h2>Code</h2>
 
-<p>You can inline a <code>block of code</code> with backticks.</p>
+<p>Short passages of code can stand out by using a single backtick at the start and end of the inline passage, <code>like this</code>.</p>
+
+<p>You can enter a <code>block of code</code> by having a line of three backticks in a row to start the section and another three backticks in a row to end the section. Edit this page to see many examples of embedded code blocks.</p>
 
 <pre><code>Code fences are supported and language information is preserved.
 </code></pre>
@@ -189,7 +233,7 @@ Make your own haiku</p>
 
 <h4>Avoid</h4>
 
-<p>Code fences can specify a language, but no special highlighting happens.</p>
+<p>Code fences can specify a language, but no special highlighting happens by default.</p>
 
 <p>Indenting a block of code with 4 spaces will not turn it into a code block.</p>
 
@@ -216,6 +260,11 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 
 </blockquote>
 
+<pre><code>&gt; This is an example
+&gt;
+&gt; &gt; Nested blockquotes work.
+</code></pre>
+
 
 <h4>Avoid</h4>
 
@@ -224,7 +273,9 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 
 <h2>Tables</h2>
 
-<p>Standard Markdown works for tables, plus alignment is supported. Headings are required. Tables are automatically formatted in the Markdown to align on columns for easier editing. This happens every time, so don't worry about extra whitespace or formatting while editing. OmniFlux will clean it up for you!</p>
+<p>Standard Markdown works for tables, plus alignment is supported. Headings are required.</p>
+
+<p>Tables are automatically formatted in the Markdown to align on columns for easier editing. This happens every time, so don't worry about extra whitespace or formatting while editing. OmniFlux will clean it up for you!</p>
 
 <table>
 <thead>
@@ -239,6 +290,13 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 
 <p>Markdown formatting within cells is allowed.</p>
 
+<pre><code>| Left | Center | Right |
+| ---- | :----: | ----: |
+| 1    |   1    |     1 |
+| 10   |   10   |    10 |
+| 100  |  100   |   100 |
+</code></pre>
+
 
 <h4>Avoid</h4>
 
@@ -252,6 +310,9 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 
 <hr>
 
+
+<pre><code>---
+</code></pre>
 
 
 <h4>Avoid</h4>
@@ -320,6 +381,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>Is your version a little stale or missing some features? <a href="#upgrading">Learn how to upgrade!</a></p>
 
 <ul>
+<li><b>2026-07-12</b> - Added support for <code>[[Page Title]]</code> for faster linking to internal pages.</li>
 <li><b>2026-07-10</b> - Fixing sidebar icon display on Android.</li>
 <li><b>2026-07-08</b> - Included TypeScript annotations into the JavaScript to allow intelligent editors the ability to have more context. This is preserved in the non-minified build.</li>
 <li><b>2026-06-29</b> - Debounced search and require at least 3 characters. Added detection of broken internal links. Fixed minor issues with CSS, especially around mobile devices. Place cursor near content viewed when editing a page.</li>
@@ -447,7 +509,7 @@ MutationObserver(mutations =&gt; {
 <tbody>
 <tr><td align="center"><a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a></td><td align="center">POC</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">9k</td><td align="center">No</td><td align="center">HTML + Template</td></tr>
 <tr><td align="center"><a href="https://feather.wiki/" target="_blank" rel="noopener noreferrer">Feather Wiki</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">WYSIWYG / MD</td><td align="center">56k</td><td align="center">Yes</td><td align="center">JSON</td></tr>
-<tr><td align="center"><a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></td><td align="center">New</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">20k</td><td align="center">No</td><td align="center">HTML</td></tr>
+<tr><td align="center"><a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></td><td align="center">New</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">21k</td><td align="center">No</td><td align="center">HTML</td></tr>
 <tr><td align="center"><a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">2,490k</td><td align="center">Yes</td><td align="center">JSON</td></tr>
 <tr><td align="center"><a href="https://stickwiki.sourceforge.net/" target="_blank" rel="noopener noreferrer">WOAS</a></td><td align="center">Old</td><td align="center">No</td><td align="center">WikiText</td><td align="center">408k</td><td align="center">No</td><td align="center">JSON</td></tr>
 <tr><td align="center"><a href="https://sourceforge.net/p/woas/home/Welcome/" target="_blank" rel="noopener noreferrer">WOAS Fork</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">WikiText</td><td align="center">732k</td><td align="center">No</td><td align="center">JSON</td></tr>
@@ -557,7 +619,7 @@ MutationObserver(mutations =&gt; {
 <tr><td align="left">Status</td><td align="left">New</td></tr>
 <tr><td align="left">One File</td><td align="left">Yes</td></tr>
 <tr><td align="left">Editing</td><td align="left">Markdown</td></tr>
-<tr><td align="left">Size</td><td align="left">20 kilobytes</td></tr>
+<tr><td align="left">Size</td><td align="left">21 kilobytes</td></tr>
 <tr><td align="left">Extensible</td><td align="left">No</td></tr>
 <tr><td align="left">Storage</td><td align="left">HTML</td></tr>
 <tr><td align="left">Embed Files</td><td align="left">Yes, all kinds</td></tr>

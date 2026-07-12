@@ -178,6 +178,20 @@ const id2Name = (id) =>
     doc.title;
 
 /**
+ * The reverse of id2Name, used for [[Page Title]] -> page-title
+ * Removes accents, changes non-alphanumeric to hyphens, consolidates hyphens.
+ * @type {(name: string) => string}
+ */
+const name2Id = (name) =>
+    name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/\W+/g, " ")
+        .trim()
+        .replace(/ /g, "-");
+
+/**
  * Save has happened. Update flags, show toaster.
  * @type {() => void}
  */
@@ -446,6 +460,13 @@ const inlineRules = [
         }
     ],
     [
+        /\[\[(.*?)\]\]/,
+        (_, txt) =>
+            dom("a", mdInline(txt), {
+                href: "#" + name2Id(txt)
+            })
+    ],
+    [
         // Support images inside links
         /\[((!\[.*?\]\(.+?\)|.)+?)\]\((.+?)\)/,
         (_, txt, _x, href) =>
@@ -680,7 +701,12 @@ const html2MdConversions = [
         (add, currentNode) => {
             const href = getAttribute(currentNode, "href");
             const text = html2Md(currentNode);
-            add(href === text ? href : `[${text}](${href})`);
+
+            if (href === "#" + name2Id(text)) {
+                add(`[[${text}]]`);
+            } else {
+                add(href === text ? href : `[${text}](${href})`);
+            }
         }
     ],
     [
