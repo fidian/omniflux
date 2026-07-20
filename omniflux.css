@@ -18,14 +18,14 @@ html {
     --of-sidebar-hover: #def;
 }
 
-body.of_autosave_flag,
-body.of_autoput_flag {
+body.of-autosave-flag,
+body.of-autoput-flag {
     --of-sidebar-color: #cfc;
     --of-sidebar-section-color: #aea;
     --of-sidebar-hover: #beb;
 }
 
-body.of_dirty_flag {
+body.of-dirty-flag {
     --of-sidebar-color: #fcc;
     --of-sidebar-section-color: #eaa;
     --of-sidebar-hover: #fed;
@@ -38,7 +38,7 @@ article {
 }
 
 article:target,
-.of_articles:not(:has(> :target)) > .index {
+.of-articles:not(:has(> :target)) > .index {
     display: block;
 }
 
@@ -81,7 +81,7 @@ article {
     }
 }
 
-.of_editor {
+.of-editor {
     background-color: inherit;
     display: flex;
     flex-direction: column;
@@ -93,14 +93,14 @@ article {
     width: 100%;
 }
 
-.of_menu {
+.of-menu {
     display: flex;
     gap: 0.5rem;
     justify-content: space-between;
     padding: 0.5rem;
 }
 
-.of_input {
+.of-input {
     border: 0;
     flex: 1;
     outline: none;
@@ -109,11 +109,11 @@ article {
 }
 
 /* When editing, hide the scrollbar */
-body.of_edit_flag {
+body.of-edit-flag {
     overflow: hidden;
 }
 
-.of_toolbar {
+.of-toolbar {
     display: flex;
     width: 100%;
     justify-content: flex-end;
@@ -129,7 +129,7 @@ body.of_edit_flag {
     }
 }
 
-.of_sidebar {
+.of-sidebar {
     display: flex;
     position: fixed;
     top: 0;
@@ -139,7 +139,7 @@ body.of_edit_flag {
     transform: translateX(calc(-100% + 50px));
     transition: transform 0.3s cubic-bezier(0.77, 0.2, 0.05, 1);
 
-    &:has(#of_sidebar_toggle:checked) {
+    &:has(#of-sidebar-toggle:checked) {
         /* Use transform for smooth animation */
         transform: translateX(0);
     }
@@ -147,34 +147,34 @@ body.of_edit_flag {
 
 /* Clean up pages when printed */
 @media print {
-    .of_toolbar,
-    .of_sidebar {
+    .of-toolbar,
+    .of-sidebar {
         display: none;
     }
 }
 
 /* Hidden input that is used for CSS-based opening and closing of the sidebar
  * panel. */
-#of_sidebar_toggle {
+#of-sidebar-toggle {
     display: none;
 
     &:checked ~ label {
         /* Animated burger menu bars - https://codepen.io/anon/pen/OrxKWb */
-        .of_burger_top {
+        .of-burger-top {
             transform: translateY(10.3px) rotate(135deg);
         }
 
-        .of_burger_mid {
+        .of-burger-mid {
             transform: scale(0);
         }
 
-        .of_burger_bot {
+        .of-burger-bot {
             transform: translateY(-10.3px) rotate(-135deg);
         }
     }
 }
 
-.of_sidebar_wrap {
+.of-sidebar-wrap {
     background-color: var(--of-sidebar-color);
     display: flex;
     flex-direction: column;
@@ -184,7 +184,7 @@ body.of_edit_flag {
     direction: rtl;
 }
 
-.of_title {
+.of-title {
     font-size: 1.3em;
     font-weight: bold;
     padding: 0.5em 0.25em;
@@ -196,7 +196,7 @@ body.of_edit_flag {
     }
 }
 
-.of_sidebar_bar {
+.of-sidebar-bar {
     /* Scrollbar on the left */
     direction: ltr;
 
@@ -228,7 +228,7 @@ body.of_edit_flag {
             user-select: none;
 
             /* Make icons a consistent size so the text labels line up. */
-            .of_icon {
+            .of-icon {
                 display: inline-block;
                 width: 1.25em;
                 text-align: center;
@@ -239,7 +239,7 @@ body.of_edit_flag {
     }
 }
 
-.of_sidebar_handle {
+.of-sidebar-handle {
     background-color: var(--of-sidebar-color);
     display: flex;
     flex-direction: column;
@@ -251,7 +251,7 @@ body.of_edit_flag {
     border-bottom-right-radius: 10px;
 }
 
-.of_hamburger_bar {
+.of-hamburger-bar {
     background-color: #333;
     border-radius: 3px;
     height: 100%;
@@ -319,7 +319,7 @@ blockquote {
     margin: 0 0 16px 0;
 }
 
-.of_notice {
+.of-notice {
     padding: 0.5em;
     margin: 0.5em 0.5em;
     text-align: center;
@@ -345,8 +345,8 @@ table {
     }
 }
 
-.of_overview,
-.of_index {
+.of-overview,
+.of-index {
     a:hover {
         background-color: var(--of-sidebar-hover);
     }
@@ -358,7 +358,7 @@ table {
 }
 
 /* Toaster message when save is successful */
-.of_saved {
+.of-saved {
     position: fixed;
     right: 0.4em;
     bottom: 0.4em;
@@ -370,7 +370,7 @@ table {
     pointer-events: none;
 }
 
-.of_saved_flag .of_saved {
+.of-saved-flag .of-saved {
     opacity: 1;
 }
 
@@ -380,22 +380,22 @@ li:has(> input) {
 }
 
 /* Using flags to show or hide content */
-.of_autoput_flag .of_autoput_off,
-.of_autosave_flag .of_autosave_off,
-.of_broken_flag .of_broken_off,
-.of_dirty_flag .of_dirty_off,
-.of_edit_flag .of_edit_off,
-.of_js_flag .of_js_off,
-.of_saved_flag .of_saved_off,
-.of_webdav_flag .of_webdav_off,
-body:not(.of_autoput_flag) .of_autoput_on,
-body:not(.of_autosave_flag) .of_autosave_on,
-body:not(.of_broken_flag) .of_broken_on,
-body:not(.of_dirty_flag) .of_dirty_on,
-body:not(.of_edit_flag) .of_edit_on,
-body:not(.of_js_flag) .of_js_on,
-body:not(.of_saved_flag) .of_saved_on,
-body:not(.of_webdav_flag) .of_webdav_on {
+.of-autoput-flag .of-autoput-off,
+.of-autosave-flag .of-autosave-off,
+.of-broken-flag .of-broken-off,
+.of-dirty-flag .of-dirty-off,
+.of-edit-flag .of-edit-off,
+.of-js-flag .of-js-off,
+.of-saved-flag .of-saved-off,
+.of-webdav-flag .of-webdav-off,
+body:not(.of-autoput-flag) .of-autoput-on,
+body:not(.of-autosave-flag) .of-autosave-on,
+body:not(.of-broken-flag) .of-broken-on,
+body:not(.of-dirty-flag) .of-dirty-on,
+body:not(.of-edit-flag) .of-edit-on,
+body:not(.of-js-flag) .of-js-on,
+body:not(.of-saved-flag) .of-saved-on,
+body:not(.of-webdav-flag) .of-webdav-on {
     display: none;
 }
 

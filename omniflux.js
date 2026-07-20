@@ -41,10 +41,10 @@ const querySelectorAll = (selector, root = doc) =>
  * @type {(selector: string, root?: Document | HTMLElement) => HTMLElement}
  */
 const querySelector = (selector, root) => querySelectorAll(selector, root)[0];
-const inputEl = /** @type {HTMLInputElement} */ (querySelector(".of_input"));
-const hashEl = querySelector(".of_hash");
-const articlesEl = querySelector(".of_articles");
-const searchResultsEl = querySelector(".of_search_results");
+const inputEl = /** @type {HTMLInputElement} */ (querySelector(".of-input"));
+const hashEl = querySelector(".of-hash");
+const articlesEl = querySelector(".of-articles");
+const searchResultsEl = querySelector(".of-search-results");
 
 /**
  * @typedef {string | Element | RecursiveContentArray} RecursiveContent
@@ -118,7 +118,7 @@ const on = (target, event, handler) =>
  * @type {(flag: string, value?: boolean) => void}
  */
 const setFlag = (flag, value = false) => {
-    doc.body.classList.toggle(`of_${flag}_flag`, !!value);
+    doc.body.classList.toggle(`of-${flag}-flag`, !!value);
 };
 
 /**
@@ -131,21 +131,21 @@ const wikiContent = () => {
     );
 
     // Reset the sidebar to the default state
-    querySelectorAll(".of_sidebar_bar [open]", copy).forEach((details) =>
+    querySelectorAll(".of-sidebar-bar [open]", copy).forEach((details) =>
         details.removeAttribute("open")
     );
-    querySelector(".of_overview", copy).setAttribute("open", "");
+    querySelector(".of-overview", copy).setAttribute("open", "");
 
     // Remove flag classes
     const classList = querySelector("body", copy).classList;
     [...classList].forEach((cls) => {
-        if (cls.match(/^of_/)) {
+        if (cls.match(/^of-/)) {
             classList.remove(cls);
         }
     });
 
     // Clear search results, backlinks
-    querySelectorAll(".of_search_results,.of_backlinks", copy).forEach(
+    querySelectorAll(".of-search-results,.of-backlinks", copy).forEach(
         (el) => (el.innerHTML = "")
     );
 
@@ -376,10 +376,10 @@ const inlineRules = [
         // point to the hash of the image.
         //
         // ![alt1](data:image/png;base64,...)
-        // <svg xmlns="..." width="800" height="600" viewBox="0 0 800 600"><title>alt1</title><image id="of_image_HASH" width="800" height="600" href="data:image/png;base64,..."/></svg>
+        // <svg xmlns="..." width="800" height="600" viewBox="0 0 800 600"><title>alt1</title><image id="of-image-HASH" width="800" height="600" href="data:image/png;base64,..."/></svg>
         //
-        // ![alt2](#page_ID)
-        // <svg xmlns="..." class="of_image" width="800" height="600" viewBox="0 0 800 600"><title>alt2</title><use href="#of_image_HASH"/></svg>
+        // ![alt2](#page-ID)
+        // <svg xmlns="..." class="of-image" width="800" height="600" viewBox="0 0 800 600"><title>alt2</title><use href="#of-image-HASH"/></svg>
         /!\[(.*?)\]\((.+?)\)/,
         (_, alt, src) => {
             if (src.startsWith("data:")) {
@@ -445,7 +445,7 @@ const inlineRules = [
                             ],
                             {
                                 xmlns: svgns,
-                                class: "of_image",
+                                class: "of-image",
                                 width,
                                 height,
                                 viewBox: `0 0 ${width} ${height}`
@@ -892,11 +892,14 @@ const html2MdConversions = [
 /**
  * Convert HTML back to Markdown.
  * When inBlock is truthy, trim the markdown.
- * @type {(el: Element, inBlock?: boolean) => string}
+ * @type {(el: HTMLElement, inBlock?: boolean) => string}
  */
 const html2Md = (el, inBlock) => {
     let trimFront = inBlock;
     let md = "";
+
+    // Clear transcluded content to prevent confusion when editing
+    querySelectorAll("[data-of-transclude]", el).forEach((x) => x.innerHTML = "");
     const treeWalker = doc.createTreeWalker(
         el,
         NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT
@@ -996,7 +999,7 @@ const onLoad = () => {
     }
 
     /** @type {HTMLInputElement} */ (
-        querySelector("#of_sidebar_toggle")
+        querySelector("#of-sidebar-toggle")
     ).checked = false;
     currentId = location.hash.slice(1);
     currentArticleEl = getArticle(currentId);
@@ -1008,7 +1011,7 @@ const onLoad = () => {
         .map((x) => `[href="#${cssEscape(x)}"]`)
         .join(",");
     const backLinks = [...querySelectorAll(`article:has(${usedBy})`)];
-    querySelector(".of_backlinks").innerHTML = backLinks.length
+    querySelector(".of-backlinks").innerHTML = backLinks.length
         ? articleList(backLinks)
         : "No pages link here.";
 
@@ -1047,7 +1050,7 @@ const updateBrokenLinks = () => {
         (a) =>
             !getArticle(/** @type {string} */ (a.getAttribute("href")).slice(1))
     );
-    querySelector(".of_broken").innerHTML = linksToArticles(brokenLinks)
+    querySelector(".of-broken").innerHTML = linksToArticles(brokenLinks)
         .sort(sortArticleList)
         .map(
             ([title, id, links]) =>
@@ -1060,14 +1063,14 @@ const updateBrokenLinks = () => {
 // Update everything after content is changed and saved.
 const solidifyState = () => {
     // Copy HTML from elements, whose query selectors are in the
-    // "data-of_transclude" attribute, to the elements with the
-    // data-of_transclude attributes.
-    querySelectorAll("[data-of_transclude]").forEach((el) => {
+    // "data-of-transclude" attribute, to the elements with the
+    // data-of-transclude attributes.
+    querySelectorAll("[data-of-transclude]").forEach((el) => {
         el.innerHTML =
-            querySelector(/** @type {string} */ (el.dataset.of_transclude))
+            querySelector(/** @type {string} */ (el.dataset.ofTransclude))
                 ?.innerHTML || "";
     });
-    querySelector(".of_index").innerHTML = md2Html(
+    querySelector(".of-index").innerHTML = md2Html(
         [...querySelectorAll("article")]
             .map(
                 (article) =>
@@ -1136,7 +1139,7 @@ const filenameToNewId = (name) => {
         const [base, ext] = name.split(/(\.[^.]+$)/);
         let i = 1;
         do {
-            name = `${base}_${i}${ext}`;
+            name = `${base}-${i}${ext}`;
             i += 1;
         } while (getArticle(name));
     }
@@ -1174,10 +1177,10 @@ const detectWebDAV = async () => {
 
 // Edit - this function is used when clicking the Edit button and
 // when navigating to a page that doesn't exist
-on(".of_edit", "click", editPage);
+on(".of-edit", "click", editPage);
 
 // Download
-on(".of_download", "click", () => {
+on(".of-download", "click", () => {
     const link = dom("a", "", {
         href: URL.createObjectURL(
             new Blob([wikiContent()], { type: "text/html" })
@@ -1190,7 +1193,7 @@ on(".of_download", "click", () => {
 
 // Enable File API-based autosaving. When active, any change will automatically
 // be saved to the local filesystem, overwriting the existing file.
-on(".of_autosave", "click", () => {
+on(".of-autosave", "click", () => {
     if (!win.showSaveFilePicker) {
         alert("File System Access API not supported in this browser.");
         return;
@@ -1207,26 +1210,26 @@ on(".of_autosave", "click", () => {
 });
 
 // Enable WebDAV-based autosaving.
-on(".of_autoput", "click", () => {
+on(".of-autoput", "click", () => {
     autoput = !autoput;
     setFlag("autoput", autoput);
     autoputAction();
 });
 
 // Cancel editing
-on(".of_cancel", "click", doneEditing);
+on(".of-cancel", "click", doneEditing);
 
 // Save edits
-on(".of_save", "click", saveEdits);
+on(".of-save", "click", saveEdits);
 
-on(".of_put", "click", autoputAction);
+on(".of-put", "click", autoputAction);
 
-on(".of_delete", "click", () => {
+on(".of-delete", "click", () => {
     inputEl.value = "";
     saveEdits();
 });
 
-on(".of_rename", "click", () => {
+on(".of-rename", "click", () => {
     const newTitle = prompt("Wiki name:", doc.title);
     if (newTitle) {
         doc.title = newTitle;
@@ -1234,7 +1237,7 @@ on(".of_rename", "click", () => {
     }
 });
 
-on(".of_clear", "click", () => {
+on(".of-clear", "click", () => {
     if (confirm("Are you sure you want to empty this wiki?")) {
         articlesEl.innerHTML = "";
         location.hash = "";
@@ -1244,14 +1247,14 @@ on(".of_clear", "click", () => {
         const overviewEl = newArticle("overview");
         overviewEl.innerHTML =
             '\n<p>Edit <a href="#overview">this page</a></p>\n\n';
-        querySelectorAll("style:not(.of_core),script:not(.of_core)").forEach(
+        querySelectorAll("style:not(.of-core),script:not(.of-core)").forEach(
             (el) => el.remove()
         );
         solidifyState();
     }
 });
 
-on(".of_change_id", "click", () => {
+on(".of-change-id", "click", () => {
     if (!currentId) {
         alert("The main page can't change its ID.");
     } else {
@@ -1277,7 +1280,7 @@ on(".of_change_id", "click", () => {
 
 // Load all articles from another copy of the wiki and replace any existing
 // articles with matching IDs.
-on(".of_import", "click", () => {
+on(".of-import", "click", () => {
     askForFile({ type: "file", accept: "text/html" }, (file) => {
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -1293,13 +1296,13 @@ on(".of_import", "click", () => {
                 }
             );
             // Copy styles that are not embedded in an article
-            querySelectorAll("style:not(.of_core,article *)", importedDoc).forEach(
+            querySelectorAll("style:not(.of-core,article *)", importedDoc).forEach(
                 (style) => {
                     doc.head.appendChild(style);
                 }
             );
             // Copy scripts that are not embedded in an article
-            querySelectorAll("script:not(.of_core,article *)", importedDoc).forEach(
+            querySelectorAll("script:not(.of-core,article *)", importedDoc).forEach(
                 (script) => {
                     doc.body.appendChild(script);
                 }
@@ -1312,7 +1315,7 @@ on(".of_import", "click", () => {
 });
 
 // Upload a file into the wiki
-on(".of_upload", "click", () => {
+on(".of-upload", "click", () => {
     askForFile({ type: "file" }, (file) => {
         const reader = new FileReader();
         const result = () => /** @type {string} */ (reader.result);
@@ -1333,7 +1336,7 @@ on(".of_upload", "click", () => {
                     const hashHex = hashArray
                         .map((b) => b.toString(16).padStart(2, "0"))
                         .join("");
-                    const id = `of_image_${hashHex}`;
+                    const id = `of-image-${hashHex}`;
                     let uri = result().split(";");
                     uri.splice(
                         1,
@@ -1357,7 +1360,7 @@ on(".of_upload", "click", () => {
 
 // Searching
 on(
-    ".of_search",
+    ".of-search",
     "input",
     /** @type {(event: InputEvent) => void} */ (
         (event) => {
@@ -1437,7 +1440,7 @@ on(
     )
 );
 onLoad();
-updateBrokenLinks(); // of_broken_flag is intentionally not preserved during save
+updateBrokenLinks(); // of-broken-flag is intentionally not preserved during save
 
 // Finally, show the buttons
 setFlag("js", true);

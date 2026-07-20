@@ -21,7 +21,7 @@ export async function makeContent(makeBlank = false) {
     // Clean the HTML file in case an updated OmniWiki was copied over.  This
     // simplifies updating the documentation, as the HTML file can be copied
     // over without worrying about the embedded CSS and JS.
-    for (const el of dom.window.document.querySelectorAll('.of_core')) {
+    for (const el of dom.window.document.querySelectorAll('.of-core')) {
         el.remove();
     }
 
@@ -45,7 +45,7 @@ export async function makeContent(makeBlank = false) {
     const css = await readFile(cssFile, 'utf-8');
     const headEl = dom.window.document.querySelector('head');
     const style = dom.window.document.createElement('style');
-    style.classList.add('of_core');
+    style.classList.add('of-core');
     style.textContent = css;
     headEl.appendChild(style);
 
@@ -53,16 +53,16 @@ export async function makeContent(makeBlank = false) {
     const script = await readFile(scriptFile, 'utf-8');
     const bodyEl = dom.window.document.querySelector('body');
     const scriptEl = dom.window.document.createElement('script');
-    scriptEl.classList.add('of_core');
+    scriptEl.classList.add('of-core');
     scriptEl.type = 'module';
     scriptEl.textContent = script;
     bodyEl.appendChild(scriptEl);
 
     if (makeBlank) {
-        for (const el of dom.window.document.querySelectorAll('article, script:not(.of_core), style:not(.of_core)')) {
+        for (const el of dom.window.document.querySelectorAll('article, script:not(.of-core), style:not(.of-core)')) {
             el.remove();
         }
-        const articles = dom.window.document.querySelector('.of_articles');
+        const articles = dom.window.document.querySelector('.of-articles');
         const index = dom.window.document.createElement('article');
         index.classList.add('index');
         index.innerHTML = '<h1>OmniFlux</h1>';
@@ -73,8 +73,8 @@ export async function makeContent(makeBlank = false) {
         overview.innerHTML = '<p>Edit <a href="#overview">this page</a></p>';
         articles.appendChild(overview);
 
-        dom.window.document.querySelector('.of_index').innerHTML = '<p><a href="#overview">Overview</a></p>';
-        dom.window.document.querySelector('[data-of_transclude="#overview"]').innerHTML = overview.innerHTML;
+        dom.window.document.querySelector('.of-index').innerHTML = '<p><a href="#overview">Overview</a></p>';
+        dom.window.document.querySelector('[data-of-transclude="#overview"]').innerHTML = overview.innerHTML;
     }
 
     return dom.serialize();

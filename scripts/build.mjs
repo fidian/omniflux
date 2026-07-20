@@ -47,8 +47,8 @@ async function analyzeFile(filename) {
     const content = await readFile(filename, "utf-8");
     const dom = new JSDOM(content, { virtualConsole });
     const size = Buffer.byteLength(content, "utf8");
-    const jsSize = sizeOf(dom, 'script.of_core');
-    const cssSize = sizeOf(dom, 'style.of_core');
+    const jsSize = sizeOf(dom, 'script.of-core');
+    const cssSize = sizeOf(dom, 'style.of-core');
     const articleSize = sizeOf(dom, 'article');
     const htmlSize = size - jsSize - cssSize - articleSize;
     console.log(`File: ${filename}`, {

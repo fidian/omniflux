@@ -66,12 +66,12 @@ test('Execute scenarios', async ({ page }) => {
                 await test.step(`${scenario.name} - MD -> HTML`, async () => {
                     // Each page will operate on its own article element since
                     // the browser session is shared across all scenarios.
-                    const id = `test_${scenario.name}`;
+                    const id = `test-${scenario.name}`;
                     await goto(page, id);
-                    await expect(page.locator(".of_input")).toBeVisible();
-                    await page.locator(".of_input").fill(scenario.markdown);
-                    await page.locator(".of_save").click();
-                    await expect(page.locator(".of_input")).toBeHidden();
+                    await expect(page.locator(".of-input")).toBeVisible();
+                    await page.locator(".of-input").fill(scenario.markdown);
+                    await page.locator(".of-save").click();
+                    await expect(page.locator(".of-input")).toBeHidden();
                     await expect(await page.locator(`article#${id}`).innerHTML()).toBe(
                         scenario.html
                     );
@@ -81,7 +81,7 @@ test('Execute scenarios', async ({ page }) => {
             if (scenario.html2md) {
                 await test.step(`${scenario.name} - HTML -> MD`, async () => {
                     await goto(page, "");
-                    await expect(page.locator(".of_input")).toBeHidden();
+                    await expect(page.locator(".of-input")).toBeHidden();
                     await expect(page.locator("article.index")).toBeVisible();
                     // Set the innerHTML of the article element to the scenario's HTML
                     await page.evaluate(
@@ -93,15 +93,15 @@ test('Execute scenarios', async ({ page }) => {
                         },
                         scenario.html
                     );
-                    await page.locator(".of_edit").click();
-                    await expect(page.locator(".of_input")).toBeVisible();
-                    await expect(await page.locator(".of_input").inputValue()).toBe(
+                    await page.locator(".of-edit").click();
+                    await expect(page.locator(".of-input")).toBeVisible();
+                    await expect(await page.locator(".of-input").inputValue()).toBe(
                         scenario.markdown
                     );
 
                     // MUST return to the non-editing view
-                    await page.locator(".of_cancel").click();
-                    await expect(page.locator(".of_input")).toBeHidden();
+                    await page.locator(".of-cancel").click();
+                    await expect(page.locator(".of-input")).toBeHidden();
                 });
             }
         }
