@@ -3,7 +3,7 @@
 
 <p>You're looking at a complete, self-contained wiki. This one file can be downloaded, the pages can be updated using Markdown, and then everything can be saved. It even supports autosaving when content changes! Try it now by pressing the "Edit" button in the upper right. <a href="#markdown">Learn about supported Markdown.</a></p>
 
-<p>After downloading, you're able to use this as a personal wiki, a project wiki, diary, a collection of organized notes, or simply an easy way to track potentially related pieces of information. It works entirely in the browser and does not require any server-side code. You can even use it on a mobile device.</p>
+<p>After downloading, you're able to use this as a personal wiki, a project wiki, diary, a collection of organized notes, or simply an easy way to track potentially related pieces of information. It works entirely in the browser and does not require any installation or server-side code. You can even use it on a mobile device.</p>
 
 <p>Download options:</p>
 
@@ -12,12 +12,21 @@
 <tr><th align="center">TL;DR</th><th align="left">Where</th><th align="left">Why / How</th></tr>
 </thead>
 <tbody>
-<tr><td align="center">Easiest</td><td align="left">Within this wiki</td><td align="left">Open the sidebar, click Saving, then follow the instructions.</td></tr>
-<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Docs</a></td><td align="left">Get it from the source. Includes all documentation, a custom element, commented JavaScript and CSS, plus the solar flare image (about 110k). Right-click and "Save Link As."</td></tr>
-<tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">Minified, no content. When every byte matters (about 21k).</td></tr>
+<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Documentation</a></td><td align="left">Press Control-S or Command-S to save.</td></tr>
+<tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">Minified, no content. When every byte matters. ~21k</td></tr>
 <tr><td align="center">Custom</td><td align="left"><a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">GitHub repository</a></td><td align="left">Build your own!</td></tr>
 </tbody>
 </table>
+
+<p>The latest version is a bit larger than the "smallest" because it contains:</p>
+
+<ul>
+<li>Unminified and commented JavaScript with TypeScript annotations.</li>
+<li>Unminified and commented CSS to explain some of the more tricky things (eg. sidebar).</li>
+<li>All of the documentation, including the page detailing the Markdown syntax.</li>
+<li>Two embedded files: a small solar flare image and a CSV file.</li>
+<li>A custom element example to show how to use your own components.</li>
+</ul>
 
 <p><a href="#changelog">Changelog</a> - <a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">GitHub</a> - <a href="https://github.com/fidian/omniflux/blob/master/LICENSE.md" target="_blank" rel="noopener noreferrer">License</a></p>
 
@@ -31,7 +40,7 @@
 <li>Write content once, have it displayed in multiple places using <a href="#content-transclusion">Content Transclusion</a>.</li>
 <li>Automated tests to ensure the bidirectional HTML to/from Markdown conversion works as expected, as well as other features in the wiki.</li>
 <li>Doesn't need JavaScript to browse, thanks to CSS-based navigation and a CSS-only sidebar, allowing it to work even in a very restrictive environment, such as with a Content Security Policy (CSP) <code>script-src 'none'</code> or a browser where JavaScript is disabled.</li>
-<li>Quick editing and saving using Ctrl+Enter or Cmd+Enter.</li>
+<li>Quick editing and saving using Control+Enter or Command+Enter.</li>
 <li>Uploading to a server through <a href="#saving-with-webdav">WebDAV</a>.</li>
 <li>Importing pages from another OmniFlux wiki, which makes <a href="#upgrading">upgrades</a> trivial. This also copies over any additional script and style elements that may have been added.</li>
 <li><a href="#custom-elements">Custom Elements</a> are allowed.</li>
@@ -47,7 +56,7 @@ Octocat is external, the solar flare is completely within the wiki.</p>
 
 <h2>How to Use</h2>
 
-<p>Edit any page by pressing the Edit button or by pressing control+enter or cmd+enter. When editing, the Cancel button will not save your changes and the Save button will keep them. When editing, you can also press control+enter or cmd+enter to save.</p>
+<p>Edit any page by pressing the Edit button or by pressing Control+Enter or Command+Enter. When editing, the Cancel button will not save your changes and the Save button will keep them. When editing, you can also press Control+Enter or Command+Enter to save or Escape to cancel.</p>
 
 <p>Links to other pages are done by linking to the ID as a location hash. The index page has no ID, like <code>[Main Page](#)</code>. Other pages have an ID, like <code>[Markdown Syntax](#markdown)</code>.</p>
 
@@ -383,6 +392,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>Is your version a little stale or missing some features? <a href="#upgrading">Learn how to upgrade!</a></p>
 
 <ul>
+<li><b>2026-07-21</b> - Added Control/Command-S behavior to save the wiki. Added canceling an edit and toggling of sidebar with Escape.</li>
 <li><b>2026-07-20</b> - Standardized class names, attributes, and more to use hyphens. Documented transclusion and remove transcluded content when editing.</li>
 <li><b>2026-07-12</b> - Added support for <code>[[Page Title]]</code> for faster linking to internal pages. Changed best practices to embed custom elements in articles, which simplifies the experience.</li>
 <li><b>2026-07-10</b> - Fixing sidebar icon display on Android.</li>
@@ -528,6 +538,7 @@ MutationObserver(mutations =&gt; {
 <tr><td align="center"><a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a></td><td align="center">POC</td><td align="center">No</td><td align="center">Markdown</td><td align="center">9k</td><td align="center">No</td><td align="center">HTML + Template</td></tr>
 <tr><td align="center"><a href="https://feather.wiki/" target="_blank" rel="noopener noreferrer">Feather Wiki</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">WYSIWYG / MD</td><td align="center">56k</td><td align="center">Yes</td><td align="center">JSON</td></tr>
 <tr><td align="center"><a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></td><td align="center">New</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">21k</td><td align="center">No</td><td align="center">HTML</td></tr>
+<tr><td align="center"><a href="https://codeberg.org/Alamantus/siteleteer" target="_blank" rel="noopener noreferrer">siteleteer</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">19k</td><td align="center">No</td><td align="center">HTML + Pre</td></tr>
 <tr><td align="center"><a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">2,490k</td><td align="center">Yes</td><td align="center">JSON</td></tr>
 <tr><td align="center"><a href="https://stickwiki.sourceforge.net/" target="_blank" rel="noopener noreferrer">WOAS</a></td><td align="center">Old</td><td align="center">No</td><td align="center">WikiText</td><td align="center">408k</td><td align="center">No</td><td align="center">JSON</td></tr>
 <tr><td align="center"><a href="https://sourceforge.net/p/woas/home/Welcome/" target="_blank" rel="noopener noreferrer">WOAS Fork</a></td><td align="center">Mature</td><td align="center">No</td><td align="center">WikiText</td><td align="center">732k</td><td align="center">No</td><td align="center">JSON</td></tr>
@@ -664,6 +675,46 @@ MutationObserver(mutations =&gt; {
 <p>It's not designed to be extensible through plugins or additional code, but any script and style elements you add will be preserved during upgrades. Because there's no API to tie into, this is not listed as being "extensible."</p>
 
 <p>With the goal of bidirectional conversion between HTML and Markdown, embedding arbitrary HTML within Markdown is not supported (custom elements are allowed).</p>
+
+
+<h2><a href="https://codeberg.org/Alamantus/siteleteer" target="_blank" rel="noopener noreferrer">siteleteer</a></h2>
+
+<p><b>Goal:</b> Simple multi-page website in a single HTML, using Markdown for editing.</p>
+
+<table>
+<thead>
+<tr><th align="left">Attribute</th><th align="left">Value</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Status</td><td align="left">Mature</td></tr>
+<tr><td align="left">Active</td><td align="left">Yes</td></tr>
+<tr><td align="left">Editing</td><td align="left">Markdown</td></tr>
+<tr><td align="left">Size</td><td align="left">19 kilobytes</td></tr>
+<tr><td align="left">Extensible</td><td align="left">No</td></tr>
+<tr><td align="left">Storage</td><td align="left">HTML + Pre</td></tr>
+<tr><td align="left">One File</td><td align="left">Yes</td></tr>
+<tr><td align="left">Embed Files</td><td align="left">No</td></tr>
+<tr><td align="left">Local Saving</td><td align="left">Yes</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">No</td></tr>
+<tr><td align="left">Searching</td><td align="left">Yes, built-in</td></tr>
+</tbody>
+</table>
+
+
+<h4>Pros</h4>
+
+<p>Very small even though the JavaScript is not minified and is commented. It's distributed this way to help developers change the wiki to do what they want.</p>
+
+<p>Automatic navigation menu, with support for changing the order of items that are displayed.</p>
+
+<p>Same author as FeatherWiki.</p>
+
+
+<h4>Cons</h4>
+
+<p>Stores content twice, once as rendered HTML and once as Markdown embedded in a <code>pre</code> tag.</p>
+
+<p>Upgrades are more difficult than with most other solutions.</p>
 
 
 <h2><a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a></h2>
