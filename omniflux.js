@@ -899,7 +899,9 @@ const html2Md = (el, inBlock) => {
     let md = "";
 
     // Clear transcluded content to prevent confusion when editing
-    querySelectorAll("[data-of-transclude]", el).forEach((x) => x.innerHTML = "");
+    querySelectorAll("[data-of-transclude]", el).forEach(
+        (x) => (x.innerHTML = "")
+    );
     const treeWalker = doc.createTreeWalker(
         el,
         NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT
@@ -1175,12 +1177,7 @@ const detectWebDAV = async () => {
     }
 };
 
-// Edit - this function is used when clicking the Edit button and
-// when navigating to a page that doesn't exist
-on(".of-edit", "click", editPage);
-
-// Download
-on(".of-download", "click", () => {
+const downloadWiki = () => {
     const link = dom("a", "", {
         href: URL.createObjectURL(
             new Blob([wikiContent()], { type: "text/html" })
@@ -1189,7 +1186,14 @@ on(".of-download", "click", () => {
     });
     link.click();
     saveDone();
-});
+};
+
+// Edit - this function is used when clicking the Edit button and
+// when navigating to a page that doesn't exist
+on(".of-edit", "click", editPage);
+
+// Download
+on(".of-download", "click", downloadWiki);
 
 // Enable File API-based autosaving. When active, any change will automatically
 // be saved to the local filesystem, overwriting the existing file.
@@ -1296,17 +1300,19 @@ on(".of-import", "click", () => {
                 }
             );
             // Copy styles that are not embedded in an article
-            querySelectorAll("style:not(.of-core,article *)", importedDoc).forEach(
-                (style) => {
-                    doc.head.appendChild(style);
-                }
-            );
+            querySelectorAll(
+                "style:not(.of-core,article *)",
+                importedDoc
+            ).forEach((style) => {
+                doc.head.appendChild(style);
+            });
             // Copy scripts that are not embedded in an article
-            querySelectorAll("script:not(.of-core,article *)", importedDoc).forEach(
-                (script) => {
-                    doc.body.appendChild(script);
-                }
-            );
+            querySelectorAll(
+                "script:not(.of-core,article *)",
+                importedDoc
+            ).forEach((script) => {
+                doc.body.appendChild(script);
+            });
             doc.title = importedDoc.title;
             solidifyState();
         };
@@ -1413,6 +1419,27 @@ on(
                     saveEdits();
                 } else {
                     editPage();
+                }
+            }
+
+            if (
+                (event.ctrlKey || event.metaKey) &&
+                event.key.match(/s/i)
+            ) {
+                event.preventDefault();
+                downloadWiki();
+            }
+
+            if (event.key === "Escape") {
+                event.preventDefault();
+
+                if (editing) {
+                    doneEditing();
+                } else {
+                    const sidebarToggle = /** @type {HTMLInputElement} */ (
+                        querySelector("#of-sidebar-toggle")
+                    );
+                    sidebarToggle.checked = !sidebarToggle.checked;
                 }
             }
         }
