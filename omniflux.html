@@ -396,7 +396,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>Is your version a little stale or missing some features? <a href="#upgrading">Learn how to upgrade!</a></p>
 
 <ul>
-<li><b>2026-07-22</b> - Documentation update. Code and CSS cleanup.</li>
+<li><b>2026-07-22</b> - Documentation update. Code and CSS cleanup. Added document title to top toolbar.</li>
 <li><b>2026-07-21</b> - Added Control/Command-S behavior to save the wiki, along with additional <a href="#keybindings">keybindings</a>. Added Escape shortcuts for canceling an edit and toggling the sidebar. Changed the edit confirmation button to say "Apply" to differentiate it from "Save".</li>
 <li><b>2026-07-20</b> - Standardized class names, attributes, and more to use hyphens. Documented transclusion and removed transcluded content when editing.</li>
 <li><b>2026-07-12</b> - Added support for <code>[[Page Title]]</code> for faster linking to internal pages. Changed best practices to embed custom elements in articles, which simplifies the experience.</li>
@@ -1010,6 +1010,10 @@ This content is sent to the custom element.
 </table>
 </article></div>
 <div class="of-toolbar">
+    <button class="of-toolbar-spacer of-js-on" data-of-transclude=".of-edit" aria-hidden="true" tabindex="-1">Edit</button>
+    <div class="of-toolbar-title">
+        <a href="#" data-of-transclude="title">OmniFlux Wiki</a>
+    </div>
     <button class="of-edit of-js-on">Edit</button>
 </div>
 <div class="of-sidebar">
@@ -1017,9 +1021,6 @@ This content is sent to the custom element.
         <div class="of-sidebar-bar">
             <div class="of-notice of-dirty-on">Unsaved Changes</div>
             <div class="of-notice of-autosave-on">Autosaving</div>
-            <div class="of-title">
-                <a href="#" data-of-transclude="title">OmniFlux Wiki</a>
-            </div>
             <details class="of-overview" name="of-sidebar" open="">
                 <summary><span class="of-icon">🗎︎</span> Overview</summary>
                 <div data-of-transclude="#overview">

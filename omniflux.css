@@ -16,6 +16,8 @@ html {
     --of-sidebar-color: #ccf;
     --of-sidebar-section-color: #aae;
     --of-sidebar-hover: #def;
+    --of-toolbar-height: 35px;
+    --of-article-top-margin: calc(var(--of-toolbar-height) + 27px);
 }
 
 body.of-autosave-flag,
@@ -34,9 +36,10 @@ body.of-dirty-flag {
 /* CSS-based navigation - https://dev.to/fedia/15kb-single-file-wiki-46a1 */
 article {
     display: none;
-    margin: 0 auto;
+    margin: var(--of-article-top-margin) auto 0;
     max-width: 960px;
     padding: 0 0.25em;
+    scroll-margin-top: var(--of-article-top-margin);
 
     /* Restrict images so they fit in the article */
     img {
@@ -67,15 +70,6 @@ body {
     padding: 0;
     font: 1.25em sans-serif;
     line-height: 1.5;
-}
-
-/* When on a small display, push the content down so the sidebar tab isn't
- * overlapping the title. */
-@media screen and (max-width: 1060px) {
-    article {
-        margin-top: 50px;
-        scroll-margin-top: 50px;
-    }
 }
 
 .of-editor {
@@ -111,19 +105,52 @@ body.of-edit-flag {
 }
 
 .of-toolbar {
+    align-items: center;
+    background-color: #fefefe;
+    border-bottom: 1px solid #ccc;
     display: flex;
-    width: 100%;
-    justify-content: flex-end;
+    gap: 0.5rem;
+    height: var(--of-toolbar-height);
+    justify-content: space-between;
     left: 0;
     padding: 0.5rem;
+    width: 100%;
+    pointer-events: none;
     position: fixed;
     right: 0;
     top: 0;
-    pointer-events: none;
 
+    a,
     button {
         pointer-events: all;
     }
+}
+
+.of-toolbar-spacer {
+    pointer-events: none !important;
+    visibility: hidden;
+}
+
+.of-toolbar-title {
+    flex: 1;
+    font-size: 1.3em;
+    font-weight: bold;
+    min-width: 0;
+    text-align: center;
+
+    a {
+        color: inherit;
+        display: block;
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.of-toolbar-spacer,
+.of-edit {
+    flex: none;
 }
 
 .of-sidebar {
@@ -144,6 +171,11 @@ body.of-edit-flag {
 
 /* Clean up pages when printed */
 @media print {
+    article {
+        margin-top: 0;
+        scroll-margin-top: 0;
+    }
+
     .of-toolbar,
     .of-sidebar {
         display: none;
@@ -179,18 +211,6 @@ body.of-edit-flag {
     height: 100%;
     overflow: auto;
     direction: rtl;
-}
-
-.of-title {
-    font-size: 1.3em;
-    font-weight: bold;
-    padding: 0.5em 0.25em;
-    text-align: center;
-
-    a {
-        color: inherit;
-        text-decoration: none;
-    }
 }
 
 .of-sidebar-bar {
