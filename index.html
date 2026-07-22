@@ -1,0 +1,3096 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"><title>OmniFlux Wiki</title><style class="of-core">/* Avoid FOUS - Flash Of Unstyled Content */
+html {
+    visibility: hidden;
+    animation: fast-fade-in 1ms ease-in forwards;
+}
+
+@keyframes fast-fade-in {
+    to {
+        visibility: visible;
+    }
+}
+
+/* Sidebar colors change based on if there are changes or if the content is
+ * automatically saving. */
+:root {
+    --of-sidebar-color: #ccf;
+    --of-sidebar-section-color: #aae;
+    --of-sidebar-hover: #def;
+    --of-toolbar-height: 35px;
+    --of-article-top-margin: calc(var(--of-toolbar-height) + 27px);
+}
+
+body.of-autosave-flag,
+body.of-autoput-flag {
+    --of-sidebar-color: #cfc;
+    --of-sidebar-section-color: #aea;
+    --of-sidebar-hover: #beb;
+}
+
+body.of-dirty-flag {
+    --of-sidebar-color: #fcc;
+    --of-sidebar-section-color: #eaa;
+    --of-sidebar-hover: #fed;
+}
+
+/* CSS-based navigation - https://dev.to/fedia/15kb-single-file-wiki-46a1 */
+article {
+    display: none;
+    margin: var(--of-article-top-margin) auto 0;
+    max-width: 960px;
+    padding: 0 0.25em;
+    scroll-margin-top: var(--of-article-top-margin);
+
+    /* Restrict images so they fit in the article */
+    img {
+        height: auto;
+        max-width: 100%;
+    }
+}
+
+article:target,
+.of-articles:not(:has(> :target)) > .index {
+    display: block;
+}
+
+/* Make animations easier */
+:root {
+    interpolate-size: allow-keywords;
+}
+
+/* Size content so 100% includes borders */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #fefefe;
+    color: #1d1d1d;
+    margin: 0;
+    padding: 0;
+    font: 1.25em sans-serif;
+    line-height: 1.5;
+}
+
+.of-editor {
+    background-color: inherit;
+    display: flex;
+    flex-direction: column;
+    font: 1.25em sans-serif;
+    height: 100%;
+    left: 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+}
+
+.of-menu {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+    padding: 0.5rem;
+}
+
+.of-input {
+    border: 0;
+    flex: 1;
+    outline: none;
+    padding: 0.5rem;
+    resize: none;
+}
+
+/* When editing, hide the scrollbar */
+body.of-edit-flag {
+    overflow: hidden;
+}
+
+.of-toolbar {
+    align-items: center;
+    background-color: #f1e2e2;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    gap: 0.5rem;
+    height: var(--of-toolbar-height);
+    justify-content: space-between;
+    left: 0;
+    padding: 0.5rem;
+    width: 100%;
+    pointer-events: none;
+    position: fixed;
+    right: 0;
+    top: 0;
+
+    a,
+    button {
+        pointer-events: all;
+    }
+}
+
+.of-toolbar-spacer {
+    pointer-events: none !important;
+    visibility: hidden;
+}
+
+.of-toolbar-title {
+    flex: 1;
+    font-size: 1.3em;
+    font-weight: bold;
+    min-width: 0;
+    text-align: center;
+
+    a {
+        color: inherit;
+        display: block;
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.of-toolbar-spacer,
+.of-edit {
+    flex: none;
+}
+
+.of-sidebar {
+    display: flex;
+    position: fixed;
+    top: 0;
+    align-items: flex-start;
+    left: 0;
+    height: 100%;
+    transform: translateX(calc(-100% + 50px));
+    transition: transform 0.3s cubic-bezier(0.77, 0.2, 0.05, 1);
+
+    &:has(#of-sidebar-toggle:checked) {
+        /* Use transform for smooth animation */
+        transform: translateX(0);
+    }
+}
+
+/* Clean up pages when printed */
+@media print {
+    article {
+        margin-top: 0;
+        scroll-margin-top: 0;
+    }
+
+    .of-toolbar,
+    .of-sidebar {
+        display: none;
+    }
+}
+
+/* Hidden input that is used for CSS-based opening and closing of the sidebar
+ * panel. */
+#of-sidebar-toggle {
+    display: none;
+
+    &:checked ~ label {
+        /* Animated burger menu bars - https://codepen.io/anon/pen/OrxKWb */
+        .of-burger-top {
+            transform: translateY(10.3px) rotate(135deg);
+        }
+
+        .of-burger-mid {
+            transform: scale(0);
+        }
+
+        .of-burger-bot {
+            transform: translateY(-10.3px) rotate(-135deg);
+        }
+    }
+}
+
+.of-sidebar-wrap {
+    background-color: var(--of-sidebar-color);
+    display: flex;
+    flex-direction: column;
+    max-width: calc(80vw - 50px);
+    height: 100%;
+    overflow: auto;
+    direction: rtl;
+}
+
+.of-sidebar-bar {
+    /* Scrollbar on the left */
+    direction: ltr;
+
+    summary {
+        margin: 0.25em 0;
+    }
+
+    details {
+        > div {
+            line-height: 1.25;
+
+            /* Hide margins for first and last child so content is closer to
+             * the expandable section label. */
+            > :first-child {
+                margin-top: 0;
+            }
+
+            > :last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        summary {
+            list-style-type: none;
+            cursor: pointer;
+            font-weight: bold;
+            background-color: var(--of-sidebar-section-color);
+            padding: 0 0.2em;
+            user-select: none;
+
+            /* Make icons a consistent size so the text labels line up. */
+            .of-icon {
+                display: inline-block;
+                width: 1.25em;
+                text-align: center;
+                font-variant-emoji: text;
+                font-family: sans-serif, monospace;
+            }
+        }
+    }
+}
+
+.of-sidebar-handle {
+    background-color: var(--of-sidebar-color);
+    display: flex;
+    flex-direction: column;
+    height: 50px;
+    width: 50px;
+    padding: 12px 8px;
+    cursor: pointer;
+    gap: 5.5px;
+    border-bottom-right-radius: 10px;
+}
+
+.of-hamburger-bar {
+    background-color: #333;
+    border-radius: 3px;
+    height: 100%;
+    transition: all 0.2s ease-in-out;
+}
+
+code {
+    white-space: pre-wrap;
+}
+
+pre code {
+    white-space: pre;
+}
+
+pre,
+code {
+    background-color: #e0e0e0;
+}
+
+pre {
+    padding: 0.5em;
+    overflow-x: auto;
+    border: 1px solid #bbb;
+}
+
+/* Keyboard shortcuts */
+kbd {
+    background-color: #f7f7f7;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.2),
+        0 0 0 2px #fff inset;
+    color: #333;
+    display: inline-block;
+    padding: 0.1em 0.4em;
+    white-space: nowrap;
+}
+
+/* Animate the content open/close in the sidebar's accordion */
+::details-content {
+    transition:
+        block-size 0.3s ease-out,
+        content-visibility 0.3s allow-discrete;
+    block-size: 0;
+    overflow: clip;
+    content-visibility: visible !important;
+    padding: 0 0.4em;
+}
+
+details[open]::details-content {
+    block-size: auto;
+}
+
+@starting-style {
+    details[open]::details-content {
+        block-size: 0;
+    }
+}
+
+blockquote {
+    padding: 0 1em;
+    color: #656d76;
+    border-left: 0.25em solid #d0d7de;
+    margin: 0 0 16px 0;
+}
+
+.of-notice {
+    padding: 0.5em;
+    margin: 0.5em 0.5em;
+    text-align: center;
+    background-color: var(--of-sidebar-section-color);
+}
+
+table {
+    border-collapse: collapse;
+
+    th,
+    td {
+        padding: 4px 10px;
+        border: 1px solid #cdd;
+    }
+
+    th {
+        font-weight: 600;
+        background-color: #bdd;
+    }
+
+    tr:nth-child(even) {
+        background-color: #eef;
+    }
+}
+
+.of-overview,
+.of-index {
+    a:hover {
+        background-color: var(--of-sidebar-hover);
+    }
+
+    ul,
+    ol {
+        padding-inline-start: 1em;
+    }
+}
+
+/* Toaster message when save is successful */
+.of-saved {
+    position: fixed;
+    right: 0.4em;
+    bottom: 0.4em;
+    padding: 0.6em 1em;
+    border: 2px solid #0c0;
+    background-color: #cfc;
+    transition: all 0.3s ease-in-out;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.of-saved-flag .of-saved {
+    opacity: 1;
+}
+
+/* Task lists - hide the bullets */
+li:has(> input) {
+    list-style: none;
+}
+
+/* Using flags to show or hide content */
+.of-autoput-flag .of-autoput-off,
+.of-autosave-flag .of-autosave-off,
+.of-broken-flag .of-broken-off,
+.of-dirty-flag .of-dirty-off,
+.of-edit-flag .of-edit-off,
+.of-js-flag .of-js-off,
+.of-saved-flag .of-saved-off,
+.of-webdav-flag .of-webdav-off,
+body:not(.of-autoput-flag) .of-autoput-on,
+body:not(.of-autosave-flag) .of-autosave-on,
+body:not(.of-broken-flag) .of-broken-on,
+body:not(.of-dirty-flag) .of-dirty-on,
+body:not(.of-edit-flag) .of-edit-on,
+body:not(.of-js-flag) .of-js-on,
+body:not(.of-saved-flag) .of-saved-on,
+body:not(.of-webdav-flag) .of-webdav-on {
+    display: none;
+}
+
+/* If in dark mode, apply a filter to make the page dark. */
+@media screen and (prefers-color-scheme: dark) {
+    html {
+        filter: invert(1) hue-rotate(180deg);
+    }
+}
+
+/* Limit a table's width and scroll if necessary */
+article table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+}
+</style></head><body class=""><div class="of-articles"><article class="index">
+<h1>OmniFlux - Single-Page Wiki</h1>
+
+<p>You're looking at a complete, self-contained wiki. This one file can be downloaded, edited with Markdown, and saved again. It even supports autosaving when content changes. Try it now by pressing the "Edit" button in the upper right. <a href="#markdown-syntax">Learn about supported Markdown.</a></p>
+
+<p>After downloading, you can use this as a personal wiki, a project wiki, a diary, a collection of organized notes, or an easy way to track related pieces of information. It works entirely in the browser and does not require installation or server-side code. You can even use it on a mobile device.</p>
+
+<p>Download options:</p>
+
+<table>
+<thead>
+<tr><th align="center">TL;DR</th><th align="left">Where</th><th align="left">Why / How</th></tr>
+</thead>
+<tbody>
+<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Documentation</a></td><td align="left">Press Control-S or Command-S to save, or open the sidebar and expand the Saving section.</td></tr>
+<tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">Minified, no content. When every byte matters. ~21k</td></tr>
+<tr><td align="center">Custom</td><td align="left"><a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">GitHub repository</a></td><td align="left">Build your own!</td></tr>
+</tbody>
+</table>
+
+<p>The latest version is a bit larger than the "smallest" because it contains:</p>
+
+<ul>
+<li>Unminified and commented CSS and JavaScript with TypeScript annotations. This is best for understanding how OmniFlux works and for creating customizations.</li>
+<li>All of this documentation, including the lengthy page detailing the <a href="#markdown-syntax">Markdown</a> syntax.</li>
+<li>Two embedded files: a small solar flare image and a CSV file.</li>
+<li>A custom element example to show how to use your own components.</li>
+</ul>
+
+<p><a href="#changelog">Changelog</a> - <a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">GitHub</a> - <a href="https://github.com/fidian/omniflux/blob/master/LICENSE.md" target="_blank" rel="noopener noreferrer">License</a></p>
+
+
+<h2>Features</h2>
+
+<ul>
+<li>Lighter (though it's also less feature-packed) than <a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a> and <a href="https://feather.wiki/" target="_blank" rel="noopener noreferrer">Feather Wiki</a>. For more details, check out the <a href="#fair-comparison">Fair Comparison</a> between these wikis and several others.</li>
+<li>Markdown support (<i>italics</i>, <b>bold</b>, <b><i>both</i></b>, <code>code</code>, <s>strike</s>, <u>underline</u>), wiki links, URL and email autolinks, images, ordered and unordered lists, task lists, tables, blockquotes, horizontal rules, and code fences. <a href="#markdown-syntax">See all of the supported syntax.</a></li>
+<li>Generated HTML isn't one long line, allowing source code management tools like <code>git</code> to work better.</li>
+<li>Write content once, have it displayed in multiple places using <a href="#content-transclusion">Content Transclusion</a>.</li>
+<li>Automated tests to ensure the bidirectional HTML to/from Markdown conversion works as expected, as well as other features in the wiki.</li>
+<li>Browsing does not require JavaScript, thanks to CSS-based navigation and a CSS-only sidebar. The wiki can still be read in restrictive environments, such as with Content Security Policy (CSP) <code>script-src 'none'</code> or a browser where JavaScript is disabled.</li>
+<li>Faster editing with <a href="#keybindings">keybindings</a>.</li>
+<li>Manual and automatic saving to a server through <a href="#saving-with-webdav">WebDAV</a> or HTTP <code>PUT</code>.</li>
+<li>Importing pages from another OmniFlux wiki, which makes <a href="#upgrading">upgrading</a> trivial. This also copies over any additional script and style elements that may have been added.</li>
+<li><a href="#custom-elements">Custom Elements</a> are allowed.</li>
+<li>Detection of broken internal links. When there are none, the sidebar item is removed.</li>
+<li>The JavaScript has TypeScript annotations to provide information to intelligent editors.</li>
+<li>Binary and text files can be uploaded to and downloaded from the wiki.</li>
+<li>Image support - these can be files that are external to the wiki or uploaded and used within the wiki, like this <a href="#solar-flare.jpg">solar-flare.jpg</a>.</li>
+</ul>
+
+<p>Linked image examples: <a href="https://github.com/fidian/omniflux" target="_blank" rel="noopener noreferrer"><img src="https://fidian.github.io/omniflux/octocat.svg" alt="Octocat" title="Octocat"></a> <a href="#solar-flare.jpg"><svg xmlns="http://www.w3.org/2000/svg" class="of-image" width="36" height="34" viewBox="0 0 36 34"><title>Solar Flare</title><use href="#of-image-0ccd8e80c53a8265c6ebe6c3def45f0a771946dc4c3e106d735359b93847b81c"></use></svg></a><br>
+Octocat is external, the solar flare is completely within the wiki.</p>
+
+
+<h2>How to Use</h2>
+
+<p>Edit any page by pressing the Edit button. When editing, Cancel discards your changes and Apply keeps them. There are also <a href="#keybindings">keybindings</a> to make editing faster.</p>
+
+<p>Links to other internal pages use double brackets.</p>
+
+<ul>
+<li>Link to a page by converting the label to an ID: <code>[[Overview]]</code> → <a href="#overview">Overview</a></li>
+<li>Change the label but still link to the same page: <code>[[overview|The Overview]]</code> -&gt; <a href="#overview">The Overview</a></li>
+<li>Link to the main page, whose ID is empty: <code>[[|Main Page]]</code> -&gt; <a href="#">Main Page</a></li>
+</ul>
+
+<p>Create a new page by making a link to it and following the link. For example, you can use this <a href="#intentionally-missing-page">Intentionally Missing Page</a>. When you follow the link, an edit screen appears so you can create content. The page ID is converted back into a title automatically when editing a blank page.</p>
+
+<p>The "Overview" section in the sidebar is under your control. Change the <a href="#overview">Overview</a> page and its content is copied to the sidebar automatically.</p>
+
+<p>The sidebar generates the "Index" entries for every page in the wiki. It uses the first heading found on the page, such as <code># Page Title</code>. If no heading is found, it converts the ID into a page title.</p>
+
+<p>To delete a page, start by editing it. From there, either remove all content and press Apply, or you can press the Delete button. The page will be removed from the index and the sidebar.</p>
+
+
+<h2>Credits</h2>
+
+<p>CSS-based navigation is from <a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a>. It's fantastic.</p>
+
+<p>The original method for converting Markdown to HTML also started from the <a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a>, but it has diverged significantly. OmniFlux now creates DOM elements directly, uses limited recursion, supports more Markdown syntax, and uses stricter parsing patterns.</p>
+
+<p>The CSS-powered slide-in menu comes from <a href="https://css-tricks.com/the-checkbox-hack/" target="_blank" rel="noopener noreferrer">The "Checkbox Hack" (and things you can do with it)</a> with a fancier hamburger icon courtesy of <a href="https://codepen.io/anon/pen/OrxKWb" target="_blank" rel="noopener noreferrer">Definitely Pure HTML/CSS animated Hamburger</a>.</p>
+
+<p>HTML to Markdown conversion walks the DOM (an approach similar to <a href="https://github.com/acornejo/downshow" target="_blank" rel="noopener noreferrer">Downshow</a>), but the similarities end there. This is an entirely different implementation.</p>
+
+<p>The ability to add a single copy of an image, reference it on multiple pages, and still treat it as an image uses <a href="https://css-tricks.com/use-and-reuse-everything-in-svg-even-animations/" target="_blank" rel="noopener noreferrer"><code>&lt;svg&gt;&lt;use /&gt;&lt;/svg&gt;</code></a>, which can reference any element in the document. <a href="https://datatracker.ietf.org/doc/html/rfc2397#section-3" target="_blank" rel="noopener noreferrer">RFC 2397</a> explains the <code>data</code> URL scheme and shows how to embed additional information.</p>
+</article>
+<article id="markdown-syntax">
+<h1>Markdown Syntax</h1>
+
+<p>Markdown is supported, though not every Markdown feature is included. This page explains the available options and common patterns that are not supported.</p>
+
+<p>When something is marked as "not supported", you can contribute code through a <a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">pull request</a>.</p>
+
+
+<h2>Basic formatting</h2>
+
+<p>Use <i>italics</i>, <b>bold</b>, and <b><i>both</i></b>. This works even<b>within</b>words. <s>Strikethrough</s> and <u>underline</u> are also supported. You can even <u><i>combine</i></u> these styles.</p>
+
+<pre><code class="language-md">*italics*, **bold**, and ***both***.
+~~strikethrough~~, ~underline~, and ~*combined*~.
+</code></pre>
+
+<p>Paragraphs are one long line. Each block of text becomes a single paragraph. Do not use newlines inside a paragraph unless you want line breaks, like the following message:</p>
+
+<p>When you use newlines<br>
+Then a break will be added<br>
+Make your own haiku</p>
+
+
+<h4>Avoid</h4>
+
+<p>Using <code>_underscores_</code> for emphasis (bold, italics, both) will not work.</p>
+
+
+<h2>Headings</h2>
+
+<p>Headings 1 through 6 are supported. Put the corresponding number of <code>#</code> symbols at the beginning of a line.</p>
+
+<pre><code class="language-md">## Headings
+</code></pre>
+
+
+<h4>Avoid</h4>
+
+<p>The alternate method of using a line of <code>------</code> or <code>======</code> underneath the heading is not supported.</p>
+
+
+<h2>Lists</h2>
+
+<ol>
+<li>Ordered lists are supported.</li>
+<li>Just prefix each list item with a number and a period.</li>
+</ol>
+
+<pre><code class="language-md">1. First Item
+2. Second Item
+</code></pre>
+
+<ul>
+<li>Unordered lists are also supported.</li>
+<li>Use a hyphen for each item.</li>
+</ul>
+
+<pre><code class="language-md">- First Item
+- Second Item
+</code></pre>
+
+<p>You can also use nested lists.</p>
+
+<ul>
+<li>Naughty list</li>
+<ol>
+<li>Tyler</li>
+<li>Brian</li>
+</ol>
+<li>Nice list</li>
+<ul>
+<li>Basically everyone else</li>
+</ul>
+</ul>
+
+<pre><code class="language-md">- Naughty List
+  1. Tyler
+  2. Brian
+- Nice list
+  - Basically everyone else
+</code></pre>
+
+<p>Task lists are supported and can be nested. When you click a task to mark it complete or incomplete, the wiki is updated. If autosave is enabled, the updated wiki is also saved.</p>
+
+<ul>
+<li><input type="checkbox"> Not done</li>
+<li><input type="checkbox" checked=""> Done</li>
+<ol>
+<li><input type="checkbox" checked=""> Done child</li>
+</ol>
+</ul>
+
+<pre><code class="language-md">- [ ] Not done
+- [x] Done
+</code></pre>
+
+
+<h4>Avoid</h4>
+
+<p>Starting the numbering of a list with any number other than 1 is not supported.</p>
+
+<p>Using <code>+</code> or <code>*</code> for list items works, but they are converted to <code>-</code> the next time you edit the list.</p>
+
+
+<h2>Images and Links</h2>
+
+<p>URLs and email addresses are converted automatically: <a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">https://fidian.github.io/omniflux</a> <a href="mailto:fidian@rumkin.com" target="_blank" rel="noopener noreferrer">fidian@rumkin.com</a></p>
+
+<p>Link to an external page: <a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></p>
+
+<pre><code class="language-md">[Link Text](https://example.com/)
+</code></pre>
+
+<p>Link to internal pages with double brackets. When the link text should be converted into the page ID, use <code>[[Page Name]]</code>, like <a href="#changelog">Changelog</a> and <a href="#fair-comparison">Fair Comparison</a>. When you want custom link text, put the page ID before the pipe and the label after it, like <a href="#">Main Page</a> (which has no ID) and <a href="#markdown-syntax">Markdown Info</a> (page ID is <code>markdown-syntax</code>).</p>
+
+<pre><code class="language-md">[[Changelog]] and [[Fair Comparison]]
+[[|Main Page]] and [[markdown-syntax|Markdown Info]]
+</code></pre>
+
+<p>External image: <img src="https://fidian.github.io/omniflux/octocat.svg" alt="Octocat" title="Octocat"> (the "alt text" is also converted to a title)</p>
+
+<pre><code class="language-md">![Octocat](https://fidian.github.io/omniflux/octocat.svg)
+</code></pre>
+
+<p>Linking around an external image: <a href="https://fidian.github.io/omniflux/octocat.svg" target="_blank" rel="noopener noreferrer"><img src="https://fidian.github.io/omniflux/octocat.svg" alt="Octocat" title="Octocat"></a></p>
+
+<pre><code class="language-md">[![Octocat](https://fidian.github.io/omniflux/octocat.svg)](https://fidian.github.io/omniflux/octocat.svg)
+</code></pre>
+
+<p>Images uploaded to the wiki can be referenced and used on any page, like this solar flare: <svg xmlns="http://www.w3.org/2000/svg" class="of-image" width="36" height="34" viewBox="0 0 36 34"><title>Solar Flare</title><use href="#of-image-0ccd8e80c53a8265c6ebe6c3def45f0a771946dc4c3e106d735359b93847b81c"></use></svg></p>
+
+<pre><code class="language-md">![Solar Flare](#solar-flare.jpg)
+</code></pre>
+
+
+<h4>Avoid</h4>
+
+<p>Links can have titles by adding a description after the URL, but that's unsupported.</p>
+
+<p>Do not use angle brackets (<code>&lt;</code> and <code>&gt;</code>) around a URL to turn it into a link. Similarly, URLs without <code>http://</code> or <code>https://</code> in front are not linked.</p>
+
+<p>Reference-style links are not supported, which is where a link is used in one or more spots, but the URL is maintained elsewhere.</p>
+
+<p>Uploading images into the wiki can significantly increase its size.</p>
+
+
+<h2>Code</h2>
+
+<p>Short passages of code can stand out by using a single backtick at the start and end of the inline passage: <code>like this</code>.</p>
+
+<p>You can enter a <code>block of code</code> by having a line of three backticks in a row to start the section and another three backticks in a row to end the section. Edit this page to see many examples of embedded code blocks.</p>
+
+<pre><code>Code fences are supported and language information is preserved.
+</code></pre>
+
+<p>While code fences support language information, no highlighting happens by default because OmniFlux keeps the core wiki small. If you want highlighting, check out <a href="#code-highlighting">Code Highlighting</a> for instructions.</p>
+
+
+<h4>Avoid</h4>
+
+<p>Code fences can specify a language, but no special highlighting happens by default.</p>
+
+<p>Indenting a block of code with 4 spaces will not turn it into a code block.</p>
+
+<p>Backticks within a code block are not supported.</p>
+
+
+<h2>Blockquotes</h2>
+
+<p>Start each line with <code>&gt; </code> to have a blockquote.</p>
+
+
+<blockquote>
+
+<p>This is an example.<br>
+Markdown inside <i>is supported</i>.</p>
+
+
+<blockquote>
+
+<p>Nested blockquotes work.<br>
+Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
+
+</blockquote>
+
+</blockquote>
+
+<pre><code>&gt; This is an example
+&gt;
+&gt; &gt; Nested blockquotes work.
+</code></pre>
+
+
+<h4>Avoid</h4>
+
+<p>Use exactly one space after each <code>&gt;</code>. This parser will not convert lines with zero spaces into blockquotes. Lines with more than one space keep the extra spaces as Markdown content, which can have unintended consequences.</p>
+
+
+<h2>Tables</h2>
+
+<p>Standard Markdown works for tables, plus alignment is supported. Headings are required.</p>
+
+<p>Tables are automatically formatted in the Markdown to align on columns for easier editing. This happens every time, so don't worry about extra whitespace or formatting while editing. OmniFlux will clean it up for you!</p>
+
+<table>
+<thead>
+<tr><th align="left">Left</th><th align="center">Center</th><th align="right">Right</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Short</td><td align="center">Medium Length</td><td align="right"><b>Super</b> <i>Long</i> Entry</td></tr>
+<tr><td align="left">Medium Length</td><td align="center"><b>Super</b> <i>Long</i> Entry</td><td align="right">Short</td></tr>
+<tr><td align="left"><b>Super</b> <i>Long</i> Entry</td><td align="center">Short</td><td align="right">Medium Length</td></tr>
+</tbody>
+</table>
+
+<p>Markdown formatting within cells is allowed.</p>
+
+<pre><code>| Left | Center | Right |
+| ---- | :----: | ----: |
+| 1    |   1    |     1 |
+| 10   |   10   |    10 |
+| 100  |  100   |   100 |
+</code></pre>
+
+
+<h4>Avoid</h4>
+
+<p>Nested pipe characters within a table are not supported, not even within backticks for code.</p>
+
+
+<h2>Horizontal Rules</h2>
+
+<p>Three or more dashes in a row on a line by itself produces this line.</p>
+
+
+<hr>
+
+
+<pre><code>---
+</code></pre>
+
+
+<h4>Avoid</h4>
+
+<p>Avoid overusing these. Headings are usually a better way to separate content.</p>
+
+
+<h2>Custom Elements</h2>
+
+<p>You can add a custom element by simply including the JavaScript and HTML. See <a href="#custom-elements">Custom Elements</a> to learn more.</p>
+
+<pre><code>&lt;custom-element&gt;Hello!&lt;/custom-element&gt;
+</code></pre>
+
+
+<h2>Completely Unsupported</h2>
+
+<p>Embedding HTML within Markdown is not supported, except for custom elements. This is tricky because conversion needs to be accurately bidirectional. However, you can accomplish nearly the same thing using the <code>raw-html</code> <a href="#custom-elements">Custom Element</a> example.</p>
+
+<p>The <code>&lt;del&gt;</code> tag isn't created when using <code>~~~text~~~</code>.</p>
+
+<p>Anchors, like <code>#[jump-here]</code>, are unsupported because the wiki uses CSS-based navigation that relies on the location hash. User-generated anchors could conflict with page IDs.</p>
+
+<p>Footnotes.</p>
+</article><article id="rule-processing">
+<h1>Rule Processing</h1>
+
+<p>When converting Markdown to HTML, there are a bunch of rules that need to get applied in a particular order. Also, sometimes rules need to build on themselves, such as when an image is linked. The rule processing engine is a generic way to process a string through a set of rules and have handlers decide how each interaction unfolds.</p>
+
+<p>The Markdown parser first looks for block-level markup. Each time a chunk is found, that chunk is processed fully. This means the Markdown is converted to DOM elements for that block-level element and any inline elements within the block.</p>
+
+<p>Inline elements are trickier because some need recursion and some must prevent it. For instance, backticks for code mean anything within them must be excluded from further processing, but a link can contain bold text.</p>
+
+
+<h2>Rule Definitions</h2>
+
+<p>Each rule is governed by a pattern and a handler. When the pattern matches text, the match result is passed in as arguments to the handler. This supports groups. Take, for example, this rule for strikeout text, or the second rule for erasing newlines.</p>
+
+<pre><code>[/~~(.+?)~~/, (entireMatch, txt) =&gt; dom('s', txt)
+
+[/\n+/, () =&gt; []]
+</code></pre>
+
+<p>If the first pattern was matched against the string <code>"one ~~two~~ three"</code>, then the handler's <code>entireMatch</code> variable will be <code>"~~two~~"</code> and the <code>txt</code> variable will be <code>"two"</code>.</p>
+
+<p>Each handler needs to return completely processed HTML as an array of DOM elements or strings that will be escaped. HTML strings are not allowed to be returned.</p>
+
+
+<h2>Markdown Processing Quick Overview</h2>
+
+<p>First, block handlers look for block-level elements. When a match is found, it must handle the block and all of the inlines within. Typically a block handler matches the beginning and end of a section of a document and then passes chunks of text to an inline processing function. Content that a block-level handler does not match is discarded.</p>
+
+<p>The rule processor tries to find the rule that matches earliest. If multiple rules match at the same position, the first rule in the rule set is used. Block-level processing is less sensitive to this, but inline markup depends on it. Take, for instance, a linked image in Markdown: <code>[![ALT](image-url)](link-url)</code>. The pattern for the link needs to match the entire link, including the image portion, and then its handler calls a function to parse <code>![ALT](image-url)</code> into HTML.</p>
+</article><article id="overview">
+<p><a href="#changelog">Changelog</a><br>
+<a href="#code-highlighting">Code Highlighting</a><br>
+<a href="#content-transclusion">Content Transclusion</a><br>
+<a href="#custom-elements">Custom Elements</a><br>
+<a href="#fair-comparison">Fair Comparison</a><br>
+<a href="#keybindings">Keybindings</a><br>
+<a href="#markdown-syntax">Markdown Syntax</a><br>
+<a href="#rule-processing">Rule Processing</a><br>
+<a href="#saving-with-webdav">Saving with WebDAV</a><br>
+<a href="#upgrading">Upgrading</a></p>
+</article><article id="changelog">
+<h1>Changelog</h1>
+
+<p>Is your version a little stale or missing some features? <a href="#upgrading">Learn how to upgrade!</a></p>
+
+<ul>
+<li><b>2026-07-22</b> - Documentation update. Code and CSS cleanup. Added document title to top toolbar.</li>
+<li><b>2026-07-21</b> - Added Control/Command-S behavior to save the wiki, along with additional <a href="#keybindings">keybindings</a>. Added Escape shortcuts for canceling an edit and toggling the sidebar. Changed the edit confirmation button to say "Apply" to differentiate it from "Save".</li>
+<li><b>2026-07-20</b> - Standardized class names, attributes, and more to use hyphens. Documented transclusion and removed transcluded content when editing.</li>
+<li><b>2026-07-12</b> - Added support for <code>[[Page Title]]</code> for faster linking to internal pages. Changed best practices to embed custom elements in articles, which simplifies the experience.</li>
+<li><b>2026-07-10</b> - Fixing sidebar icon display on Android.</li>
+<li><b>2026-07-08</b> - Included TypeScript annotations into the JavaScript to allow intelligent editors the ability to have more context. This is preserved in the non-minified build.</li>
+<li><b>2026-06-29</b> - Debounced search and required at least 3 characters. Added detection of broken internal links. Fixed minor issues with CSS, especially around mobile devices. Placed the cursor near the content being viewed when editing a page.</li>
+<li><b>2026-06-25</b> - Added search, backlinks, dark mode, task lists.</li>
+<li><b>2026-06-24</b> - Added WebDAV support for saving and automatic saving. Added custom element support.</li>
+<li><b>2026-06-23</b> - Added icons to summary bars to help distinguish them faster. Added <a href="#fair-comparison">Fair Comparison</a> of wiki alternatives. Added horizontal rules.</li>
+<li><b>2026-06-22</b> - Enabled uploading of files and images into the wiki. Images are stored once and can be referenced by multiple pages.</li>
+<li><b>2026-06-19</b> - Tables are now supported, along with alignment of table columns. Expanded section for how to include code highlighting with Prism.js.</li>
+<li><b>2026-06-18</b> - Added autosave, a delete button, renaming the wiki, changing page IDs, and importing pages from another wiki file. Updated the Markdown processor to simplify the handlers and recurse only where needed.</li>
+<li><b>2026-06-17</b> - Added a sidebar, transclusions, control/command + enter keybinding, automatic index list generation.</li>
+<li><b>2026-06-15</b> - Improved the build system and added Markdown conversion tests.</li>
+<li><b>2026-06-10</b> - Initial release.</li>
+</ul>
+</article><article id="upgrading">
+<h1>Upgrading OmniFlux</h1>
+
+<p>You can copy all of your pages to a new copy of OmniFlux to upgrade to the latest version. The upgrade process also copies any extra <code>&lt;script&gt;</code> and <code>&lt;style&gt;</code> elements that were added. These are placed just after the core script and styles that make the wiki function.</p>
+
+<p>The process is painless.</p>
+
+<ol>
+<li>Save a copy of your existing wiki to your local drive.</li>
+<li>Open a new version of <a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux</a> from the documentation site.</li>
+<li>Open the sidebar and go to "Actions".</li>
+<li>(Optional) Erase all pages by clicking "Remove All Pages".</li>
+<li>Import your old content by clicking "Import Pages" and selecting the saved wiki from step 1.</li>
+<li>Save the upgraded wiki.</li>
+</ol>
+
+
+<h2>What gets copied?</h2>
+
+<ul>
+<li>All pages. If you imported into a wiki that is not empty, then any pages with matching IDs are overwritten with the imported content.</li>
+<li>Any additional style and script tags that are outside of the articles.</li>
+<ul>
+<li>Style tags are put into the document header.</li>
+<li>Script tags are put at the end of the body.</li>
+</ul>
+<li>The document title.</li>
+</ul>
+
+<p>In addition, the sidebar is updated after the import to reflect the new state of the wiki.</p>
+
+
+<h2>Are there any concerns?</h2>
+
+<p>When there are specific issues with versions that are released, the date of the new version will be listed along with upgrade instructions.</p>
+
+<ul>
+<li>2026-07-20 - Class names changed.</li>
+<ul>
+<li>Before upgrading, modify your wiki and replace "of_core" with "of-core". <code>&lt;style class="of_core"&gt;</code> should become <code>&lt;style class="of-core"&gt;</code>, and the same change should apply to the <code>&lt;script&gt;</code> tag.</li>
+</ul>
+</ul>
+</article><article id="code-highlighting">
+<h1>Code Highlighting</h1>
+
+<p>You can include <a href="https://prismjs.com/" target="_blank" rel="noopener noreferrer">Prism</a> or another library within the wiki to highlight code blocks. Code fences in Markdown automatically add <code>class="language-xxxx"</code> to the <code>&lt;code&gt;</code> element, allowing tools like Prism to work.</p>
+
+<ol>
+<li>Go to the download page for <a href="https://prismjs.com/download" target="_blank" rel="noopener noreferrer">Prism</a>.</li>
+<li>Select the desired theme.</li>
+<li>Select additional highlighting languages you want.</li>
+<li>While keeping that browser tab open, open a new tab that has the saved copy of this wiki.</li>
+<li>Create a new page in the wiki and edit it. Add a <code>&lt;raw-html&gt;</code> element. When creating the <code>&lt;script&gt;</code> and <code>&lt;style&gt;</code> elements later, they must go into the <code>&lt;raw-html&gt;</code> code.</li>
+<li>Go to the Prism tab and copy the extra JavaScript needed for Prism.</li>
+<li>Go to the wiki tab and create a new <code>&lt;script&gt;</code> element and paste in the Prism code.</li>
+<li>Go to the Prism tab and copy the extra CSS needed.</li>
+<li>Go back to the wiki tab and create a new <code>&lt;style&gt;</code> element with the necessary Prism stylesheets.</li>
+<li>Save the wiki HTML and verify that code fences are highlighted by reloading the wiki in your browser.</li>
+</ol>
+
+<p>The normal process for <a href="#upgrading">upgrading</a> will copy all articles, which includes this Prism code.</p>
+
+
+<h2>Problems</h2>
+
+<p>Prism does not highlight newly added <code>&lt;code&gt;</code> elements automatically. See <a href="https://github.com/PrismJS/prism/issues/1115" target="_blank" rel="noopener noreferrer">issue #1115</a> for others wanting this same feature. You can handle this by adding another <code>&lt;script&gt;</code> element. Like before, put this one into the page.</p>
+
+<pre><code>&lt;script&gt;
+MutationObserver(mutations =&gt; {
+  for (const mutation of mutations) {
+    if (mutation.type === 'childList' &amp;&amp;
+        mutation.target.nodeName === 'ARTICLE' &amp;&amp;
+        mutation.addedNodes.length &gt; 0) {
+      Prism.highlightAllUnder(mutation.target);
+    }
+  }
+}).observe(document.body, { childList: true, subtree: true });
+&lt;/script&gt;
+</code></pre>
+
+<p>Another issue is that some Prism plugins, like toolbar plugins, will add extra elements to the HTML. This makes the HTML to Markdown conversion think that there is extra text. For instance, the "Copy to Clipboard Button" does this, which adds a "Copy" paragraph in the Markdown. Be careful when adding plugins and ensure they don't modify the DOM dramatically.</p>
+</article><article id="list-of-names.csv">
+<h1>🖫 list-of-names.csv</h1>
+
+<p>This is a short CSV file listing names and whether they have been naughty or nice.</p>
+
+<p><a href="data:text/csv;base64,TmFtZSxTdGF0dXMNClR5bGVyLE5hdWdodHkNCkJyaWFuLE5hdWdodHkNCkJhc2ljYWxseSBldmVyeW9uZSBlbHNlLE5pY2UNCg==" target="_blank" rel="noopener noreferrer" download="list-of-names.csv">list-of-names.csv</a></p>
+</article><article id="solar-flare.jpg">
+<h1>🖼 solar-flare.jpg</h1>
+
+<p>This is a small image embedded in the wiki. When you use it elsewhere, the image data is referenced from this page. The image behaves like a normal image, but its data is never repeated.</p>
+
+<p>You can use it like this: <code>![Solar Flare](#solar-flare.jpg)</code></p>
+
+<p><svg xmlns="http://www.w3.org/2000/svg" width="36" height="34" viewBox="0 0 36 34"><title>solar-flare.jpg</title><image id="of-image-0ccd8e80c53a8265c6ebe6c3def45f0a771946dc4c3e106d735359b93847b81c" width="36" height="34" href="data:image/jpeg;id=of-image-0ccd8e80c53a8265c6ebe6c3def45f0a771946dc4c3e106d735359b93847b81c;width=36;height=34;base64,/9j/4AAQSkZJRgABAQEBLAEsAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wgARCAAiACQDAREAAhEBAxEB/8QAGQABAQEAAwAAAAAAAAAAAAAABQQDAQIG/8QAGQEAAwEBAQAAAAAAAAAAAAAAAgMEAQUA/9oADAMBAAIQAxAAAAHXl9GU9MpTgxfHsUmpXTkhEVQGZD3ElZ2LbOONMrRmYupTHVr3NeQn5agrUseFF1cxMVv/xAAfEAACAgICAwEAAAAAAAAAAAACAwABESETMRASMkH/2gAIAQEAAQUCsBjFaIPWY8LbFlRi1MsMTEHUUzErDQNVzjuVul1cTqGvN8VVA7D7V3+H9//EACARAAIBBAEFAAAAAAAAAAAAAAABAgMQESExEhMiMkH/2gAIAQMBAT8By7ShgaspJktbR7IcTBHQ1kfgzTOkWxFTeiNTCO4/hG1Xi0eD/8QAHxEAAgICAgMBAAAAAAAAAAAAAAIBESExAxIQMlFh/9oACAECAQE/AbFcVrL8Mh+CtUkNZY2RoPaCGO8E4HkTE2Px5wdPow2ji2TonZ//xAAcEAAABwEBAAAAAAAAAAAAAAAAARARICExMEH/2gAIAQEABj8C9FQ0+FjFdLaJj//EAB4QAAIDAAIDAQAAAAAAAAAAAAABESExUXEQQWHh/9oACAEBAAE/IW1vaNIWbfo+0Dt4fNoXZEHc0VNcYOeHo0keM+3gyHCyTBpwIL4ONoFq9kymJgUKxoSEQd+DAzGHeh//2gAMAwEAAgADAAAAEP6EKSMH42GIU9//xAAaEQADAAMBAAAAAAAAAAAAAAAAAREQITFh/9oACAEDAQE/EPIlOzDDoCAqoRGhoolSvMqNYJEFaHSUbh9Q3bwI6C6KpP/EABsRAQEBAQADAQAAAAAAAAAAAAEAESEQMVFB/9oACAECAQE/EDF1xh4jwz9WY6lyYRpChrJR0gE/EsW+zLWwZ2bgkfk3PFl6eD0+HtX/xAAdEAEAAgIDAQEAAAAAAAAAAAABABEhMUFRYXGh/9oACAEBAAE/EE5VQWLnxKEFKz04ahAhaoC7O4vCUwR6gXP2C8MK7+xaZkKtl+eJHepxFJyeVL+tIC6I7YUiwuJrS1qIKZOPkFtZaID0175KcZyVH1d5B39gVG8eMu0hwsxKLWY04zx9mhxWpp+RFiae5//Z"></image></svg></p>
+</article><article id="fair-comparison">
+<h1>Fair Comparison</h1>
+
+<p>All of the wikis compared here work with no installation, no server-side software, and nothing more than a web browser. Read my reviews, read reviews by others, and try out the systems that you think would work best for your purposes.</p>
+
+<p>If you know of other self-contained wikis in this same vein, please let me know by <a href="https://github.com/fidian/omniflux/issues" target="_blank" rel="noopener noreferrer">opening an issue</a>.</p>
+
+<table>
+<thead>
+<tr><th align="center">Wiki Software</th><th align="center">Status</th><th align="center">Active</th><th align="center">Editing</th><th align="center">Size</th><th align="center">Plugins</th><th align="center">Storage</th></tr>
+</thead>
+<tbody>
+<tr><td align="center"><a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a></td><td align="center">POC</td><td align="center">No</td><td align="center">Markdown</td><td align="center">9k</td><td align="center">No</td><td align="center">HTML + Template</td></tr>
+<tr><td align="center"><a href="https://feather.wiki/" target="_blank" rel="noopener noreferrer">Feather Wiki</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">WYSIWYG / MD</td><td align="center">56k</td><td align="center">Yes</td><td align="center">JSON</td></tr>
+<tr><td align="center"><a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></td><td align="center">New</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">21k</td><td align="center">No</td><td align="center">HTML</td></tr>
+<tr><td align="center"><a href="https://codeberg.org/Alamantus/siteleteer" target="_blank" rel="noopener noreferrer">siteleteer</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">19k</td><td align="center">No</td><td align="center">HTML + Pre</td></tr>
+<tr><td align="center"><a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a></td><td align="center">Mature</td><td align="center">Yes</td><td align="center">Markdown</td><td align="center">2,490k</td><td align="center">Yes</td><td align="center">JSON</td></tr>
+<tr><td align="center"><a href="https://stickwiki.sourceforge.net/" target="_blank" rel="noopener noreferrer">WOAS</a></td><td align="center">Old</td><td align="center">No</td><td align="center">WikiText</td><td align="center">408k</td><td align="center">No</td><td align="center">JSON</td></tr>
+<tr><td align="center"><a href="https://sourceforge.net/p/woas/home/Welcome/" target="_blank" rel="noopener noreferrer">WOAS Fork</a></td><td align="center">Mature</td><td align="center">No</td><td align="center">WikiText</td><td align="center">732k</td><td align="center">No</td><td align="center">JSON</td></tr>
+<tr><td align="center"><a href="https://github.com/chunqiuyiyu/xie" target="_blank" rel="noopener noreferrer">Xie</a></td><td align="center">POC</td><td align="center">No</td><td align="center">Markdown</td><td align="center">9k</td><td align="center">No</td><td align="center">HTML</td></tr>
+</tbody>
+</table>
+
+<p>The table above and each section below provide statistics and notes to make projects easier to compare.</p>
+
+<ul>
+<li>Status: How long has the project been around? Have the bugs been worked out? (POC = proof of concept)</li>
+<li>Active: Is the project under active development?</li>
+<li>Editing: How are pages edited? WYSIWYG means "what you see is what you get"; MD means Markdown in a textarea.</li>
+<li>Size: The size of the stock, empty file on disk, not gzipped. If minification is available, the minified version is listed.</li>
+<li>Extensible: Is the codebase meant to be expanded with plugins or extensions? Is there a documented API?</li>
+<li>Storage: How is the content stored in the file?</li>
+<li>One File: Is the wiki predominantly saved as a single file by default? Plugins and extensions may change this behavior.</li>
+<li>Embed Files: Are users allowed to embed images? Can any file be added to the wiki?</li>
+<li>Local Saving: How does saving work when not using a server.</li>
+<li>Server-Side Saving: Is this software able to push files to a server somehow?</li>
+<li>Searching: Does the wiki provide built-in or extensibility to allow searching?</li>
+</ul>
+
+
+<h2><a href="https://dev.to/fedia/15kb-single-file-wiki-46a1" target="_blank" rel="noopener noreferrer">1.5KB Single-File Wiki</a></h2>
+
+<p><b>Goal:</b> <i>How small can a fully editable wiki possibly be?</i></p>
+
+<table>
+<thead>
+<tr><th align="left">Attribute</th><th align="left">Value</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Status</td><td align="left">Proof of Concept</td></tr>
+<tr><td align="left">Active</td><td align="left">No</td></tr>
+<tr><td align="left">Editing</td><td align="left">Markdown</td></tr>
+<tr><td align="left">Size</td><td align="left">9 kilobytes</td></tr>
+<tr><td align="left">Extensible</td><td align="left">No</td></tr>
+<tr><td align="left">Storage</td><td align="left">HTML + Template</td></tr>
+<tr><td align="left">One File</td><td align="left">Yes</td></tr>
+<tr><td align="left">Embed Files</td><td align="left">No</td></tr>
+<tr><td align="left">Local Saving</td><td align="left">Yes, file downloader</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">No</td></tr>
+<tr><td align="left">Searching</td><td align="left">No</td></tr>
+</tbody>
+</table>
+
+
+<h4>Pros</h4>
+
+<p>Lightweight, CSS-based wiki that only needs JavaScript for editing. This is what inspired OmniFlux.</p>
+
+<p>Viewable without JavaScript. Relies on CSS for navigation.</p>
+
+
+<h4>Cons</h4>
+
+<p>Content is stored twice, once as rendered HTML and once as a template that contains the raw Markdown.</p>
+
+<p>Markdown conversion is somewhat buggy at times for specific examples.</p>
+
+
+<h2><a href="https://feather.wiki/" target="_blank" rel="noopener noreferrer">Feather Wiki</a></h2>
+
+<p><b>Goal:</b> <i>A practical, extensible personal wiki that lives in a single file.</i></p>
+
+<table>
+<thead>
+<tr><th align="left">Attribute</th><th align="left">Value</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Status</td><td align="left">Mature</td></tr>
+<tr><td align="left">Active</td><td align="left">Yes</td></tr>
+<tr><td align="left">Editing</td><td align="left">WYSIWYG / MD</td></tr>
+<tr><td align="left">Size</td><td align="left">56 kilobytes</td></tr>
+<tr><td align="left">Extensible</td><td align="left">Yes, through custom JavaScript</td></tr>
+<tr><td align="left">Storage</td><td align="left">JSON</td></tr>
+<tr><td align="left">One File</td><td align="left">Yes</td></tr>
+<tr><td align="left">Embed Files</td><td align="left">Yes, images only</td></tr>
+<tr><td align="left">Local Saving</td><td align="left">Yes, file downloader</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">Yes, WebDAV</td></tr>
+<tr><td align="left">Searching</td><td align="left">Yes, through plugins</td></tr>
+</tbody>
+</table>
+
+
+<h4>Pros</h4>
+
+<p>A more traditional, page-based navigation style than TiddlyWiki. Lots of community support for various customizations.</p>
+
+<p>Much, much lighter than TiddlyWiki.</p>
+
+
+<h4>Cons</h4>
+
+<p>There are quirks on screens with different sizes, such as buttons being off screen when saving edits, though additional CSS could clear most of these up.</p>
+
+<p>Unfriendly to source code management tools, such as <code>git</code>, because of the extremely long lines.</p>
+
+
+<h2><a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></h2>
+
+<p><b>Goal:</b> <i>A modern knowledge base packed into a tiny standalone HTML file.</i></p>
+
+<table>
+<thead>
+<tr><th align="left">Attribute</th><th align="left">Value</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Status</td><td align="left">New</td></tr>
+<tr><td align="left">Active</td><td align="left">Yes</td></tr>
+<tr><td align="left">Editing</td><td align="left">Markdown</td></tr>
+<tr><td align="left">Size</td><td align="left">21 kilobytes</td></tr>
+<tr><td align="left">Extensible</td><td align="left">No</td></tr>
+<tr><td align="left">Storage</td><td align="left">HTML</td></tr>
+<tr><td align="left">One File</td><td align="left">Yes</td></tr>
+<tr><td align="left">Embed Files</td><td align="left">Yes, all kinds</td></tr>
+<tr><td align="left">Local Saving</td><td align="left">Yes, file downloader and File API</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">Yes, WebDAV</td></tr>
+<tr><td align="left">Searching</td><td align="left">Yes, built-in</td></tr>
+</tbody>
+</table>
+
+
+<h4>Pros</h4>
+
+<p>You're looking at an OmniFlux wiki right now!</p>
+
+<p>Viewable without JavaScript because it relies on CSS for navigation.</p>
+
+
+<h4>Cons</h4>
+
+<p>It's not designed to be extensible through plugins or additional code, but any script and style elements you add will be preserved during upgrades. Because there's no API to tie into, this is not listed as being "extensible."</p>
+
+<p>With the goal of bidirectional conversion between HTML and Markdown, embedding arbitrary HTML within Markdown is not supported (custom elements are allowed).</p>
+
+
+<h2><a href="https://codeberg.org/Alamantus/siteleteer" target="_blank" rel="noopener noreferrer">siteleteer</a></h2>
+
+<p><b>Goal:</b> Simple multi-page website in a single HTML, using Markdown for editing.</p>
+
+<table>
+<thead>
+<tr><th align="left">Attribute</th><th align="left">Value</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Status</td><td align="left">Mature</td></tr>
+<tr><td align="left">Active</td><td align="left">Yes</td></tr>
+<tr><td align="left">Editing</td><td align="left">Markdown</td></tr>
+<tr><td align="left">Size</td><td align="left">19 kilobytes</td></tr>
+<tr><td align="left">Extensible</td><td align="left">No</td></tr>
+<tr><td align="left">Storage</td><td align="left">HTML + Pre</td></tr>
+<tr><td align="left">One File</td><td align="left">Yes</td></tr>
+<tr><td align="left">Embed Files</td><td align="left">No</td></tr>
+<tr><td align="left">Local Saving</td><td align="left">Yes</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">No</td></tr>
+<tr><td align="left">Searching</td><td align="left">Yes, built-in</td></tr>
+</tbody>
+</table>
+
+
+<h4>Pros</h4>
+
+<p>Very small, even though the JavaScript is not minified and includes comments. It is distributed this way to help developers change the wiki to do what they want.</p>
+
+<p>Automatic navigation menu, with support for changing the order of items that are displayed.</p>
+
+<p>Same author as FeatherWiki.</p>
+
+
+<h4>Cons</h4>
+
+<p>Stores content twice, once as rendered HTML and once as Markdown embedded in a <code>pre</code> tag.</p>
+
+<p>Upgrades are more difficult than with most other solutions.</p>
+
+
+<h2><a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a></h2>
+
+<p><b>Goal:</b> <i>The everything-in-one-file platform for notes, wikis, and personal knowledge management.</i></p>
+
+<table>
+<thead>
+<tr><th align="left">Attribute</th><th align="left">Value</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Status</td><td align="left">Mature</td></tr>
+<tr><td align="left">Active</td><td align="left">Yes</td></tr>
+<tr><td align="left">Editing</td><td align="left">Markdown</td></tr>
+<tr><td align="left">Size</td><td align="left">2,490 kilobytes</td></tr>
+<tr><td align="left">Extensible</td><td align="left">Yes, through custom JavaScript</td></tr>
+<tr><td align="left">Storage</td><td align="left">JSON</td></tr>
+<tr><td align="left">One File</td><td align="left">Yes</td></tr>
+<tr><td align="left">Embed Files</td><td align="left">Yes, all kinds</td></tr>
+<tr><td align="left">Local Saving</td><td align="left">Yes, File downloader</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">Yes, WebDAV or via plugins</td></tr>
+<tr><td align="left">Searching</td><td align="left">Yes, built-in</td></tr>
+</tbody>
+</table>
+
+
+<h4>Pros</h4>
+
+<p>The leader of the pack. One of the earliest (if not the first) single-page wikis.</p>
+
+<p>Strongly encourages plugins to handle all sorts of things. Extremely flexible and configurable. Works with a variety of server-side software to support saving remotely.</p>
+
+
+<h4>Cons</h4>
+
+<p>With ultimate configurability comes the largest size.</p>
+
+<p>Navigation is unlike typical websites. Each "page" opens above the current content, so small pages are encouraged.</p>
+
+
+<h2><a href="https://stickwiki.sourceforge.net/" target="_blank" rel="noopener noreferrer">WOAS</a></h2>
+
+<p><b>Goal:</b> <i>Carry an entire wiki on a USB drive and edit it anywhere.</i></p>
+
+<table>
+<thead>
+<tr><th align="left">Attribute</th><th align="left">Value</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Status</td><td align="left">Old - Non-functional in modern browsers</td></tr>
+<tr><td align="left">Active</td><td align="left">No</td></tr>
+<tr><td align="left">Editing</td><td align="left">WikiText</td></tr>
+<tr><td align="left">Size</td><td align="left">408 kilobytes</td></tr>
+<tr><td align="left">Extensible</td><td align="left">No</td></tr>
+<tr><td align="left">Storage</td><td align="left">JSON</td></tr>
+<tr><td align="left">One File</td><td align="left">No - requires a JAR to save</td></tr>
+<tr><td align="left">Embed Files</td><td align="left">Yes</td></tr>
+<tr><td align="left">Local Saving</td><td align="left">Yes, JAR applet</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">No</td></tr>
+<tr><td align="left">Searching</td><td align="left">Yes (unverified)</td></tr>
+</tbody>
+</table>
+
+
+<h4>Pros</h4>
+
+<p>Worked well when it came out. Supported a style of markup like Wikipedia.</p>
+
+<p>Supports AES encryption for pages.</p>
+
+
+<h4>Cons</h4>
+
+<p>Outdated and no longer loads because browsers don't allow loading Java applets any longer. Because there's an immediate check to see if file saving works, the entire wiki is not viewable.</p>
+
+
+<h2><a href="https://sourceforge.net/p/woas/home/Welcome/" target="_blank" rel="noopener noreferrer">WOAS Fork</a></h2>
+
+<p><b>Goal:</b> <i>Preserve and modernize the classic portable wiki experience.</i></p>
+
+<table>
+<thead>
+<tr><th align="left">Attribute</th><th align="left">Value</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Status</td><td align="left">Mature</td></tr>
+<tr><td align="left">Active</td><td align="left">No</td></tr>
+<tr><td align="left">Editing</td><td align="left">WikiText</td></tr>
+<tr><td align="left">Size</td><td align="left">732 kilobytes</td></tr>
+<tr><td align="left">Extensible</td><td align="left">No</td></tr>
+<tr><td align="left">Storage</td><td align="left">JSON</td></tr>
+<tr><td align="left">One File</td><td align="left">Yes</td></tr>
+<tr><td align="left">Embed Files</td><td align="left">Yes</td></tr>
+<tr><td align="left">Local Saving</td><td align="left">Yes, file downloader</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">No</td></tr>
+<tr><td align="left">Searching</td><td align="left">Yes</td></tr>
+</tbody>
+</table>
+
+
+<h4>Pros</h4>
+
+<p>Updated version of WOAS that supports saving in newer browsers. Supports a style of markup like Wikipedia.</p>
+
+<p>Supported AES encryption for pages.</p>
+
+
+<h4>Cons</h4>
+
+<p>Fairly large for what you get, though space is cheap.</p>
+
+
+<h2><a href="https://github.com/chunqiuyiyu/xie" target="_blank" rel="noopener noreferrer">Xie</a></h2>
+
+<p><b>Goal:</b> <i>Generate self-contained wiki documents from Markdown with almost no overhead.</i></p>
+
+<table>
+<thead>
+<tr><th align="left">Attribute</th><th align="left">Value</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Status</td><td align="left">Proof of Concept</td></tr>
+<tr><td align="left">Active</td><td align="left">No</td></tr>
+<tr><td align="left">Editing</td><td align="left">Markdown</td></tr>
+<tr><td align="left">Size</td><td align="left">9 kilobytes</td></tr>
+<tr><td align="left">Extensible</td><td align="left">Yes, through custom JavaScript</td></tr>
+<tr><td align="left">Storage</td><td align="left">HTML</td></tr>
+<tr><td align="left">One File</td><td align="left">Yes</td></tr>
+<tr><td align="left">Embed Files</td><td align="left">No</td></tr>
+<tr><td align="left">Local Saving</td><td align="left">Yes, file downloader</td></tr>
+<tr><td align="left">Server-Side Saving</td><td align="left">No</td></tr>
+<tr><td align="left">Searching</td><td align="left">No</td></tr>
+</tbody>
+</table>
+
+
+<h4>Pros</h4>
+
+<p>This shows promise because it is extremely lightweight.</p>
+
+
+<h4>Cons</h4>
+
+<p>Unfortunately, while editing pages and trying to add content, it appears to get confused on which page is being edited. Also, multiple copies of the same page get added to the DOM. However, these bugs aren't devastatingly bad and could be fixed with a little more time invested.</p>
+</article><article id="saving-with-webdav">
+<h1>Saving with WebDAV</h1>
+
+<p>WebDAV (Web-based Distributed Authoring and Versioning) is a set of extensions to the standard HTTP protocol. While basic HTTP is generally read-only for viewing web pages, WebDAV allows users to edit, manage, and move files on a remote web server over the internet.</p>
+
+<p>OmniFlux can use a WebDAV server, or a lightweight endpoint that supports HTTP <code>PUT</code>, to upload a copy of itself back to the server. The Upload button saves immediately, and Auto Upload saves after each content change while enabled. Here is a small list of supported software:</p>
+
+<ul>
+<li>All of the <a href="https://codeberg.org/Alamantus/FeatherWiki/src/branch/main/nests" target="_blank" rel="noopener noreferrer">"nests"</a> from Feather Wiki, which come in different versions.</li>
+<li><a href="https://github.com/fstanis/awesome-webdav#servers" target="_blank" rel="noopener noreferrer">awesome-webdav</a> has a list of servers that support WebDAV.</li>
+<li>Cloud providers (e.g. Nextcloud and ownCloud) and NAS devices (Synology, QNAP, TrueNAS) support it.</li>
+<li>Apache has <code>mod_dav</code> to enable support.</li>
+</ul>
+</article><article id="custom-elements">
+<h1>Custom Elements</h1>
+
+<p>A custom element extends the HTML standard with user-provided JavaScript. This can be for appearance only, or it can add functionality. Check out MDN's <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements" target="_blank" rel="noopener noreferrer">Using custom elements</a> for further information.</p>
+
+<p>OmniFlux allows embedding of custom elements as block-level Markdown. They are not allowed as inline elements.</p>
+
+<pre><code class="language-md">&lt;custom-element attr="value" more="ok"&gt;
+This content is sent to the custom element.
+&lt;/custom-element&gt;
+</code></pre>
+
+<p>When converted to HTML, the custom element tag and all of its contents are copied exactly as they appeared in the Markdown.</p>
+
+<p>When <a href="#upgrading">upgrading</a>, any custom <code>&lt;style&gt;</code> and <code>&lt;script&gt;</code> tags are preserved, so your custom elements will continue to work.</p>
+
+<p>Embedding arbitrary HTML as Markdown is not supported by OmniFlux's parser, but you can accomplish nearly the same thing using a custom element.</p>
+
+
+<h2><code>raw-html</code> Example</h2>
+
+<p>In this scenario, the <code>raw-html</code> custom element is <i>not defined</i> and still works. That's because any custom element wrapping Markdown is preserved exactly as-is.</p>
+
+<p>Here is an example of wrapping content with <code>raw-html</code> tags.</p>
+
+<pre><code class="language-md">&lt;raw-html&gt;&lt;p style="font-size:3em"&gt;BIG!&lt;/p&gt;&lt;/raw-html&gt;
+</code></pre>
+
+<p>And it looks like this:</p>
+
+<raw-html><p style="font-size:3em">BIG!</p></raw-html>
+
+<p>But why does this work?</p>
+
+<ol>
+<li>OmniFlux detects that there is a custom element, <code>&lt;raw-html&gt;...&lt;/raw-html&gt;</code>.</li>
+<li>OmniFlux doesn't know what custom elements are defined.</li>
+<li>The safest path here is to copy the HTML from the Markdown to the resulting document.</li>
+<li>The browser sees the custom element and it's not defined, so <code>&lt;raw-html&gt;</code> and its matching close tag are ignored, but the contents are preserved.</li>
+</ol>
+
+<p>This allows HTML embedding without editing the OmniFlux code. The main risk is defining that custom element later, which could change or break pages that use it.</p>
+
+
+<h2>Tilt Example</h2>
+
+<p>This is an example of creating a custom element, embedding it into the wiki, and then using that same custom element to show something fancy. This is what the Markdown looks like to embed a custom element.</p>
+
+<pre><code class="language-md">&lt;tilt-container&gt;OmniFlux&lt;/tilt-container&gt;
+</code></pre>
+
+<p>It will render like this.</p>
+
+<tilt-container>OmniFlux</tilt-container>
+
+<p>To include the tilt container custom element, add JavaScript to OmniFlux by creating a page that embeds the code for the custom element. Take a look at <a href="#tilt-custom-element">Tilt Custom Element</a> and edit the page. Upgrading copies over custom elements, so these additions can move to newer OmniFlux versions.</p>
+</article><article id="tilt-custom-element">
+<h1>Tilt Custom Element</h1>
+
+<p>This page defines the <code>&lt;tilt-container&gt;</code> custom element. Edit the page to see how it's done!</p>
+
+<p>Read more about <code>&lt;raw-html&gt;</code>, embedding, and using <a href="#custom-elements">Custom Elements</a>.</p>
+
+<tilt-container>OmniFlux!</tilt-container>
+
+<p>If you make changes to this custom element, you will need to save and reload the wiki to have the element refreshed.</p>
+
+<raw-html>
+<!-- This uses "raw-html" to embed HTML into the markdown -->
+<script>
+  customElements.define('tilt-container', class extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.shadowRoot.innerHTML = `
+        <style>
+          :host {
+            display: block;
+          }
+          .wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            animation: tilt 3s linear infinite;
+          }
+          @keyframes tilt {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-20deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(20deg); }
+            100% { transform: rotate(0deg); }
+          }
+        </style>
+        <div class="wrapper">
+          <slot></slot>
+        </div>
+      `;
+    }
+  });
+</script>
+</raw-html>
+</article><article id="content-transclusion">
+<h1>Content Transclusion</h1>
+
+<p>OmniFlux allows you to copy content from other elements. For instance, below is the title of the wiki, which comes from the document's title. Whenever a change is made to any page, all transclusions are updated.</p>
+
+<raw-html data-of-transclude="title">OmniFlux Wiki</raw-html>
+
+<p>This is achieved by using embedded HTML (see <a href="#custom-elements">Custom Elements</a>) and the <code>data-of-transclude</code> attribute.</p>
+
+<pre><code>&lt;raw-html data-of-transclude="title"&gt;&lt;/raw-html&gt;
+</code></pre>
+
+<p>The transclusion value, <code>title</code>, is used as a query selector in the document and the target element's content is copied. This is useful for standard disclaimers, safety warnings, or common steps that you want on several pages without maintaining those copies separately. Below is the <a href="#license-information">License Information</a> page repeated three times. When the license information page changes, all of these copies update automatically.</p>
+
+<raw-html>
+<table>
+<tbody><tr><td data-of-transclude="#license-information">
+<p>OmniFlux is licensed under the <a href="https://github.com/fidian/omniflux/blob/master/LICENSE.md" target="_blank" rel="noopener noreferrer">MIT License</a>.</p>
+</td></tr>
+<tr><td data-of-transclude="#license-information">
+<p>OmniFlux is licensed under the <a href="https://github.com/fidian/omniflux/blob/master/LICENSE.md" target="_blank" rel="noopener noreferrer">MIT License</a>.</p>
+</td></tr>
+<tr><td data-of-transclude="#license-information">
+<p>OmniFlux is licensed under the <a href="https://github.com/fidian/omniflux/blob/master/LICENSE.md" target="_blank" rel="noopener noreferrer">MIT License</a>.</p>
+</td></tr>
+</tbody></table>
+</raw-html>
+
+<p>The three lines above are wrapped in a table, and the embedded Markdown looks like this before content is inserted.</p>
+
+<pre><code>&lt;raw-html&gt;
+&lt;table&gt;
+&lt;tbody&gt;&lt;tr&gt;&lt;td data-of-transclude="#license-information"&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td data-of-transclude="#license-information"&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td data-of-transclude="#license-information"&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+&lt;/raw-html&gt;
+</code></pre>
+</article><article id="license-information">
+<p>OmniFlux is licensed under the <a href="https://github.com/fidian/omniflux/blob/master/LICENSE.md" target="_blank" rel="noopener noreferrer">MIT License</a>.</p>
+</article><article id="keybindings">
+<h1>Keybindings</h1>
+
+<p>OmniFlux includes keybindings to speed up editing and reduce the effort required to add content. Keybindings change based on whether you are viewing or editing.</p>
+
+<p><b>For Macs:</b> All Ctrl shortcuts can be used with <code>⌘ Cmd</code> instead.</p>
+
+<table>
+<thead>
+<tr><th align="left">Key</th><th align="left">When</th><th align="left">Action</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Ctrl-S</td><td align="left">Anywhere</td><td align="left">Save a copy of the current state of the wiki locally.</td></tr>
+<tr><td align="left">Ctrl-U</td><td align="left">Anywhere</td><td align="left">Upload to a WebDAV server, if one was detected.</td></tr>
+<tr><td align="left">Ctrl-Enter</td><td align="left">Editing</td><td align="left">Apply the current edit.</td></tr>
+<tr><td align="left">Escape</td><td align="left">Editing</td><td align="left">Prompt to discard the current changes.</td></tr>
+<tr><td align="left">Ctrl-Enter</td><td align="left">Viewing</td><td align="left">Edit the current page.</td></tr>
+<tr><td align="left">Escape</td><td align="left">Viewing</td><td align="left">Toggle the sidebar.</td></tr>
+</tbody>
+</table>
+</article></div>
+<div class="of-toolbar">
+    <button class="of-toolbar-spacer of-js-on" data-of-transclude=".of-edit" aria-hidden="true" tabindex="-1">Edit</button>
+    <div class="of-toolbar-title">
+        <a href="#" data-of-transclude="title">OmniFlux Wiki</a>
+    </div>
+    <button class="of-edit of-js-on">Edit</button>
+</div>
+<div class="of-sidebar">
+    <div class="of-sidebar-wrap">
+        <div class="of-sidebar-bar">
+            <div class="of-notice of-dirty-on">Unsaved Changes</div>
+            <div class="of-notice of-autosave-on">Autosaving</div>
+            <details class="of-overview" name="of-sidebar" open="">
+                <summary><span class="of-icon">🗎︎</span> Overview</summary>
+                <div data-of-transclude="#overview">
+<p><a href="#changelog">Changelog</a><br>
+<a href="#code-highlighting">Code Highlighting</a><br>
+<a href="#content-transclusion">Content Transclusion</a><br>
+<a href="#custom-elements">Custom Elements</a><br>
+<a href="#fair-comparison">Fair Comparison</a><br>
+<a href="#keybindings">Keybindings</a><br>
+<a href="#markdown-syntax">Markdown Syntax</a><br>
+<a href="#rule-processing">Rule Processing</a><br>
+<a href="#saving-with-webdav">Saving with WebDAV</a><br>
+<a href="#upgrading">Upgrading</a></p>
+</div>
+            </details>
+            <details name="of-sidebar">
+                <summary><span class="of-icon">🔍︎</span> Search</summary>
+                <div>
+                    <input type="text" class="of-search" placeholder="Search...">
+                    <div class="of-search-results"></div>
+                </div>
+            </details>
+            <details name="of-sidebar">
+                <summary><span class="of-icon">○︎</span> Index</summary>
+                <div class="of-index">
+<p><a href="#list-of-names.csv">🖫 list-of-names.csv</a><br>
+<a href="#solar-flare.jpg">🖼 solar-flare.jpg</a><br>
+<a href="#changelog">Changelog</a><br>
+<a href="#code-highlighting">Code Highlighting</a><br>
+<a href="#content-transclusion">Content Transclusion</a><br>
+<a href="#custom-elements">Custom Elements</a><br>
+<a href="#fair-comparison">Fair Comparison</a><br>
+<a href="#keybindings">Keybindings</a><br>
+<a href="#license-information">License Information</a><br>
+<a href="#markdown-syntax">Markdown Syntax</a><br>
+<a href="#">OmniFlux - Single-Page Wiki</a><br>
+<a href="#overview">Overview</a><br>
+<a href="#rule-processing">Rule Processing</a><br>
+<a href="#saving-with-webdav">Saving with WebDAV</a><br>
+<a href="#tilt-custom-element">Tilt Custom Element</a><br>
+<a href="#upgrading">Upgrading OmniFlux</a></p>
+</div>
+            </details>
+            <details name="of-sidebar">
+                <summary><span class="of-icon">🔗︎</span> Backlinks</summary>
+                <div class="of-backlinks"></div>
+            </details>
+            <details name="of-sidebar">
+                <summary class="of-broken-on"><span class="of-icon">💥︎</span> Broken Links</summary>
+                <div class="of-broken"><div><a href="#">OmniFlux - Single-Page Wiki</a><ul><li><a href="#intentionally-missing-page">Intentionally Missing Page</a></li></ul></div></div>
+            </details>
+            <details class="of-js-off" name="of-sidebar">
+                <summary><span class="of-icon">⇩︎</span> Saving</summary>
+                Press <kbd>Ctrl</kbd>+<kbd>S</kbd><br>
+                or <kbd>⌘ Cmd</kbd>+<kbd>S</kbd>
+            </details>
+            <details class="of-js-on" name="of-sidebar">
+                <summary><span class="of-icon">⇩︎</span> Saving</summary>
+                <div>
+                    <p>
+                        Save wiki locally:<br>
+                        <button class="of-download">Download</button>
+                    </p>
+                    <p class="of-webdav-on">
+                        Save wiki to server:<br>
+                        <button class="of-put">Upload</button>
+                    </p>
+                    <p>
+                        Save automatically locally:<br>
+                        <button class="of-autosave">
+                            <div class="of-autosave-on">Disable Autosave</div>
+                            <div class="of-autosave-off">Enable Autosave</div>
+                        </button>
+                    </p>
+                    <p class="of-webdav-on">
+                        Save automatically to server:<br>
+                        <button class="of-autoput">
+                            <div class="of-autoput-on">Disable Auto Upload</div>
+                            <div class="of-autoput-off">Enable Auto Upload</div>
+                        </button>
+                    </p>
+                </div>
+            </details>
+            <details class="of-js-on" name="of-sidebar">
+                <summary><span class="of-icon">✦︎</span> Actions</summary>
+                <div>
+                    <p>
+                        Change sidebar and page title<br>
+                        <button class="of-rename">Rename Wiki</button>
+                    </p>
+                    <p>
+                        Remove all pages<br>
+                        Delete custom CSS and JS<br>
+                        <button class="of-clear">Clear Wiki</button>
+                    </p>
+                    <p>
+                        Change current page ID<br>
+                        Updates all links<br>
+                        <button class="of-change-id">Change Page ID</button>
+                    </p>
+                    <p>
+                        Copy in content<br>
+                        <button class="of-import">Import Pages</button>
+                    </p>
+                    <p>
+                        Embed a file<br>
+                        <button class="of-upload">Upload File</button>
+                    </p>
+                </div>
+            </details>
+        </div>
+    </div>
+    <input type="checkbox" id="of-sidebar-toggle">
+    <label for="of-sidebar-toggle" class="of-sidebar-handle">
+        <div class="of-hamburger-bar of-burger-top"></div>
+        <div class="of-hamburger-bar of-burger-mid"></div>
+        <div class="of-hamburger-bar of-burger-bot"></div>
+    </label>
+</div>
+<div class="of-editor of-edit-on">
+    <div class="of-menu">
+        <button class="of-cancel">Cancel</button>
+        <span class="of-hash"></span>
+        <button class="of-delete">Delete</button>
+        <button class="of-apply">Apply</button>
+    </div>
+    <textarea class="of-input" placeholder="Write here..."></textarea>
+</div>
+<div class="of-saved">
+    ✔ Saved
+</div><script class="of-core" type="module">// @ts-check
+
+/**
+ * State
+ */
+
+let currentId = ""; // Current page ID, derived from URL hash
+/** @type {HTMLElement | undefined} */
+let currentArticleEl; // Current page's article element
+let editing = false; // Whether the editor is open or not
+/** @type {FileSystemFileHandle | null | void} */
+let autosaveFileHandle = null; // If truthy, autosave is enabled
+let autoput = false; // If truthy, WebDAV-based autosave is enabled
+/** @type {ReturnType<typeof setTimeout>} */
+let saveTimeout; // For showing the "saved" message
+/** @type {ReturnType<typeof setTimeout>} */
+let searchTimeout; // For debounce
+let webdav = false; // Whether WebDAV is available for saving
+
+/**
+ * Minification variables and functions
+ */
+
+const win = window;
+const doc = document;
+const pathname = location.pathname;
+const svgns = "http://www.w3.org/2000/svg";
+const linkAttributes = {
+    target: "_blank",
+    rel: "noopener noreferrer"
+};
+
+/**
+ * Find elements and keep track of some that are manipulated more than once.
+ */
+/** @type {(selector: string, root?: Document | HTMLElement) => NodeListOf<HTMLElement>} */
+const querySelectorAll = (selector, root = doc) =>
+    root.querySelectorAll(selector);
+/**
+ * This is typed to always return Element even though undefined is possible.
+ * This is a deliberate choice to reduce comments in the code. Use with caution.
+ * @type {(selector: string, root?: Document | HTMLElement) => HTMLElement}
+ */
+const querySelector = (selector, root) => querySelectorAll(selector, root)[0];
+const inputEl = /** @type {HTMLInputElement} */ (querySelector(".of-input"));
+const hashEl = querySelector(".of-hash");
+const articlesEl = querySelector(".of-articles");
+const searchResultsEl = querySelector(".of-search-results");
+
+/**
+ * @typedef {string | Element | RecursiveContentArray} RecursiveContent
+ */
+
+/**
+ * @typedef {RecursiveContent[]} RecursiveContentArray
+ */
+
+/**
+ * Create a DOM node
+ * @type {(tag: string, content?: RecursiveContent, attrs?: object, ns?: string) => HTMLElement}
+ */
+const dom = (tag, content, attrs, ns) => {
+    const el = /** @type {HTMLElement} */ (
+        ns ? doc.createElementNS(ns, tag) : doc.createElement(tag)
+    );
+
+    for (const [key, value] of Object.entries(attrs || {})) {
+        el.setAttribute(key, value);
+    }
+
+    /** @type {(child?: RecursiveContent) => void} */
+    const append = (child) => {
+        if (Array.isArray(child)) {
+            child.forEach(append);
+        } else if (child) {
+            el.append(
+                typeof child === "string" ? doc.createTextNode(child) : child
+            );
+        }
+    };
+
+    append(content);
+
+    return el;
+};
+
+/** @type {(el: Element, attr: string) => string | null} */
+const getAttribute = (el, attr) => el.getAttribute(attr);
+
+/** @type {(el: Element, attrs: Record<string, string>) => void} */
+const setAttributes = (el, attrs) => {
+    for (const [key, value] of Object.entries(attrs)) {
+        el.setAttribute(key, value);
+    }
+};
+
+/**
+ * Change an ID into something safe for CSS
+ * @type {(str: string) => string}
+ */
+const cssEscape = (str) => CSS.escape(str);
+
+/** @type {(id: string) => HTMLElement | undefined} */
+const getArticle = (id) =>
+    querySelector(`article${id ? `#${cssEscape(id)}` : ".index"}`);
+
+/**
+ * Add an event listener to a known target or to a single element matching a selector.
+ * @type {(target: string | Document | Window | Element, event: string, handler: (event: any) => void) => void}
+ */
+const on = (target, event, handler) =>
+    (typeof target === "string"
+        ? querySelector(target)
+        : target
+    ).addEventListener(event, handler);
+
+/**
+ * Set or remove a flag class on body.
+ * @type {(flag: string, value?: boolean) => void}
+ */
+const setFlag = (flag, value = false) => {
+    doc.body.classList.toggle(`of-${flag}-flag`, !!value);
+};
+
+/**
+ * Convert the wiki into safe HTML for saving.
+ * @type {() => string}
+ */
+const wikiContent = () => {
+    const copy = /** @type {HTMLElement} */ (
+        doc.documentElement.cloneNode(true)
+    );
+
+    // Reset the sidebar to the default state
+    querySelectorAll(".of-sidebar-bar [open]", copy).forEach((details) =>
+        details.removeAttribute("open")
+    );
+    querySelector(".of-overview", copy).setAttribute("open", "");
+
+    // Remove flag classes
+    const classList = querySelector("body", copy).classList;
+    [...classList].forEach((cls) => {
+        if (cls.match(/^of-/)) {
+            classList.remove(cls);
+        }
+    });
+
+    // Clear search results, backlinks
+    querySelectorAll(".of-search-results,.of-backlinks", copy).forEach(
+        (el) => (el.innerHTML = "")
+    );
+
+    return `<!DOCTYPE html>\n${copy.outerHTML}\n`;
+};
+
+/**
+ * When saving locally for the first time, try to use the document title as a
+ * name. Otherwise default to the existing filename. Update the timestamp at
+ * the end.
+ * @type {() => string}
+ */
+const suggestedFilename = () =>
+    (pathname.split("/").pop() || doc.title).replace(
+        /([-\d]*\.html?)?$/,
+        `-${new Date()
+            .toISOString()
+            .replace(/[-:]|\..*/g, "")
+            .replace("T", "-")}.html`
+    );
+
+/**
+ * Convert an ID into a human readable name by replacing dashes and
+ * underscores with spaces, then capitalizing the first letter of each
+ * word.
+ * @type {(id: string) => string}
+ */
+const id2Name = (id) =>
+    id.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ||
+    doc.title;
+
+/**
+ * The reverse of id2Name, used for [[Page Title]] -> page-title
+ * Removes accents, changes non-alphanumeric to hyphens, consolidates hyphens.
+ * Allows periods for filenames.
+ * @type {(name: string) => string}
+ */
+const name2Id = (name) =>
+    name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9_.]+/g, " ")
+        .trim()
+        .replace(/ /g, "-");
+
+/**
+ * Save has happened. Update flags, show toaster.
+ * @type {() => void}
+ */
+const saveDone = () => {
+    setFlag("dirty");
+    setFlag("saved", true);
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => setFlag("saved"), 2000);
+};
+
+/**
+ * Triggered when autosaving locally and a change was made.
+ * @type {() => Promise<void>}
+ */
+const autosaveAction = async () => {
+    if (!autosaveFileHandle) {
+        autosaveFileHandle = await win
+            .showSaveFilePicker({
+                suggestedName: suggestedFilename()
+            })
+            .catch(() => {});
+    }
+
+    if (autosaveFileHandle) {
+        setFlag("autosave", true);
+        try {
+            const writable = await autosaveFileHandle.createWritable();
+            await writable.write(wikiContent());
+            await writable.close();
+            saveDone();
+        } catch (err) {
+            autosaveFileHandle = null;
+            setFlag("autosave");
+            console.error("Autosave failed:", err);
+
+            alert("Autosave failed. Check the console for details.");
+        }
+    }
+};
+
+const autoputAction = async () => {
+    /** @type {(msg: any) => void} */
+    const fail = (msg) => {
+        autoput = false;
+        setFlag("autoput");
+        console.error("WebDAV PUT failed:", msg);
+
+        alert("WebDAV PUT failed. Check the console for details.");
+    };
+
+    try {
+        const response = await fetch(pathname, {
+            method: "PUT",
+            body: wikiContent(),
+            headers: {
+                "Content-Type": "text/html"
+            }
+        });
+
+        if (response.ok) {
+            saveDone();
+        } else {
+            fail(await response.text());
+        }
+    } catch (err) {
+        fail(err);
+    }
+};
+
+/**
+ * @typedef {(...args: string[]) => RecursiveContent} Md2HtmlRuleHandler
+ */
+
+/**
+ * @typedef {[RegExp, Md2HtmlRuleHandler][]} Md2HtmlRuleSet
+ */
+
+/**
+ * For rules and rule processing, see
+ * https://fidian.github.io/omniflux/#rule-processing
+ * @template T
+ * @type {(str: string, rules: Md2HtmlRuleSet, preserve?: boolean) => RecursiveContent}
+ */
+const processRules = (str, rules, preserve) => {
+    /** @type {RecursiveContent} */
+    let result = [];
+
+    while (str) {
+        let bestMatch = null;
+        let bestHandler = null;
+
+        for (const [regexp, handler] of rules) {
+            const match = str.match(regexp);
+
+            if (
+                match &&
+                (!bestMatch ||
+                    /** @type {number} */ (match.index) <
+                        /** @type {number} */ (bestMatch.index))
+            ) {
+                bestMatch = match;
+                bestHandler = handler;
+            }
+        }
+
+        let skip = bestMatch?.index ?? str.length;
+
+        if (preserve && skip) {
+            result.push(str.slice(0, skip));
+        }
+
+        if (bestMatch) {
+            result.push(
+                /** @type NonNullable<typeof bestHandler> */ (bestHandler)(
+                    ...bestMatch
+                )
+            );
+            str = str.slice(
+                /** @type {number} */ (bestMatch.index) +
+                    /** @type {number} */ (bestMatch[0].length)
+            );
+        } else {
+            str = "";
+        }
+    }
+
+    return result;
+};
+
+/**
+ * Find a heading in an article and use it as a title. If none exist, fallback to the ID and attempt to convert it.
+ * @type {(articleEl: HTMLElement) => string}
+ */
+const articleTitle = (articleEl) =>
+    querySelector("h1,h2,h3,h4,h5,h6", articleEl)?.textContent.trim() ||
+    id2Name(articleEl.id);
+
+/**
+ * Sorts an array of arrays, where item[0] is the title.
+ * @type {(a: [string, ...any[]], b: [string, ...any[]]) => number}
+ */
+const sortArticleList = (a, b) =>
+    a[0].localeCompare(b[0], undefined, { numeric: true });
+
+/**
+ * Creates a list of links to articles. Result's array is a title, the ID, then
+ * the links that point to the article.
+ * @type {(linkList: Element[]) => [string, string, Element[]][]}
+ */
+const linksToArticles = (linkList) => {
+    // Group by article
+    const articles = new Map();
+    for (const link of linkList) {
+        const article = /** @type {HTMLElement} */ (link.closest("article"));
+        const info = articles.get(article) || [
+            articleTitle(article),
+            article.id,
+            []
+        ];
+        info[2].push(link);
+        articles.set(article, info);
+    }
+    return [...articles.values()];
+};
+
+/**
+ * Convert Markdown to HTML.
+ */
+
+/** @type Md2HtmlRuleSet */
+const inlineRules = [
+    [/`(.+?)`/, (_, txt) => dom("code", txt)],
+    [/\*{3}(.+?)\*{3}/, (_, txt) => dom("b", dom("i", mdInline(txt)))],
+    [/\*\*(.+?)\*\*/, (_, txt) => dom("b", mdInline(txt))],
+    [/\*(.+?)\*/, (_, txt) => dom("i", mdInline(txt))],
+    [/~~(.+?)~~/, (_, txt) => dom("s", mdInline(txt))],
+    [/~(.+?)~/, (_, txt) => dom("u", mdInline(txt))],
+    [
+        // Images can be the source (to allow reuse without bloating the wiki)
+        // that uses a data URL, a reference that uses the user-controlled
+        // page ID, or a normal URL. When changed to HTML, references will instead
+        // point to the hash of the image.
+        //
+        // ![alt1](data:image/png;base64,...)
+        // <svg xmlns="..." width="800" height="600" viewBox="0 0 800 600"><title>alt1</title><image id="of-image-HASH" width="800" height="600" href="data:image/png;base64,..."/></svg>
+        //
+        // ![alt2](#page-ID)
+        // <svg xmlns="..." class="of-image" width="800" height="600" viewBox="0 0 800 600"><title>alt2</title><use href="#of-image-HASH"/></svg>
+        /!\[(.*?)\]\((.+?)\)/,
+        (_, alt, src) => {
+            if (src.startsWith("data:")) {
+                const params = src
+                    .split(";")
+                    .slice(1, -1)
+                    .reduce(
+                        /** @type {(acc: Record<string, string>, param: string) => Record<string, string>} */ (
+                            acc,
+                            param
+                        ) => {
+                            const [key, value] = param.split("=");
+                            acc[key] = value;
+                            return acc;
+                        },
+                        {}
+                    );
+
+                if (params.id && params.width && params.height) {
+                    return dom(
+                        "svg",
+                        [
+                            dom("title", alt, {}, svgns),
+                            dom(
+                                "image",
+                                "",
+                                {
+                                    id: params.id,
+                                    width: params.width,
+                                    height: params.height,
+                                    href: src
+                                },
+                                svgns
+                            )
+                        ],
+                        {
+                            xmlns: svgns,
+                            width: params.width,
+                            height: params.height,
+                            viewBox: `0 0 ${params.width} ${params.height}`
+                        },
+                        svgns
+                    );
+                }
+            }
+
+            if (src.startsWith("#")) {
+                const elImage = querySelector(
+                    `article#${cssEscape(src.slice(1))} svg image`
+                );
+
+                if (elImage) {
+                    const width = getAttribute(elImage, "width");
+                    const height = getAttribute(elImage, "height");
+                    const id = getAttribute(elImage, "id");
+
+                    if (width && height && id) {
+                        return dom(
+                            "svg",
+                            [
+                                dom("title", alt, {}, svgns),
+                                dom("use", "", { href: `#${id}` }, svgns)
+                            ],
+                            {
+                                xmlns: svgns,
+                                class: "of-image",
+                                width,
+                                height,
+                                viewBox: `0 0 ${width} ${height}`
+                            },
+                            svgns
+                        );
+                    }
+                }
+            }
+
+            return dom("img", "", { src, alt, title: alt });
+        }
+    ],
+    [
+        /\[\[(.*?)(\|.*?)?\]\]/,
+        (_, dest, label) =>
+            dom("a", mdInline(label ? label.substring(1) : dest), {
+                href: "#" + name2Id(dest)
+            })
+    ],
+    [
+        // Support images inside links
+        /\[((!\[.*?\]\(.+?\)|.)+?)\]\((.+?)\)/,
+        (_, txt, _x, href) =>
+            dom("a", mdInline(txt), {
+                href,
+                ...(href.startsWith("#") ? {} : linkAttributes),
+                ...(href.startsWith("data:") ? { download: txt } : {})
+            })
+    ],
+    [
+        /(?<!\=["'])https?\:\/\/[^\s]+/i,
+        (href) => dom("a", href, { href, ...linkAttributes })
+    ],
+    [
+        /(?<!mailto:)[^\s]+@[^\s]+/i,
+        (email) => dom("a", email, { href: 'mailto:' + email, ...linkAttributes })
+    ]
+];
+
+/**
+ * Convert inline Markdown to HTML elements.
+ * This is difficult to type correctly.
+ * @type {(str: string) => RecursiveContent}
+ */
+const mdInline = (str) =>
+    /** @type {any} */ (processRules)(str.trim(), inlineRules, 1);
+
+/** @type {Md2HtmlRuleSet} */
+const blockRules = [
+    [/^ *-{3,} *$/m, () => ["\n", dom("hr"), "\n\n\n"]],
+    [
+        /^```([^\n]*)\n(([^\n]*\n)+?)```$/m,
+        (_, lang, code) => [
+            dom(
+                "pre",
+                dom("code", code, lang ? { class: `language-${lang}` } : {})
+            ),
+            "\n\n"
+        ]
+    ],
+    [
+        /^>( [^\n]+)?(\n>( [^\n]+)?)*$/m,
+        (txt) => [
+            "\n",
+            dom("blockquote", ["\n\n", md2Dom(txt.replace(/^> ?/gm, ""))]),
+            "\n\n"
+        ]
+    ],
+    [
+        /^(#+)([^\n]+)$/m,
+        (_, h, txt) => ["\n", dom("h" + h.length, mdInline(txt)), "\n\n"]
+    ],
+    [
+        /^( *(\d+\.|[-*+]) +[^\n]+(\n *(\d+\.|[-*+]) +[^\n]+)*)$/m,
+        (all) => {
+            /**
+             * Convert the list item and handle task lists
+             * @type {(content: string) => RecursiveContent}
+             */
+            const listItem = (content) => {
+                const taskMatch = content.match(/^\[([ xX])\] (.+)$/);
+                return taskMatch
+                    ? [
+                          dom("input", "", {
+                              type: "checkbox",
+                              ...(taskMatch[1] !== " " ? { checked: "" } : {})
+                          }),
+                          " ",
+                          mdInline(taskMatch[2].trim())
+                      ]
+                    : mdInline(content);
+            };
+
+            /**
+             * @typedef {[number, string, (string | Element)[]]} ListItem
+             */
+
+            /**
+             * Map all lines to an array of [indentSize, listType, content]
+             * @type {ListItem[]}
+             */
+            const lines = all
+                .split("\n")
+                // Map lines to [fullMatch, listStyle, content]
+                .map(
+                    (line) =>
+                        line.match(/^( *(?:\d+\.|[-*+]) +)(.+)$/) || [
+                            "",
+                            "",
+                            line
+                        ]
+                )
+                // Now change to [indentSize, listType, listDomNode]
+                .map(([_, listStyle, content]) => [
+                    listStyle.length,
+                    listStyle.match(/\d/) ? "ol" : "ul",
+                    [dom("li", listItem(content.trim())), "\n"]
+                ]);
+
+            /** @type {() => RecursiveContent} */
+            const makeList = () => {
+                const [indent, type] = lines[0];
+                /** @type {RecursiveContent} */
+                const content = ["\n"];
+
+                while (lines.length && lines[0][0] >= indent) {
+                    if (lines[0][1] === type && lines[0][0] === indent) {
+                        content.push(
+                            /** @type {ListItem} */ (lines.shift())[2]
+                        );
+                    } else if (lines[0][0] > indent) {
+                        content.push(makeList());
+                    }
+                }
+
+                return [dom(type, content), "\n"];
+            };
+
+            return [makeList(), "\n"];
+        }
+    ],
+    [
+        // Tables
+        /^\|[^\n]+\| *(\n\|[^\n]+\| *)+$/m,
+        (all) => {
+            /**
+             * Split and process single lines of the table
+             * @type {(line: string) => string[]}
+             */
+            const splitter = (line) =>
+                line
+                    .trim()
+                    .slice(1, -1)
+                    .trim()
+                    .split(/ *\| */);
+            const lines = all.trim().split("\n");
+            const alignments = splitter(lines[1]).map((align) =>
+                align.endsWith(":")
+                    ? align.startsWith(":")
+                        ? "center"
+                        : "right"
+                    : "left"
+            );
+            const headers = splitter(lines[0]);
+            const rows = lines.slice(2).map((line) => splitter(line));
+
+            /**
+             * Make a row with a set of cells
+             * @type {(tag: string, cells: string[]) => Element}
+             */
+            const domRow = (tag, cells) =>
+                dom(
+                    "tr",
+                    cells.map((cell, i) =>
+                        dom(tag, mdInline(cell), {
+                            align: alignments[i]
+                        })
+                    )
+                );
+
+            return [
+                dom("table", [
+                    "\n",
+                    dom("thead", ["\n", domRow("th", headers), "\n"]),
+                    "\n",
+                    dom("tbody", [
+                        "\n",
+                        rows.map((cells) => [domRow("td", cells), "\n"])
+                    ]),
+                    "\n"
+                ]),
+                "\n\n"
+            ];
+        }
+    ],
+    // Match custom elements and copy verbatim
+    [
+        /^<([a-z][a-z0-9]*(-[a-z0-9]+)+)( [^>]*)?>.*?<\/\1> *$/ims,
+        (match) => {
+            const e = dom("div");
+            e.innerHTML = match;
+
+            return [/** @type {Element} */ (e.firstChild), "\n\n"];
+        }
+    ],
+    [
+        /^([^\n]+(\n[^\n]+)*)$/m,
+        (all) => [
+            dom(
+                "p",
+                all
+                    .split("\n")
+                    .flatMap((item, i) => [
+                        ...(i ? [dom("br"), "\n"] : []),
+                        mdInline(item)
+                    ])
+            ),
+            "\n\n"
+        ]
+    ]
+];
+
+/**
+ * Convert Markdown to DOM nodes
+ * @type {(str: string) => RecursiveContent}
+ */
+const md2Dom = (str) => processRules(`\n${str}\n`, blockRules);
+
+/**
+ * Convert Markdown to HTML. Include newlines for better git support.
+ * @type {(str: string) => string}
+ */
+const md2Html = (str) => `\n${dom("div", md2Dom(str)).innerHTML.trim()}\n`;
+
+/**
+ * @typedef {(add: (str: string, isBlock?: boolean) => void, currentNode: HTMLElement) => void} Html2MdRuleHandler
+ */
+
+/**
+ * @typedef {[RegExp, Html2MdRuleHandler][]} Html2MdRuleSet
+ */
+
+/**
+ * Convert HTML to Markdown. Must convert everything md2Dom supports.
+ * @type {Html2MdRuleSet}
+ */
+const html2MdConversions = [
+    [/^HR$/, (add) => add("\n---\n\n\n", true)],
+    [/^(B|STRONG)$/, (add, currentNode) => add(`**${html2Md(currentNode)}**`)],
+    [/^(I|EM)$/, (add, currentNode) => add(`*${html2Md(currentNode)}*`)],
+    [/^(S|DEL)$/, (add, currentNode) => add(`~~${html2Md(currentNode)}~~`)],
+    [/^U$/, (add, currentNode) => add(`~${html2Md(currentNode)}~`)],
+    [/^(CODE|TT)$/, (add, currentNode) => add(`\`${html2Md(currentNode)}\``)],
+    [
+        /^A$/,
+        (add, currentNode) => {
+            const href = getAttribute(currentNode, "href");
+            const text = html2Md(currentNode);
+
+            if (href?.match(/^#/)) {
+                if (href === "#" + name2Id(text)) {
+                    add(`[[${text}]]`);
+                } else {
+                    add(`[[${href.slice(1)}|${text}]]`);
+                }
+            } else if (href === 'mailto:' + text) {
+                add(text);
+            } else {
+                add(href === text ? href : `[${text}](${href})`);
+            }
+        }
+    ],
+    [
+        /^IMG$/,
+        (add, currentNode) =>
+            add(
+                `![${getAttribute(currentNode, "alt")}](${getAttribute(currentNode, "src")})`
+            )
+    ],
+    [
+        /^PRE$/,
+        (add, currentNode) => {
+            const codeTarget =
+                querySelector("code", currentNode) || currentNode;
+            const codeContent = codeTarget.textContent;
+            const lang =
+                codeTarget.className.match(/language-(\S+)/)?.[1] || "";
+            add(`\`\`\`${lang}\n${codeContent}\`\`\`\n\n`, true);
+        }
+    ],
+    [
+        /^H[1-6]$/,
+        (add, currentNode) =>
+            add(
+                `\n${"#".repeat(parseInt(currentNode.tagName[1]))} ${html2Md(currentNode, true)}\n\n`,
+                true
+            )
+    ],
+    [
+        /^(UL|OL)$/,
+        (add, currentNode) => {
+            let parent = currentNode.parentElement;
+            let indent = "";
+            let tail = "\n\n";
+            while (parent?.tagName.match(/^(UL|OL)$/)) {
+                indent += "  ";
+                parent = parent.parentElement;
+                tail = "\n";
+            }
+            add(
+                indent +
+                    html2Md(currentNode, true)
+                        .trimEnd()
+                        .replace(/\n/g, "\n" + indent) +
+                    tail,
+                true
+            );
+        }
+    ],
+    [
+        /^LI$/,
+        (add, currentNode) => {
+            const parent = /** @type {Element} */ (currentNode.parentElement);
+            let prefix =
+                parent.tagName === "OL"
+                    ? `${[...parent.children].filter((node) => node.tagName === "LI").indexOf(currentNode) + 1}. `
+                    : "- ";
+            add(`${prefix}${html2Md(currentNode, true)}\n`, true);
+        }
+    ],
+    [
+        // Only allowed inside of a list item
+        /^INPUT$/,
+        (add, currentNode) =>
+            add(
+                /** @type {HTMLInputElement} */ (currentNode).checked
+                    ? "[x]"
+                    : "[ ]"
+            )
+    ],
+    [
+        /^BLOCKQUOTE$/,
+        (add, currentNode) =>
+            add(
+                `> ${html2Md(currentNode, true).replace(/\n/g, "\n> ")}\n\n`,
+                true
+            )
+    ],
+    [/^BR$/, (add, currentNode) => add("\n", true)],
+    [
+        /^(P|DIV)$/,
+        (add, currentNode) => add(html2Md(currentNode, true) + "\n\n", true)
+    ],
+    [
+        /^TABLE$/,
+        (add, currentNode) => {
+            /**
+             * [0] is maximum content length
+             * [1] is alignment (string)
+             * [2] is alignment length (left = 4, center = 6, right = 5)
+             * [3] is the divider row text (---, :---, :---:, ---:)
+             * @typedef {[number, string, number, string]} ColInfo
+             */
+
+            /** @type {ColInfo[]} */
+            const colDef = [];
+
+            /** @typedef {string[]} RowInfo */
+
+            /** @type {RowInfo[]} */
+            const rows = [...querySelectorAll("tr", currentNode)].map((row) =>
+                [...querySelectorAll("td, th", row)].map((cell, i) => {
+                    const content = html2Md(cell, true);
+                    const def = colDef[i] || [3, "left"];
+                    def[0] = Math.max(def[0], content.length);
+                    def[1] = getAttribute(cell, "align") || def[1];
+                    colDef[i] = def;
+                    return content;
+                })
+            );
+
+            /** @type {(row: RowInfo) => string} */
+            const showRow = (row) =>
+                `| ${row
+                    .map((cell, i) => {
+                        const len = cell.length;
+                        const [want, , align] = colDef[i];
+                        const gapLeft =
+                            align > 5
+                                ? Math.floor((want - len) / 2)
+                                : align > 4
+                                  ? want - len
+                                  : 0;
+                        return cell.padStart(len + gapLeft).padEnd(want);
+                    })
+                    .join(" | ")} |\n`;
+
+            // Increase minimum width for 3 hyphens and necessary colons
+            for (const def of colDef) {
+                def[2] = def[1].length;
+                def[0] = Math.max(def[0], def[2] - 1);
+                def[3] = "-".repeat(def[0]);
+                if (def[2] > 5) {
+                    def[3] = ":" + def[3].slice(1);
+                }
+                if (def[2] > 4) {
+                    def[3] = def[3].slice(0, -1) + ":";
+                }
+            }
+
+            let result = showRow(/** @type {RowInfo} */ (rows.shift()));
+            result += `| ${colDef.map((def) => def[3]).join(" | ")} |\n`;
+
+            for (const row of rows) {
+                result += showRow(row);
+            }
+
+            add(result + "\n", true);
+        }
+    ],
+    [
+        // SVG elements are in lowercase, hence "svg" and "/i" just in case
+        /^svg$/i,
+        (add, currentNode) => {
+            const use = querySelector("use", currentNode);
+            const title =
+                querySelector("title", currentNode)?.textContent || "";
+
+            if (use) {
+                const article = querySelector(
+                    `article:has(svg image#${cssEscape(/** @type {string} */ (getAttribute(use, "href")).slice(1))})`
+                );
+
+                if (article) {
+                    add(`![${title}](#${getAttribute(article, "id")})`);
+                }
+            } else {
+                const image = querySelector("image", currentNode);
+
+                if (image) {
+                    add(`![${title}](${getAttribute(image, "href")})`);
+                }
+            }
+        }
+    ],
+    // Preserve all custom elements
+    [/-/, (add, currentNode) => add(currentNode.outerHTML + "\n\n", true)],
+    // Strip away all unknown tags but keep their content
+    [/.*/, (add, currentNode) => add(html2Md(currentNode))]
+];
+
+/**
+ * Convert HTML back to Markdown.
+ * When inBlock is truthy, trim the markdown.
+ * @type {(el: HTMLElement, inBlock?: boolean) => string}
+ */
+const html2Md = (el, inBlock) => {
+    let trimFront = inBlock;
+    let md = "";
+
+    // Clear transcluded content to prevent confusion when editing
+    querySelectorAll("[data-of-transclude]", el).forEach(
+        (x) => (x.innerHTML = "")
+    );
+    const treeWalker = doc.createTreeWalker(
+        el,
+        NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT
+    );
+    /**
+     * Adds content to the output buffer.
+     * @type {(text: string, isBlock?: boolean) => void}
+     */
+    const add = (text, isBlock) => {
+        if (trimFront && !isBlock) {
+            text = text.trimStart();
+
+            if (text.length) {
+                trimFront = false;
+            }
+        }
+
+        md += text;
+
+        if (isBlock) {
+            trimFront = true;
+        }
+    };
+    let currentNode = treeWalker.nextNode();
+
+    while (currentNode) {
+        if (currentNode.nodeType === Node.TEXT_NODE) {
+            add(
+                /** @type {string} */ (currentNode.textContent).replace(
+                    /\s+/g,
+                    " "
+                )
+            );
+            currentNode = treeWalker.nextNode();
+        } else {
+            for (const [regex, handler] of html2MdConversions) {
+                if (
+                    regex.test(/** @type {HTMLElement} */ (currentNode).tagName)
+                ) {
+                    handler(add, /** @type {HTMLElement} */ (currentNode));
+                    break;
+                }
+            }
+
+            currentNode = treeWalker.nextSibling();
+        }
+    }
+
+    return inBlock
+        ? md
+              .trim()
+              // collapse whitespace at the end of a line but not newlines
+              .replace(/[^\S\n]+([\n])/g, "$1")
+              .replace(/(\n{3})\n+/g, "$1")
+        : md;
+};
+
+/**
+ * A few functions that bind to element events and that are reused.
+ */
+const editPage = () => {
+    hashEl.textContent = "#" + currentId;
+
+    if (currentArticleEl) {
+        let v = html2Md(currentArticleEl, true);
+
+        // position cursor after the content that is above the viewport
+        const div = dom("div");
+
+        for (const el of currentArticleEl.children) {
+            if (el.getBoundingClientRect().bottom < 0) {
+                div.innerHTML += el.outerHTML;
+            }
+        }
+
+        let spot = html2Md(div, true).length;
+
+        while (spot && v[spot] === "\n") {
+            spot += 1;
+        }
+
+        inputEl.value = v;
+        inputEl.setSelectionRange(spot, spot);
+    } else {
+        inputEl.value = `# ${id2Name(currentId)}\n\n`;
+    }
+
+    editing = true;
+    setFlag("edit", true);
+    inputEl.focus();
+};
+
+const onLoad = () => {
+    if (editing) {
+        editing = false;
+        setFlag("edit");
+    }
+
+    /** @type {HTMLInputElement} */ (
+        querySelector("#of-sidebar-toggle")
+    ).checked = false;
+    currentId = location.hash.slice(1);
+    currentArticleEl = getArticle(currentId);
+    const usedBy = [
+        currentId,
+        querySelector("image[id]", currentArticleEl)?.getAttribute("id")
+    ]
+        .filter((x) => x != null) // Do not use !==
+        .map((x) => `[href="#${cssEscape(x)}"]`)
+        .join(",");
+    const backLinks = [...querySelectorAll(`article:has(${usedBy})`)];
+    querySelector(".of-backlinks").innerHTML = backLinks.length
+        ? articleList(backLinks)
+        : "No pages link here.";
+
+    if (!currentArticleEl) editPage();
+};
+
+const doneEditing = () => {
+    hashEl.innerHTML = "";
+    editing = false;
+    setFlag("edit");
+
+    // Handle pressing "Cancel" instead of creating a new page
+    if (!currentArticleEl) location.hash = "";
+};
+
+/** @type {(articles: HTMLElement[]) => string} */
+const articleList = (articles) => {
+    const p = dom("p");
+    articles
+        .map(
+            (article) =>
+                /** @type {[string, string]} */ ([
+                    articleTitle(article),
+                    article.id
+                ])
+        )
+        .sort(sortArticleList)
+        .forEach(([title, id], i) => {
+            if (i) p.append(dom("br"), "\n");
+            p.append(dom("a", title, { href: `#${id}` }));
+        });
+
+    return `\n${p.outerHTML}\n`;
+};
+
+const updateBrokenLinks = () => {
+    const brokenLinks = [...querySelectorAll("article a[href^='#']")].filter(
+        (a) =>
+            !getArticle(/** @type {string} */ (a.getAttribute("href")).slice(1))
+    );
+    querySelector(".of-broken").innerHTML = linksToArticles(brokenLinks)
+        .sort(sortArticleList)
+        .map(
+            ([title, id, links]) =>
+                `<div><a href="#${id}">${title}</a><ul><li>${links.map((link) => link.outerHTML).join("</li><li>")}</li></ul></div>`
+        )
+        .join("\n");
+    setFlag("broken", brokenLinks.length > 0);
+};
+
+// Update everything after content is changed and saved.
+const solidifyState = () => {
+    // Copy HTML from elements, whose query selectors are in the
+    // "data-of-transclude" attribute, to the elements with the
+    // data-of-transclude attributes.
+    querySelectorAll("[data-of-transclude]").forEach((el) => {
+        el.innerHTML =
+            querySelector(/** @type {string} */ (el.dataset.ofTransclude))
+                ?.innerHTML || "";
+    });
+    querySelector(".of-index").innerHTML = md2Html(
+        [...querySelectorAll("article")]
+            .map(
+                (article) =>
+                    /** @type {[string, string]} */ ([
+                        articleTitle(article),
+                        article.id
+                    ])
+            )
+            .sort(sortArticleList)
+            .map(([title, id]) => `[${title}](#${id})`)
+            .join("\n")
+    );
+    updateBrokenLinks();
+    setFlag("dirty", true);
+
+    if (autosaveFileHandle) {
+        autosaveAction();
+    }
+
+    if (autoput) {
+        autoputAction();
+    }
+};
+
+const saveEdits = () => {
+    const mdValue = inputEl.value;
+
+    if (!currentArticleEl) {
+        // When creating a new element, change the hash so the browser's :target
+        // selector will show the new page after it's added to the DOM. It does
+        // not find the element otherwise. This line is also necessary to show
+        // something useful after deleting a page.
+        location.hash = "";
+        currentArticleEl = newArticle(currentId);
+    }
+
+    if (mdValue.length) {
+        currentArticleEl.innerHTML = md2Html(mdValue);
+    } else {
+        // Delete the article
+        currentArticleEl.remove();
+        currentId = "";
+    }
+
+    location.hash = currentId;
+    doneEditing();
+    solidifyState();
+};
+
+/** @type {(props: object, callback: (file: File) => void) => void} */
+const askForFile = (props, callback) => {
+    const fileInput = /** @type {HTMLInputElement} */ (dom("input", "", props));
+    on(fileInput, "change", () => {
+        const file = /** @type {FileList} */ (fileInput.files)[0];
+
+        if (file) {
+            callback(file);
+        }
+    });
+    fileInput.click();
+};
+
+/** @type {(name: string) => string} */
+const filenameToNewId = (name) => {
+    if (getArticle(name)) {
+        const [base, ext] = name.split(/(\.[^.]+$)/);
+        let i = 1;
+        do {
+            name = `${base}-${i}${ext}`;
+            i += 1;
+        } while (getArticle(name));
+    }
+
+    return name;
+};
+
+/** @type {(id?: string) => HTMLElement} */
+const newArticle = (id) => {
+    const el = dom("article", "", id ? { id } : {});
+    articlesEl.append(el);
+    return el;
+};
+
+/** @type {(name: string, dataUrl: string, isImage?: boolean) => void} */
+const saveFile = (name, dataUrl, isImage) => {
+    const id = filenameToNewId(name);
+    const el = newArticle(id);
+
+    el.innerHTML = md2Html(`# ${isImage ? "🖼" : "🖫"} ${name}
+
+${isImage ? "!" : ""}[${name}](${dataUrl})`);
+    location.hash = id;
+    solidifyState();
+};
+
+const detectWebDAV = async () => {
+    if (location.protocol.startsWith("http")) {
+        const response = await fetch(pathname, { method: "OPTIONS" });
+        if (response.headers.get("DAV")) {
+            webdav = true;
+            setFlag("webdav", true);
+        }
+    }
+};
+
+const downloadWiki = () => {
+    const link = dom("a", "", {
+        href: URL.createObjectURL(
+            new Blob([wikiContent()], { type: "text/html" })
+        ),
+        download: suggestedFilename()
+    });
+    link.click();
+    saveDone();
+};
+
+// Edit - this function is used when clicking the Edit button and
+// when navigating to a page that doesn't exist
+on(".of-edit", "click", editPage);
+
+// Download
+on(".of-download", "click", downloadWiki);
+
+// Enable File API-based autosaving. When active, any change will automatically
+// be saved to the local filesystem, overwriting the existing file.
+on(".of-autosave", "click", () => {
+    if (!win.showSaveFilePicker) {
+        alert("File System Access API not supported in this browser.");
+        return;
+    }
+
+    if (autosaveFileHandle) {
+        autosaveFileHandle = null;
+        setFlag("autosave");
+        return;
+    }
+
+    // Save immediately, which prompts the user for a file.
+    autosaveAction();
+});
+
+// Enable WebDAV-based autosaving.
+on(".of-autoput", "click", () => {
+    autoput = !autoput;
+    setFlag("autoput", autoput);
+    autoputAction();
+});
+
+// Cancel editing
+on(".of-cancel", "click", doneEditing);
+
+// Save edits
+on(".of-apply", "click", saveEdits);
+
+on(".of-put", "click", autoputAction);
+
+on(".of-delete", "click", () => {
+    inputEl.value = "";
+    saveEdits();
+});
+
+on(".of-rename", "click", () => {
+    const newTitle = prompt("Wiki name:", doc.title);
+    if (newTitle) {
+        doc.title = newTitle;
+        solidifyState();
+    }
+});
+
+on(".of-clear", "click", () => {
+    if (confirm("Are you sure you want to empty this wiki?")) {
+        articlesEl.innerHTML = "";
+        location.hash = "";
+        currentArticleEl = newArticle();
+        currentArticleEl.classList.add("index");
+        currentArticleEl.innerHTML = `\n<h1>OmniFlux</h1>\n\n`;
+        const overviewEl = newArticle("overview");
+        overviewEl.innerHTML =
+            '\n<p>Edit <a href="#overview">this page</a></p>\n\n';
+        querySelectorAll("style:not(.of-core),script:not(.of-core)").forEach(
+            (el) => el.remove()
+        );
+        solidifyState();
+    }
+});
+
+on(".of-change-id", "click", () => {
+    if (!currentId) {
+        alert("The main page can't change its ID.");
+    } else {
+        const newId = prompt(
+            "This updates all links to this page.\n\nNew page ID:",
+            currentId
+        );
+
+        if (newId && newId !== currentId) {
+            if (getArticle(newId)) {
+                alert("A page with that ID already exists.");
+            } else {
+                /** @type {HTMLElement} */ (currentArticleEl).id = newId;
+                location.hash = newId;
+                querySelectorAll(`a[href="#${cssEscape(currentId)}"]`).forEach(
+                    (a) => a.setAttribute("href", `#${newId}`)
+                );
+                solidifyState();
+            }
+        }
+    }
+});
+
+// Load all articles from another copy of the wiki and replace any existing
+// articles with matching IDs.
+on(".of-import", "click", () => {
+    askForFile({ type: "file", accept: "text/html" }, (file) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const parser = new DOMParser();
+            const importedDoc = parser.parseFromString(
+                /** @type {string} */ (reader.result),
+                "text/html"
+            );
+            querySelectorAll("article", importedDoc).forEach(
+                (importedArticle) => {
+                    getArticle(importedArticle.id)?.remove();
+                    articlesEl.append(importedArticle);
+                }
+            );
+            // Copy styles that are not embedded in an article
+            querySelectorAll(
+                "style:not(.of-core,article *)",
+                importedDoc
+            ).forEach((style) => {
+                doc.head.appendChild(style);
+            });
+            // Copy scripts that are not embedded in an article
+            querySelectorAll(
+                "script:not(.of-core,article *)",
+                importedDoc
+            ).forEach((script) => {
+                doc.body.appendChild(script);
+            });
+            doc.title = importedDoc.title;
+            solidifyState();
+        };
+        reader.readAsText(file);
+    });
+});
+
+// Upload a file into the wiki
+on(".of-upload", "click", () => {
+    askForFile({ type: "file" }, (file) => {
+        const reader = new FileReader();
+        const result = () => /** @type {string} */ (reader.result);
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            if (file.type.startsWith("image/")) {
+                const img = new Image();
+                img.onload = async () => {
+                    // Hash reader.result to get a unique ID
+                    const binary = atob(result().split(",")[1]);
+                    const bytes = new Uint8Array(
+                        [...binary].map((char) => char.charCodeAt(0))
+                    );
+                    const hashBuffer = crypto.subtle.digest("SHA-256", bytes);
+                    const hashArray = Array.from(
+                        new Uint8Array(await hashBuffer)
+                    );
+                    const hashHex = hashArray
+                        .map((b) => b.toString(16).padStart(2, "0"))
+                        .join("");
+                    const id = `of-image-${hashHex}`;
+                    let uri = result().split(";");
+                    uri.splice(
+                        1,
+                        0,
+                        `id=${id}`,
+                        `width=${img.width}`,
+                        `height=${img.height}`
+                    );
+                    saveFile(file.name, uri.join(";"), true);
+                };
+                img.onerror = () => {
+                    saveFile(file.name, result());
+                };
+                img.src = result();
+            } else {
+                saveFile(file.name, result());
+            }
+        };
+    });
+});
+
+// Searching
+on(
+    ".of-search",
+    "input",
+    /** @type {(event: InputEvent) => void} */ (
+        (event) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const value = /** @type {HTMLInputElement} */ (
+                    event.target
+                ).value
+                    .trim()
+                    .toLowerCase();
+
+                if (!value.length) {
+                    searchResultsEl.innerHTML = "";
+                    return;
+                }
+
+                if (!value.match(/\w{3}/)) {
+                    searchResultsEl.innerHTML =
+                        "Not enough characters to search.";
+                    return;
+                }
+
+                const matchWords = value.split(/\s+/);
+                searchResultsEl.innerHTML =
+                    articleList(
+                        [...querySelectorAll("article")].filter((article) => {
+                            const text = article.textContent.toLowerCase();
+                            return matchWords.every((word) =>
+                                text.includes(word)
+                            );
+                        })
+                    ) || "No results.";
+            }, 300);
+        }
+    )
+);
+
+// Set internal state when navigating to a new page or upon
+// initial load
+on(win, "hashchange", onLoad);
+on(
+    win,
+    "keydown",
+    /** @type {(event: KeyboardEvent) => void} */ (
+        (event) => {
+            const preventDefault = () => event.preventDefault();
+            const key = event.key.toLowerCase();
+
+            if (key === "escape") {
+                preventDefault();
+
+                if (editing) {
+                    if (confirm("Discard changes?")) {
+                        doneEditing();
+                    }
+                } else {
+                    const sidebarToggle = /** @type {HTMLInputElement} */ (
+                        querySelector("#of-sidebar-toggle")
+                    );
+                    sidebarToggle.checked = !sidebarToggle.checked;
+                }
+            }
+
+            // Require Control or Command for all following shortcuts.
+            if (event.ctrlKey || event.metaKey) {
+                if (key === "enter") {
+                    preventDefault();
+
+                    if (editing) {
+                        saveEdits();
+                    } else {
+                        editPage();
+                    }
+                } else if (key === "s") {
+                    preventDefault();
+                    downloadWiki();
+                } else if (key === "u") {
+                    preventDefault();
+
+                    if (webdav) {
+                        autoputAction();
+                    }
+                }
+            }
+        }
+    )
+);
+
+// Preserve checkbox state into HTML
+on(
+    doc,
+    "change",
+    /** @type {(event: InputEvent) => void} */ (
+        ({ target }) => {
+            // Skip the sidebar toggle
+            if (
+                /** @type {HTMLInputElement} */ (target)?.type === "checkbox" &&
+                !(/** @type {HTMLInputElement} */ (target).id)
+            ) {
+                /** @type {HTMLInputElement} */ (target).toggleAttribute(
+                    "checked",
+                    /** @type {HTMLInputElement} */ (target).checked
+                );
+                solidifyState();
+            }
+        }
+    )
+);
+onLoad();
+updateBrokenLinks(); // of-broken-flag is intentionally not preserved during save
+
+// Finally, show the buttons
+setFlag("js", true);
+
+// Detect WebDAV support
+detectWebDAV();
+</script></body></html>
