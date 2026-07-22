@@ -74,6 +74,39 @@ ${pageIds}
 </urlset>`;
 }
 
+function escapeHtml(text) {
+    return text
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+}
+
+function sitemapHtml(pageIds) {
+    const links = [
+        '<li><a href="./">OmniFlux - Single-Page Wiki</a></li>',
+        ...pageIds.map(
+            (pageId) =>
+                `<li><a href="./${encodeURIComponent(pageId)}/">${escapeHtml(pageId)}</a></li>`
+        )
+    ].join("\n");
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OmniFlux Documentation Sitemap</title>
+</head>
+<body>
+<h1>OmniFlux Documentation Sitemap</h1>
+<ul>
+${links}
+</ul>
+</body>
+</html>`;
+}
+
 async function main() {
     await rm("dist", { recursive: true, force: true });
     await mkdir("dist/minified/", { recursive: true });
@@ -104,6 +137,7 @@ async function main() {
         "User-agent: *\nAllow: /\nSitemap: https://fidian.github.com/omniflux/sitemap.xml"
     );
     await writeFileToDist("sitemap.xml", await sitemap());
+    await writeFileToDist("sitemap.html", sitemapHtml(pageIds));
     await analyzeFile("dist/index.html");
     await analyzeFile("dist/minified/index.html");
 }
