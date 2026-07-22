@@ -1,15 +1,15 @@
 md2html: true
 html2md: true
 markdown:
- > [1](#one) [1 2](#one-two)
+ > [[one|1]] [[one-two|1 2]]
  >
  > [[One]] [[One Two]]
  >
  > [[Â_Ţöūγḩ-57ℝįñģ _123]]
  >
- > ![alt](#image) [![alt](#image)](#image)
+ > ![alt](#image) [[image|![alt](#image)]]
  >
- > [nested ![alt](#image) and text](#both)
+ > [[both|nested ![alt](#image) and text]]
  >
  > https://example.com/
  > [Example](https://example.com)

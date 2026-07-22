@@ -1,7 +1,7 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"><title>OmniFlux</title></head><body class=""><div class="of-articles"><article class="index">
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"><title>OmniFlux Wiki</title></head><body class=""><div class="of-articles"><article class="index">
 <h1>OmniFlux - Single-Page Wiki</h1>
 
-<p>You're looking at a complete, self-contained wiki. This one file can be downloaded, the pages can be updated using Markdown, and then everything can be saved. It even supports autosaving when content changes! Try it now by pressing the "Edit" button in the upper right. <a href="#markdown">Learn about supported Markdown.</a></p>
+<p>You're looking at a complete, self-contained wiki. This one file can be downloaded, the pages can be updated using Markdown, and then everything can be saved. It even supports autosaving when content changes! Try it now by pressing the "Edit" button in the upper right. <a href="#markdown-syntax">Learn about supported Markdown.</a></p>
 
 <p>After downloading, you're able to use this as a personal wiki, a project wiki, diary, a collection of organized notes, or simply an easy way to track potentially related pieces of information. It works entirely in the browser and does not require any installation or server-side code. You can even use it on a mobile device.</p>
 
@@ -12,7 +12,7 @@
 <tr><th align="center">TL;DR</th><th align="left">Where</th><th align="left">Why / How</th></tr>
 </thead>
 <tbody>
-<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Documentation</a></td><td align="left">Press Control-S or Command-S to save.</td></tr>
+<tr><td align="center">Latest</td><td align="left"><a href="https://fidian.github.io/omniflux/" target="_blank" rel="noopener noreferrer">OmniFlux Documentation</a></td><td align="left">Press Control-S or Command-S to save, or open the sidebar and expand the Saving section.</td></tr>
 <tr><td align="center">Smallest</td><td align="left"><a href="https://fidian.github.io/omniflux/minified/" target="_blank" rel="noopener noreferrer">Tiny Version</a></td><td align="left">Minified, no content. When every byte matters. ~21k</td></tr>
 <tr><td align="center">Custom</td><td align="left"><a href="https://github.com/fidian/omniflux/" target="_blank" rel="noopener noreferrer">GitHub repository</a></td><td align="left">Build your own!</td></tr>
 </tbody>
@@ -21,9 +21,8 @@
 <p>The latest version is a bit larger than the "smallest" because it contains:</p>
 
 <ul>
-<li>Unminified and commented JavaScript with TypeScript annotations.</li>
-<li>Unminified and commented CSS to explain some of the more tricky things (eg. sidebar).</li>
-<li>All of the documentation, including the page detailing the Markdown syntax.</li>
+<li>Unminified and commented CSS and JavaScript with TypeScript annotations. This is best for understanding what's being done and to create customizations.</li>
+<li>All of this documentation, including the lengthy page detailing the <a href="#markdown-syntax">Markdown</a> syntax.</li>
 <li>Two embedded files: a small solar flare image and a CSV file.</li>
 <li>A custom element example to show how to use your own components.</li>
 </ul>
@@ -35,14 +34,14 @@
 
 <ul>
 <li>Lighter (though it's also less feature-packed) than <a href="https://tiddlywiki.com/" target="_blank" rel="noopener noreferrer">TiddlyWiki</a> and <a href="https://feather.wiki/" target="_blank" rel="noopener noreferrer">Feather Wiki</a>. For more details, check out the <a href="#fair-comparison">Fair Comparison</a> between these wikis and several others.</li>
-<li>Markdown support (<i>italics</i>, <b>bold</b>, <b><i>both</i></b>, <code>code</code>, <s>strike</s>, <u>underline</u>), external images, links, ordered and unordered lists, code fences. <a href="#markdown">See all of the supported syntax.</a></li>
+<li>Markdown support (<i>italics</i>, <b>bold</b>, <b><i>both</i></b>, <code>code</code>, <s>strike</s>, <u>underline</u>), external images, links, ordered and unordered lists, code fences. <a href="#markdown-syntax">See all of the supported syntax.</a></li>
 <li>Generated HTML isn't one long line, allowing source code management tools like <code>git</code> to work better.</li>
 <li>Write content once, have it displayed in multiple places using <a href="#content-transclusion">Content Transclusion</a>.</li>
 <li>Automated tests to ensure the bidirectional HTML to/from Markdown conversion works as expected, as well as other features in the wiki.</li>
-<li>Doesn't need JavaScript to browse, thanks to CSS-based navigation and a CSS-only sidebar, allowing it to work even in a very restrictive environment, such as with a Content Security Policy (CSP) <code>script-src 'none'</code> or a browser where JavaScript is disabled.</li>
-<li>Quick editing and saving using Control+Enter or Command+Enter.</li>
+<li>Doesn't need JavaScript to browse, thanks to CSS-based navigation and a CSS-only sidebar, allowing it to work even in a very restrictive environment, such as with Content Security Policy (CSP) <code>script-src 'none'</code> or a browser where JavaScript is disabled.</li>
+<li>Quicker editing using <a href="#keybindings">keybindings</a>.</li>
 <li>Uploading to a server through <a href="#saving-with-webdav">WebDAV</a>.</li>
-<li>Importing pages from another OmniFlux wiki, which makes <a href="#upgrading">upgrades</a> trivial. This also copies over any additional script and style elements that may have been added.</li>
+<li>Importing pages from another OmniFlux wiki, which makes <a href="#upgrading">upgrading</a> trivial. This also copies over any additional script and style elements that may have been added.</li>
 <li><a href="#custom-elements">Custom Elements</a> are allowed.</li>
 <li>Detection of broken internal links. When there are none, the sidebar item is removed.</li>
 <li>The JavaScript has TypeScript annotations to provide information to intelligent editors.</li>
@@ -56,17 +55,23 @@ Octocat is external, the solar flare is completely within the wiki.</p>
 
 <h2>How to Use</h2>
 
-<p>Edit any page by pressing the Edit button or by pressing Control+Enter or Command+Enter. When editing, the Cancel button will not save your changes and the Save button will keep them. When editing, you can also press Control+Enter or Command+Enter to save or Escape to cancel.</p>
+<p>Edit any page by pressing the Edit button. When editing, the Cancel button will not keep your changes and the Apply button will remember them. There are also <a href="#keybindings">keybindings</a> to make your editing easier.</p>
 
-<p>Links to other pages are done by linking to the ID as a location hash. The index page has no ID, like <code>[Main Page](#)</code>. Other pages have an ID, like <code>[Markdown Syntax](#markdown)</code>.</p>
+<p>Links to other internal pages are done using two brackets.</p>
 
-<p>Create a new page by making a link to it. Edit any page and paste in the Markdown to link to a page, like this example: <code>[New Page](#new-page)</code>. By clicking the link, you will see the edit screen to create the content for the page as shown here: <a href="#new-page">New Page</a>.</p>
+<ul>
+<li>Link to a page by converting the label to an ID: <code>[[Overview]]</code> → <a href="#overview">Overview</a></li>
+<li>Change the label but still link to the same page: <code>[[overview|The Overview]]</code> -&gt; <a href="#overview">The Overview</a></li>
+<li>Link to the main page, whose ID is empty: <code>[[|Main Page]]</code> -&gt; <a href="#">Main Page</a></li>
+</ul>
+
+<p>Create a new page by making a link to it and following the link. For example, you can use this <a href="#intentionally-missing-page">Intentionally Missing Page</a>. When you follow the link, an edit screen will be shown to create content. The page's ID is converted back into a title automatically when editing a blank page.</p>
 
 <p>The "Overview" section in the sidebar is under your control. Change the <a href="#overview">Overview</a> page and it will automatically get copied to the sidebar.</p>
 
 <p>The sidebar generates the "Index" entries for every page in the wiki. It will use the first heading found on the page, like <code># Page Title</code>. If no heading is found, it converts the ID into a page title.</p>
 
-<p>To delete a page, start by editing it. From there, either remove all content and press Save, or you can press the Delete button. The page will be removed from the index and the sidebar.</p>
+<p>To delete a page, start by editing it. From there, either remove all content and press Apply, or you can press the Delete button. The page will be removed from the index and the sidebar.</p>
 
 
 <h2>Credits</h2>
@@ -81,7 +86,7 @@ Octocat is external, the solar flare is completely within the wiki.</p>
 
 <p>The ability to add a single copy of an image and reference it on multiple pages, yet still treat it as an image is leveraging <a href="https://css-tricks.com/use-and-reuse-everything-in-svg-even-animations/" target="_blank" rel="noopener noreferrer"><code>&lt;svg&gt;&lt;use /&gt;&lt;/svg&gt;</code></a>, which is able to reference any element in the document. <a href="https://datatracker.ietf.org/doc/html/rfc2397#section-3" target="_blank" rel="noopener noreferrer">RFC 2397</a> explains the <code>data</code> URL scheme and shows how to embed additional information.</p>
 </article>
-<article id="markdown">
+<article id="markdown-syntax">
 <h1>Markdown Syntax</h1>
 
 <p>Markdown is supported, though not all features are included. This page will explain all of your available options, including common patterns that are not supported.</p>
@@ -187,17 +192,17 @@ Make your own haiku</p>
 
 <h2>Images and Links</h2>
 
-<p>URLs are converted automatically: <a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">https://fidian.github.io/omniflux</a></p>
+<p>URLs and email addresses are converted automatically: <a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">https://fidian.github.io/omniflux</a> <a href="mailto:fidian@rumkin.com" target="_blank" rel="noopener noreferrer">fidian@rumkin.com</a></p>
 
 <p>Link to an external page: <a href="https://fidian.github.io/omniflux" target="_blank" rel="noopener noreferrer">OmniFlux</a></p>
 
 <pre><code class="language-md">[Link Text](https://example.com/)
 </code></pre>
 
-<p>Linking to an internal page is accomplished in two different ways. When the link text matches the ID, you can surround in double brackets, like <a href="#changelog">Changelog</a> and <a href="#fair-comparison">Fair Comparison</a>, When you want a custom name for a page, you link using a standard link, like <a href="#">Main Page</a> and <a href="#markdown">Markdown Info</a>.</p>
+<p>Linking to an internal page is accomplished in two different ways. When the link text matches the ID, you can surround in double brackets, like <a href="#changelog">Changelog</a> and <a href="#fair-comparison">Fair Comparison</a>, When you want a custom name for a page, you link using a standard link, like <a href="#">Main Page</a> (which has no ID) and <a href="#markdown-syntax">Markdown Info</a> (page ID is <code>markdown-syntax</code>).</p>
 
 <pre><code class="language-md">[[Changelog]] and [[Fair Comparison]]
-[Main Page](#) and [Markdown Info](#markdown)
+[[|Main Page]] and [[markdown-syntax|Markdown Info]]
 </code></pre>
 
 <p>External image: <img src="https://fidian.github.io/omniflux/octocat.svg" alt="Octocat" title="Octocat"> (the "alt text" is also converted to a title)</p>
@@ -221,8 +226,6 @@ Make your own haiku</p>
 <p>Links can have titles by adding a description after the URL, but that's unsupported.</p>
 
 <p>Do not use angle brackets (<code>&lt;</code> and <code>&gt;</code>) around a URL to turn it into a link. Similarly, URLs without <code>http://</code> or <code>https://</code> in front are not linked.</p>
-
-<p>Email addresses are not linked automatically.</p>
 
 <p>Reference-style links are not supported, which is where a link is used in one or more spots, but the URL is maintained elsewhere.</p>
 
@@ -382,7 +385,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <a href="#content-transclusion">Content Transclusion</a><br>
 <a href="#custom-elements">Custom Elements</a><br>
 <a href="#fair-comparison">Fair Comparison</a><br>
-<a href="#markdown">Markdown Syntax</a><br>
+<a href="#markdown-syntax">Markdown Syntax</a><br>
 <a href="#rule-processing">Rule Processing</a><br>
 <a href="#saving-with-webdav">Saving with WebDAV</a><br>
 <a href="#upgrading">Upgrading</a></p>
@@ -392,7 +395,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>Is your version a little stale or missing some features? <a href="#upgrading">Learn how to upgrade!</a></p>
 
 <ul>
-<li><b>2026-07-21</b> - Added Control/Command-S behavior to save the wiki. Added canceling an edit and toggling of sidebar with Escape.</li>
+<li><b>2026-07-21</b> - Added Control/Command-S behavior to save the wiki, along with additional <a href="#keybindings">keybindings</a>. Added canceling an edit and toggling of sidebar with Escape. Fixed edit button to say "Apply" to differentiate it from "Save".</li>
 <li><b>2026-07-20</b> - Standardized class names, attributes, and more to use hyphens. Documented transclusion and remove transcluded content when editing.</li>
 <li><b>2026-07-12</b> - Added support for <code>[[Page Title]]</code> for faster linking to internal pages. Changed best practices to embed custom elements in articles, which simplifies the experience.</li>
 <li><b>2026-07-10</b> - Fixing sidebar icon display on Android.</li>
@@ -634,7 +637,7 @@ MutationObserver(mutations =&gt; {
 
 <h4>Cons</h4>
 
-<p>Many quirks on screens with different sizes, such as buttons being off screen to save edits, though a helping of additional CSS could clear most of these up.</p>
+<p>Many quirks on screens with different sizes, such as buttons being off screen to persist edits, though a helping of additional CSS could clear most of these up.</p>
 
 <p>Unfriendly to source code management tools, such as <code>git</code> because of the extremely long lines.</p>
 
@@ -980,7 +983,7 @@ This content is sent to the custom element.
 
 <p>OmniFlux allows you to copy content from other elements. For instance, below is the title of the wiki, which comes from the document's title. Whenever a change is made to any page, all of the transclusions are updated.</p>
 
-<raw-html data-of-transclude="title">OmniFlux</raw-html>
+<raw-html data-of-transclude="title">OmniFlux Wiki</raw-html>
 
 <p>This is achieved by using embedded HTML (see <a href="#custom-elements">Custom Elements</a>) and the <code>data-of-transclude</code> attribute.</p>
 
@@ -1015,6 +1018,26 @@ This content is sent to the custom element.
 </code></pre>
 </article><article id="license-information">
 <p>OmniFlux is licensed under the <a href="https://github.com/fidian/omniflux/blob/master/LICENSE.md" target="_blank" rel="noopener noreferrer">MIT License</a>.</p>
+</article><article id="keybindings">
+<h1>Keybindings</h1>
+
+<p>OmniFlux allows keybindings in order to maximize your editing efficiency and minimize the amount of effort it takes to add additional content into the wiki. Keybindings change based on the mode you are in.</p>
+
+<p><b>For Macs:</b> All Ctrl shortcuts can be used with <code>⌘ Cmd</code> instead.</p>
+
+<table>
+<thead>
+<tr><th align="left">Key</th><th align="left">When</th><th align="left">Action</th></tr>
+</thead>
+<tbody>
+<tr><td align="left">Ctrl-S</td><td align="left">Anywhere</td><td align="left">Save a copy of the current state of the wiki locally.</td></tr>
+<tr><td align="left">Ctrl-U</td><td align="left">Anywhere</td><td align="left">Upload to a WebDAV server, if one was detected.</td></tr>
+<tr><td align="left">Ctrl-Enter</td><td align="left">Editing</td><td align="left">Edit the current page.</td></tr>
+<tr><td align="left">Escape</td><td align="left">Editing</td><td align="left">Prompt to discard the current changes.</td></tr>
+<tr><td align="left">Ctrl-Enter</td><td align="left">Viewing</td><td align="left">Edit the current page.</td></tr>
+<tr><td align="left">Escape</td><td align="left">Viewing</td><td align="left">Toggle the sidebar.</td></tr>
+</tbody>
+</table>
 </article></div>
 <div class="of-toolbar">
     <button class="of-edit of-js-on">Edit</button>
@@ -1025,7 +1048,7 @@ This content is sent to the custom element.
             <div class="of-notice of-dirty-on">Unsaved Changes</div>
             <div class="of-notice of-autosave-on">Autosaving</div>
             <div class="of-title">
-                <a href="#" data-of-transclude="title">OmniFlux</a>
+                <a href="#" data-of-transclude="title">OmniFlux Wiki</a>
             </div>
             <details class="of-overview" name="of-sidebar" open="">
                 <summary><span class="of-icon">🗎︎</span> Overview</summary>
@@ -1035,7 +1058,7 @@ This content is sent to the custom element.
 <a href="#content-transclusion">Content Transclusion</a><br>
 <a href="#custom-elements">Custom Elements</a><br>
 <a href="#fair-comparison">Fair Comparison</a><br>
-<a href="#markdown">Markdown Syntax</a><br>
+<a href="#markdown-syntax">Markdown Syntax</a><br>
 <a href="#rule-processing">Rule Processing</a><br>
 <a href="#saving-with-webdav">Saving with WebDAV</a><br>
 <a href="#upgrading">Upgrading</a></p>
@@ -1058,8 +1081,9 @@ This content is sent to the custom element.
 <a href="#content-transclusion">Content Transclusion</a><br>
 <a href="#custom-elements">Custom Elements</a><br>
 <a href="#fair-comparison">Fair Comparison</a><br>
+<a href="#keybindings">Keybindings</a><br>
 <a href="#license-information">License Information</a><br>
-<a href="#markdown">Markdown Syntax</a><br>
+<a href="#markdown-syntax">Markdown Syntax</a><br>
 <a href="#">OmniFlux - Single-Page Wiki</a><br>
 <a href="#overview">Overview</a><br>
 <a href="#rule-processing">Rule Processing</a><br>
@@ -1074,7 +1098,7 @@ This content is sent to the custom element.
             </details>
             <details name="of-sidebar">
                 <summary class="of-broken-on"><span class="of-icon">💥︎</span> Broken Links</summary>
-                <div class="of-broken"><div><a href="#">OmniFlux - Single-Page Wiki</a><ul><li><a href="#new-page">New Page</a></li></ul></div></div>
+                <div class="of-broken"><div><a href="#">OmniFlux - Single-Page Wiki</a><ul><li><a href="#intentionally-missing-page">Intentionally Missing Page</a></li></ul></div></div>
             </details>
             <details class="of-js-off" name="of-sidebar">
                 <summary><span class="of-icon">⇩︎</span> Saving</summary>
@@ -1149,7 +1173,7 @@ This content is sent to the custom element.
         <button class="of-cancel">Cancel</button>
         <span class="of-hash"></span>
         <button class="of-delete">Delete</button>
-        <button class="of-save">Save</button>
+        <button class="of-apply">Apply</button>
     </div>
     <textarea class="of-input" placeholder="Write here..."></textarea>
 </div>

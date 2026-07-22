@@ -15,6 +15,7 @@ let autoput = false; // If truthy, WebDAV-based autosave is enabled
 let saveTimeout; // For showing the "saved" message
 /** @type {ReturnType<typeof setTimeout>} */
 let searchTimeout; // For debounce
+let webdav = false; // Whether WebDAV is available for saving
 
 /**
  * Minification variables and functions
@@ -180,6 +181,7 @@ const id2Name = (id) =>
 /**
  * The reverse of id2Name, used for [[Page Title]] -> page-title
  * Removes accents, changes non-alphanumeric to hyphens, consolidates hyphens.
+ * Allows periods for filenames.
  * @type {(name: string) => string}
  */
 const name2Id = (name) =>
@@ -187,7 +189,7 @@ const name2Id = (name) =>
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .toLowerCase()
-        .replace(/\W+/g, " ")
+        .replace(/[^a-z0-9_.]+/g, " ")
         .trim()
         .replace(/ /g, "-");
 
@@ -460,10 +462,10 @@ const inlineRules = [
         }
     ],
     [
-        /\[\[(.*?)\]\]/,
-        (_, txt) =>
-            dom("a", mdInline(txt), {
-                href: "#" + name2Id(txt)
+        /\[\[(.*?)(\|.*?)?\]\]/,
+        (_, dest, label) =>
+            dom("a", mdInline(label ? label.substring(1) : dest), {
+                href: "#" + name2Id(dest)
             })
     ],
     [
@@ -479,6 +481,10 @@ const inlineRules = [
     [
         /(?<!\=["'])https?\:\/\/[^\s]+/i,
         (href) => dom("a", href, { href, ...linkAttributes })
+    ],
+    [
+        /(?<!mailto:)[^\s]+@[^\s]+/i,
+        (email) => dom("a", email, { href: 'mailto:' + email, ...linkAttributes })
     ]
 ];
 
@@ -702,8 +708,14 @@ const html2MdConversions = [
             const href = getAttribute(currentNode, "href");
             const text = html2Md(currentNode);
 
-            if (href === "#" + name2Id(text)) {
-                add(`[[${text}]]`);
+            if (href?.match(/^#/)) {
+                if (href === "#" + name2Id(text)) {
+                    add(`[[${text}]]`);
+                } else {
+                    add(`[[${href.slice(1)}|${text}]]`);
+                }
+            } else if (href === 'mailto:' + text) {
+                add(text);
             } else {
                 add(href === text ? href : `[${text}](${href})`);
             }
@@ -986,7 +998,7 @@ const editPage = () => {
         inputEl.value = v;
         inputEl.setSelectionRange(spot, spot);
     } else {
-        inputEl.value = "";
+        inputEl.value = `# ${id2Name(currentId)}\n\n`;
     }
 
     editing = true;
@@ -1172,6 +1184,7 @@ const detectWebDAV = async () => {
     if (location.protocol.startsWith("http")) {
         const response = await fetch(pathname, { method: "OPTIONS" });
         if (response.headers.get("DAV")) {
+            webdav = true;
             setFlag("webdav", true);
         }
     }
@@ -1224,7 +1237,7 @@ on(".of-autoput", "click", () => {
 on(".of-cancel", "click", doneEditing);
 
 // Save edits
-on(".of-save", "click", saveEdits);
+on(".of-apply", "click", saveEdits);
 
 on(".of-put", "click", autoputAction);
 
@@ -1412,34 +1425,41 @@ on(
     "keydown",
     /** @type {(event: KeyboardEvent) => void} */ (
         (event) => {
-            if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-                event.preventDefault();
+            const preventDefault = () => event.preventDefault();
+            const key = event.key.toLowerCase();
 
-                if (editing) {
-                    saveEdits();
-                } else {
-                    editPage();
-                }
-            }
+            if (key === "escape") {
+                preventDefault();
 
-            if (
-                (event.ctrlKey || event.metaKey) &&
-                event.key.match(/s/i)
-            ) {
-                event.preventDefault();
-                downloadWiki();
-            }
-
-            if (event.key === "Escape") {
-                event.preventDefault();
-
-                if (editing) {
+                if (editing && confirm("Discard changes?")) {
                     doneEditing();
                 } else {
                     const sidebarToggle = /** @type {HTMLInputElement} */ (
                         querySelector("#of-sidebar-toggle")
                     );
                     sidebarToggle.checked = !sidebarToggle.checked;
+                }
+            }
+
+            // Require Control or Command for all following shortcuts.
+            if (event.ctrlKey || event.metaKey) {
+                if (key === "enter") {
+                    preventDefault();
+
+                    if (editing) {
+                        saveEdits();
+                    } else {
+                        editPage();
+                    }
+                } else if (key === 's') {
+                    preventDefault()
+                    downloadWiki();
+                } else if (key === 'u') {
+                    preventDefault();
+
+                    if (webdav) {
+                        autoputAction();
+                    }
                 }
             }
         }

@@ -1,0 +1,16 @@
+md2html: true
+html2md: true
+markdown:
+ > support@example.com
+ >
+ > [Email Support](mailto:support@example.com)
+ >
+ > first.last+tag@example.co.uk
+html:
+ >
+ > <p><a href="mailto:support@example.com" target="_blank" rel="noopener noreferrer">support@example.com</a></p>
+ >
+ > <p><a href="mailto:support@example.com" target="_blank" rel="noopener noreferrer">Email Support</a></p>
+ >
+ > <p><a href="mailto:first.last+tag@example.co.uk" target="_blank" rel="noopener noreferrer">first.last+tag@example.co.uk</a></p>
+ >

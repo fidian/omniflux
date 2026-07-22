@@ -5,7 +5,7 @@ test("editing and deleting new page", async ({ page }) => {
     await goto(page);
     await expect(page).toHaveTitle(/OmniFlux/);
     await page.click(".of-edit");
-    await page.fill("textarea", "Go to a [new page](#new-page)!");
+    await page.fill("textarea", "Go to a [[new-page|new page]]!");
     await page.click(".of-save");
     await expect(page.url()).not.toContain("#new-page");
     await page.click("a:has-text('new page')");

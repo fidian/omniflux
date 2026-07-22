@@ -1,0 +1,23 @@
+# Convert specific situations to HTML
+md2html: true
+html2md: false
+markdown:
+ > [[one|1]] [[one-two|1 2]]
+ > [1](#one) [1 2](#one-two)
+ >
+ > [[image|![alt](#image)]]
+ > [![alt](#image)](#image)
+ >
+ > [[both|nested ![alt](#image) and text]]
+ > [nested ![alt](#image) and text](#both)
+html:
+ >
+ > <p><a href="#one">1</a> <a href="#one-two">1 2</a><br>
+ > <a href="#one">1</a> <a href="#one-two">1 2</a></p>
+ >
+ > <p><a href="#image"><img src="#image" alt="alt" title="alt"></a><br>
+ > <a href="#image"><img src="#image" alt="alt" title="alt"></a></p>
+ >
+ > <p><a href="#both">nested <img src="#image" alt="alt" title="alt"> and text</a><br>
+ > <a href="#both">nested <img src="#image" alt="alt" title="alt"> and text</a></p>
+ >

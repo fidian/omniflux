@@ -1,0 +1,16 @@
+md2html: true
+html2md: false
+markdown:
+ > [[page-id|Page Name]]
+ >
+ > [[another-page|Another Page]]
+ >
+ > [[a_tou-h-57-ing-_123|Â_Ţöūγḩ-57ℝįñģ _123]]
+html:
+ >
+ > <p><a href="#page-id">Page Name</a></p>
+ >
+ > <p><a href="#another-page">Another Page</a></p>
+ >
+ > <p><a href="#a_tou-h-57-ing-_123">Â_Ţöūγḩ-57ℝįñģ _123</a></p>
+ >
