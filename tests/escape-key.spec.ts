@@ -11,6 +11,10 @@ test("Escape cancels edits without saving", async ({ page }) => {
     await expect(page.locator(".of-input")).toBeVisible();
     await page.locator(".of-input").fill("# Unsaved edit");
 
+    page.once("dialog", async (dialog) => {
+        expect(dialog.message()).toBe("Discard changes?");
+        await dialog.accept();
+    });
     await page.keyboard.press("Escape");
 
     await expect(page.locator(".of-input")).toBeHidden();

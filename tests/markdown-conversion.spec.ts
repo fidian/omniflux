@@ -70,7 +70,7 @@ test('Execute scenarios', async ({ page }) => {
                     await goto(page, id);
                     await expect(page.locator(".of-input")).toBeVisible();
                     await page.locator(".of-input").fill(scenario.markdown);
-                    await page.locator(".of-save").click();
+                    await page.locator(".of-apply").click();
                     await expect(page.locator(".of-input")).toBeHidden();
                     await expect(await page.locator(`article#${id}`).innerHTML()).toBe(
                         scenario.html

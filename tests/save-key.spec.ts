@@ -9,7 +9,7 @@ async function expectShortcutToDownload(page: Page, shortcut: string) {
     const download = await downloadPromise;
 
     expect(download.suggestedFilename()).toMatch(
-        /^OmniFlux-\d{8}-\d{6}\.html$/
+        /^OmniFlux Wiki-\d{8}-\d{6}\.html$/
     );
 }
 
