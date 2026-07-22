@@ -23,6 +23,26 @@ test("Escape cancels edits without saving", async ({ page }) => {
     );
 });
 
+test("Escape keeps editing when discard is canceled", async ({ page }) => {
+    await goto(page);
+    const sidebarToggle = page.locator("#of-sidebar-toggle");
+
+    await page.locator(".of-edit").click();
+    await expect(page.locator(".of-input")).toBeVisible();
+    await page.locator(".of-input").fill("# Unsaved edit");
+    await expect(sidebarToggle).not.toBeChecked();
+
+    page.once("dialog", async (dialog) => {
+        expect(dialog.message()).toBe("Discard changes?");
+        await dialog.dismiss();
+    });
+    await page.keyboard.press("Escape");
+
+    await expect(page.locator(".of-input")).toBeVisible();
+    await expect(page.locator(".of-input")).toHaveValue("# Unsaved edit");
+    await expect(sidebarToggle).not.toBeChecked();
+});
+
 test("Escape toggles the sidebar when not editing", async ({ page }) => {
     await goto(page);
     const sidebarToggle = page.locator("#of-sidebar-toggle");

@@ -758,7 +758,6 @@ const html2MdConversions = [
                 parent = parent.parentElement;
                 tail = "\n";
             }
-            const listMd = html2Md(currentNode, true);
             add(
                 indent +
                     html2Md(currentNode, true)
@@ -1042,22 +1041,24 @@ const doneEditing = () => {
 };
 
 /** @type {(articles: HTMLElement[]) => string} */
-const articleList = (articles) =>
-    md2Html(
-        [...articles]
-            .map((article) => [
-                querySelector(
-                    "h1,h2,h3,h4,h5,h6",
-                    article
-                )?.textContent.trim() || id2Name(article.id),
-                article.id
-            ])
-            .sort((a, b) =>
-                a[0].localeCompare(b[0], undefined, { numeric: true })
-            )
-            .map(([title, id]) => `[${title}](#${id})`)
-            .join("\n")
-    );
+const articleList = (articles) => {
+    const p = dom("p");
+    articles
+        .map(
+            (article) =>
+                /** @type {[string, string]} */ ([
+                    articleTitle(article),
+                    article.id
+                ])
+        )
+        .sort(sortArticleList)
+        .forEach(([title, id], i) => {
+            if (i) p.append(dom("br"), "\n");
+            p.append(dom("a", title, { href: `#${id}` }));
+        });
+
+    return `\n${p.outerHTML}\n`;
+};
 
 const updateBrokenLinks = () => {
     const brokenLinks = [...querySelectorAll("article a[href^='#']")].filter(
@@ -1431,8 +1432,10 @@ on(
             if (key === "escape") {
                 preventDefault();
 
-                if (editing && confirm("Discard changes?")) {
-                    doneEditing();
+                if (editing) {
+                    if (confirm("Discard changes?")) {
+                        doneEditing();
+                    }
                 } else {
                     const sidebarToggle = /** @type {HTMLInputElement} */ (
                         querySelector("#of-sidebar-toggle")
@@ -1451,10 +1454,10 @@ on(
                     } else {
                         editPage();
                     }
-                } else if (key === 's') {
-                    preventDefault()
+                } else if (key === "s") {
+                    preventDefault();
                     downloadWiki();
-                } else if (key === 'u') {
+                } else if (key === "u") {
                     preventDefault();
 
                     if (webdav) {

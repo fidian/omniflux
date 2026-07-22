@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { makeContent } from "./make-content.mjs";
+import { getPageIds, makeContent } from "./make-content.mjs";
 import { minify } from "html-minifier-next";
 import { JSDOM, VirtualConsole } from 'jsdom';
 
@@ -60,6 +60,15 @@ async function analyzeFile(filename) {
     });
 }
 
+async function sitemap() {
+    const pageIds = (await getPageIds()).map((id) => `<url><loc>https://fidian.github.com/omniflux/#${id}</loc></url>`).join("\n");
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://fidian.github.com/omniflux/</loc></url>
+${pageIds}
+</urlset>`;
+}
+
 async function main() {
     await rm("dist", { recursive: true, force: true });
     await mkdir("dist/minified/", { recursive: true });
@@ -73,6 +82,18 @@ async function main() {
     await writeFileToDist(
         "googled1a61b91d6079a30.html",
         'google-site-verification: googled1a61b91d6079a30.html'
+    );
+    await writeFileToDist(
+        '404.html',
+        '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Redirecting...</title><script>const l=window.location;l.replace(l.toString().replace(/\/([^\/]*)$/, "/#$1"));</script></head><body></body></html>'
+    );
+    await writeFileToDist(
+        'robots.txt',
+        'User-agent: *\nAllow: /\nSitemap: https://fidian.github.com/omniflux/sitemap.xml'
+    );
+    await writeFileToDist(
+        'sitemap.xml',
+        await sitemap()
     );
     await analyzeFile("dist/index.html");
     await analyzeFile("dist/minified/index.html");

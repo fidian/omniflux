@@ -34,7 +34,15 @@ body.of-dirty-flag {
 /* CSS-based navigation - https://dev.to/fedia/15kb-single-file-wiki-46a1 */
 article {
     display: none;
+    margin: 0 auto;
+    max-width: 960px;
     padding: 0 0.25em;
+
+    /* Restrict images so they fit in the article */
+    img {
+        height: auto;
+        max-width: 100%;
+    }
 }
 
 article:target,
@@ -59,17 +67,6 @@ body {
     padding: 0;
     font: 1.25em sans-serif;
     line-height: 1.5;
-}
-
-article {
-    margin: 0 auto;
-    max-width: 960px;
-
-    /* Restrict images so they fit in the article */
-    img {
-        height: auto;
-        max-width: 100%;
-    }
 }
 
 /* When on a small display, push the content down so the sidebar tab isn't

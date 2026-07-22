@@ -1,29 +1,33 @@
-# OmniFlux - Single Page Wiki
+# OmniFlux - Single-Page Wiki
 
-Are you looking for a self-contained wiki that can be easily deployed on any web server? Look no further than OmniFlux! This single-page wiki is designed to be simple, fast, and easy to use, making it the perfect solution for anyone who wants to create a wiki without the hassle of setting up a complex backend.
+OmniFlux is a self-contained wiki that runs from a single HTML file. It is designed to be simple, fast, and easy to deploy anywhere you can host or open an HTML file, without setting up a backend or database.
 
 [DEMO: See it in action!](https://fidian.github.io/omniflux/)
 
 
 ## Features
 
-* Everything's all in one HTML file. Just open it in your browser and start writing.
-* No need for a server or a database, no installation needed.
-* Write content in Markdown.
-* Uses CSS-based routing. This wiki can be browsed without JavaScript!
+* Everything is stored in one HTML file. Open it in your browser and start writing.
+* No server, database, installation, or build step is required for normal use.
+* Write pages in Markdown, including task lists, tables, wiki links, images, code fences, and email or URL autolinks.
+* Save locally by downloading the current wiki, with optional browser File System Access API autosave when supported.
+* Save to a server with WebDAV or HTTP `PUT` when your host supports it.
+* Search, backlinks, broken-link detection, and a generated page index are built in.
+* Uploaded files and images can be embedded directly in the wiki.
+* CSS-based routing lets the wiki be browsed without JavaScript.
 
 
 ## Design Goals
 
-* Simplicity: We wanted to create a wiki that anyone can use, regardless of their technical expertise.
-* Portability: By keeping everything in a single HTML file, we made it easy to share and deploy the wiki on any web server.
-* Lightweight: There's no plugin system, complex configuration, or unnecessary features.
-* Git Friendly: The HTML includes newlines, making `git diff` work well for tracking changes to the wiki content.
+* Simplicity: Anyone should be able to use the wiki without learning server administration.
+* Portability: Keeping everything in one HTML file makes the wiki easy to share, archive, and deploy.
+* Lightweight: There is no plugin system, complex configuration, or unnecessary framework.
+* Git-friendly output: The saved HTML includes newlines, making `git diff` useful for tracking content changes.
 
 
 ## Alternatives
 
-If you are looking for more features, I would recommend these:
+If you need a larger ecosystem or more customization, consider these:
 
 * [TiddlyWiki](https://tiddlywiki.com/) - A more feature-rich single-page wiki with a plugin system and extensive customization options.
 * [Feather Wiki](https://feather.wiki/) - A minimalist single-page wiki that focuses on simplicity and ease of use, but with fewer features than TiddlyWiki.
@@ -33,9 +37,9 @@ There is also a [page on the wiki](https://fidian.github.io/omniflux/#fair-compa
 
 ## How Did This Come About?
 
-I've created this wiki by starting with [1.5KB Single-File Wiki](https://dev.to/fedia/15kb-single-file-wiki-46a1), which is where the CSS-based navigation comes from. One issue I had was that this approach kept two copies of each page in the HTML file, which increases the size of the wiki dramatically as you add content. To solve this, I include a converter from HTML back to Markdown, allowing this wiki to only keep one copy of each page. This pays for itself after adding only a few pages.
+I started this wiki from [1.5KB Single-File Wiki](https://dev.to/fedia/15kb-single-file-wiki-46a1), which is where the CSS-based navigation comes from. One issue I had with that approach was that it kept two copies of each page in the HTML file, increasing the wiki size dramatically as content grew. To solve this, OmniFlux includes an HTML-to-Markdown converter, allowing the saved wiki to keep only one copy of each page. This pays for itself after adding only a few pages.
 
-After that, the regular expressions were modified or rewritten to be more targeted, additional Markdown support was added, and a bunch of features were rolled in, like search, embedding images, a user-controlled table of contents (overview), and some page-related actions.
+After that, the regular expressions were modified or rewritten to be more targeted, additional Markdown support was added, and features such as search, embedded files, a user-controlled overview, backlinks, broken-link detection, autosave, WebDAV upload, and page actions were added.
 
 Oh, and tests now exist to make sure the Markdown converter works correctly, which is a nice bonus.
 
