@@ -15,7 +15,7 @@ function insert(str, splitAt, insertStr) {
 }
 
 export async function makeContent(makeBlank = false) {
-    const { dom, html } = await loadDomAndHtml();
+    let { dom, html } = await loadDomAndHtml();
 
     // Clean the HTML file in case an updated OmniWiki was copied over.  This
     // simplifies updating the documentation, as the HTML file can be copied

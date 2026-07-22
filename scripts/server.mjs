@@ -79,6 +79,8 @@ const handler = async (req, res) => {
             req.on('end', async () => {
                 log('Received PUT request with body length:', body.length);
                 await writeFile("omniflux.html", body);
+                // Regenerate content so the <script> and <style> tags are removed
+                await makeContent();
                 res.writeHead(200, { 'Content-Type': 'text/plain' });
                 res.end('OK');
                 releaseMutex(id2);

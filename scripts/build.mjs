@@ -85,7 +85,7 @@ async function main() {
     );
     await writeFileToDist(
         '404.html',
-        '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Redirecting...</title><script>const l=window.location;l.replace(l.toString().replace(/\/([^\/]*)$/, "/#$1"));</script></head><body></body></html>'
+        '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Redirecting...</title><script>const l=window.location;l.replace(l.toString().replace(/\\/([^\/]*)$/, "/#$1"));</script></head><body></body></html>'
     );
     await writeFileToDist(
         'robots.txt',
