@@ -3,7 +3,7 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { getPageIds, makeContent } from "./make-content.mjs";
 import { minify } from "html-minifier-next";
-import { JSDOM, VirtualConsole } from 'jsdom';
+import { JSDOM, VirtualConsole } from "jsdom";
 
 const noJekyllFile = "dist/.nojekyll";
 const octocatFile = "dist/octocat.svg";
@@ -47,9 +47,9 @@ async function analyzeFile(filename) {
     const content = await readFile(filename, "utf-8");
     const dom = new JSDOM(content, { virtualConsole });
     const size = Buffer.byteLength(content, "utf8");
-    const jsSize = sizeOf(dom, 'script.of-core');
-    const cssSize = sizeOf(dom, 'style.of-core');
-    const articleSize = sizeOf(dom, 'article');
+    const jsSize = sizeOf(dom, "script.of-core");
+    const cssSize = sizeOf(dom, "style.of-core");
+    const articleSize = sizeOf(dom, "article");
     const htmlSize = size - jsSize - cssSize - articleSize;
     console.log(`File: ${filename}`, {
         size,
@@ -61,7 +61,12 @@ async function analyzeFile(filename) {
 }
 
 async function sitemap() {
-    const pageIds = (await getPageIds()).map((id) => `<url><loc>https://fidian.github.com/omniflux/#${id}</loc></url>`).join("\n");
+    const pageIds = (await getPageIds())
+        .map(
+            (id) =>
+                `<url><loc>https://fidian.github.com/omniflux/#${id}</loc></url>`
+        )
+        .join("\n");
     return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url><loc>https://fidian.github.com/omniflux/</loc></url>
@@ -75,26 +80,30 @@ async function main() {
     await buildFile("index.html");
     await buildFile("minified/index.html", true);
     await writeFileToDist(".nojekyll", "");
+    const pageIds = await getPageIds();
+
+    for (const pageId of pageIds) {
+        await mkdir(`dist/${pageId}/`, { recursive: true });
+        await writeFileToDist(`${pageId}/index.html`, `<script>location.replace(location.href.replace(/\\/([^\/]*)\\/?$/, "/#$1"));</script>`);
+    }
+
     await writeFileToDist(
         "octocat.svg",
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M10.226 17.284c-2.965-.36-5.054-2.493-5.054-5.256 0-1.123.404-2.336 1.078-3.144-.292-.741-.247-2.314.09-2.965.898-.112 2.111.36 2.83 1.01.853-.269 1.752-.404 2.853-.404 1.1 0 1.999.135 2.807.382.696-.629 1.932-1.1 2.83-.988.315.606.36 2.179.067 2.942.72.854 1.101 2 1.101 3.167 0 2.763-2.089 4.852-5.098 5.234.763.494 1.28 1.572 1.28 2.807v2.336c0 .674.561 1.056 1.235.786 4.066-1.55 7.255-5.615 7.255-10.646C23.5 6.188 18.334 1 11.978 1 5.62 1 .5 6.188.5 12.545c0 4.986 3.167 9.12 7.435 10.669.606.225 1.19-.18 1.19-.786V20.63a2.9 2.9 0 0 1-1.078.224c-1.483 0-2.359-.808-2.987-2.313-.247-.607-.517-.966-1.034-1.033-.27-.023-.359-.135-.359-.27 0-.27.45-.471.898-.471.652 0 1.213.404 1.797 1.235.45.651.921.943 1.483.943.561 0 .92-.202 1.437-.719.382-.381.674-.718.944-.943"></path></svg>'
     );
     await writeFileToDist(
         "googled1a61b91d6079a30.html",
-        'google-site-verification: googled1a61b91d6079a30.html'
+        "google-site-verification: googled1a61b91d6079a30.html"
     );
     await writeFileToDist(
-        '404.html',
-        '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Redirecting...</title><script>const l=window.location;l.replace(l.toString().replace(/\\/([^\/]*)$/, "/#$1"));</script></head><body></body></html>'
+        "404.html",
+        '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Redirecting...</title><script>const l=window.location;l.replace(l.href.replace(/\\/([^\/]*)\\/?$/, "/#$1"));</script></head><body></body></html>'
     );
     await writeFileToDist(
-        'robots.txt',
-        'User-agent: *\nAllow: /\nSitemap: https://fidian.github.com/omniflux/sitemap.xml'
+        "robots.txt",
+        "User-agent: *\nAllow: /\nSitemap: https://fidian.github.com/omniflux/sitemap.xml"
     );
-    await writeFileToDist(
-        'sitemap.xml',
-        await sitemap()
-    );
+    await writeFileToDist("sitemap.xml", await sitemap());
     await analyzeFile("dist/index.html");
     await analyzeFile("dist/minified/index.html");
 }
