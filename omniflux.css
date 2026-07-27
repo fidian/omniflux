@@ -53,6 +53,14 @@ article:target,
     display: block;
 }
 
+/* Hide the delete button on the index page */
+.of-delete {
+    display: none;
+}
+body:has(.of-articles > :target) .of-delete {
+    display: block;
+}
+
 /* Make animations easier */
 :root {
     interpolate-size: allow-keywords;

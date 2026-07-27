@@ -15,87 +15,93 @@ function insert(str, splitAt, insertStr) {
 }
 
 export async function makeContent(makeBlank = false) {
-    let { dom, html } = await loadDomAndHtml();
+    const { dom, document } = await loadDom();
 
     // Clean the HTML file in case an updated OmniWiki was copied over.  This
     // simplifies updating the documentation, as the HTML file can be copied
     // over without worrying about the embedded CSS and JS.
-    for (const el of dom.window.document.querySelectorAll(".of-core")) {
+    for (const el of document.querySelectorAll(".of-core")) {
         el.remove();
     }
 
     // Remove blank lines within close body tag
-    const bodyNodes = [...dom.window.document.querySelector("body").childNodes];
+    const bodyNodes = [...document.querySelector("body").childNodes];
     [bodyNodes[0], bodyNodes[bodyNodes.length - 1]].forEach((child) => {
         if (child.nodeType === 3 && child.textContent.trim() === "") {
             child.remove();
         }
     });
 
-    const modified = dom.serialize();
+    // Update the application version (date string) to be YYYY.MM.DD
+    document
+        .querySelector("meta[name='version']")
+        .setAttribute(
+            "content",
+            document
+                .querySelector("#changelog li:first-child b")
+                .innerHTML.replace(/-/g, ".")
+        );
+    document
+        .querySelector("meta[name='build-time']")
+        .setAttribute("content", new Date().toISOString());
 
-    if (modified !== html) {
-        console.log("Updating HTML to remove embedded CSS and JS");
-        await writeFile(htmlFile, modified, "utf-8");
-        html = modified;
-    }
+    await writeFile(htmlFile, dom.serialize(), "utf-8");
 
     // Add CSS
     const css = await readFile(cssFile, "utf-8");
-    const headEl = dom.window.document.querySelector("head");
-    const style = dom.window.document.createElement("style");
+    const headEl = document.querySelector("head");
+    const style = document.createElement("style");
     style.classList.add("of-core");
     style.textContent = css;
     headEl.appendChild(style);
 
     // Add JS
     const script = await readFile(scriptFile, "utf-8");
-    const bodyEl = dom.window.document.querySelector("body");
-    const scriptEl = dom.window.document.createElement("script");
+    const bodyEl = document.querySelector("body");
+    const scriptEl = document.createElement("script");
     scriptEl.classList.add("of-core");
     scriptEl.type = "module";
     scriptEl.textContent = script;
     bodyEl.appendChild(scriptEl);
 
     if (makeBlank) {
-        for (const el of dom.window.document.querySelectorAll(
+        for (const el of document.querySelectorAll(
             "article, script:not(.of-core), style:not(.of-core)"
         )) {
             el.remove();
         }
-        const articles = dom.window.document.querySelector(".of-articles");
-        const index = dom.window.document.createElement("article");
+        const articles = document.querySelector(".of-articles");
+        const index = document.createElement("article");
         index.classList.add("index");
         index.innerHTML = "<h1>OmniFlux</h1>";
         articles.appendChild(index);
 
-        const overview = dom.window.document.createElement("article");
+        const overview = document.createElement("article");
         overview.id = "overview";
         overview.innerHTML = '<p>Edit <a href="#overview">this page</a></p>';
         articles.appendChild(overview);
 
-        dom.window.document.querySelector(".of-index").innerHTML =
+        document.querySelector(".of-index").innerHTML =
             '<p><a href="#overview">Overview</a></p>';
-        dom.window.document.querySelector(
-            '[data-of-transclude="#overview"]'
-        ).innerHTML = overview.innerHTML;
+        document.querySelector('[data-of-transclude="#overview"]').innerHTML =
+            overview.innerHTML;
     }
 
     return dom.serialize();
 }
 
 export async function getPageIds() {
-    const { dom } = await loadDomAndHtml();
-    const pageIds = [
-        ...dom.window.document.querySelectorAll("article[id]")
-    ].map((el) => el.id);
+    const { document } = await loadDom();
+    const pageIds = [...document.querySelectorAll("article[id]")].map(
+        (el) => el.id
+    );
 
     return pageIds;
 }
 
-async function loadDomAndHtml() {
+async function loadDom() {
     let html = await readFile(htmlFile, "utf-8");
     const dom = new JSDOM(html, { virtualConsole });
 
-    return { dom, html };
+    return { dom, document: dom.window.document };
 }

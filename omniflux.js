@@ -1243,8 +1243,10 @@ on(".of-apply", "click", saveEdits);
 on(".of-put", "click", autoputAction);
 
 on(".of-delete", "click", () => {
-    inputEl.value = "";
-    saveEdits();
+    if (confirm("Are you sure you want to delete this page?")) {
+        inputEl.value = "";
+        saveEdits();
+    }
 });
 
 on(".of-rename", "click", () => {
