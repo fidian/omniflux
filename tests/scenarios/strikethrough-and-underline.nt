@@ -1,0 +1,8 @@
+md2html: true
+html2md: true
+markdown:
+ > ~~strikethrough~~ and ~underline~
+html:
+ >
+ > <p><s>strikethrough</s> and <u>underline</u></p>
+ >

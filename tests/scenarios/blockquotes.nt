@@ -9,8 +9,11 @@ html:
  >
  > <p>Test</p>
  >
+ >
  > <blockquote>
  >
  > <p>This is a blockquote<br>
  > with two lines</p>
+ >
+ > </blockquote>
  >
