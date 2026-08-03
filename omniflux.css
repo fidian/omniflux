@@ -390,6 +390,10 @@ table {
     }
 }
 
+.of-search-results {
+    margin: 0.5em 0;
+}
+
 /* Toaster message when save is successful */
 .of-saved {
     position: fixed;
