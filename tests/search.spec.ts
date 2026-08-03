@@ -68,3 +68,12 @@ test("Multi-word search requires all terms to appear in the same article", async
     await page.locator(".of-search").fill("markdown xyznotawordxyz");
     await expect(page.locator(".of-search-results a")).toHaveCount(0);
 });
+
+test("Search shows 'No results.' when nothing matches", async ({ page }) => {
+    await goto(page);
+    await openSidebar(page);
+    await openSidebarSection(page, ".of-search");
+
+    await page.locator(".of-search").fill("xyznotawordxyz");
+    await expect(page.locator(".of-search-results")).toHaveText("No results.");
+});

@@ -1406,15 +1406,25 @@ on(
                 }
 
                 const matchWords = value.split(/\s+/);
-                searchResultsEl.innerHTML =
-                    articleList(
-                        [...querySelectorAll("article")].filter((article) => {
-                            const text = article.textContent.toLowerCase();
-                            return matchWords.every((word) =>
-                                text.includes(word)
-                            );
-                        })
-                    ) || "No results.";
+                const matches = [];
+
+                for (const article of querySelectorAll("article")) {
+                    const text = article.textContent.toLowerCase();
+
+                    if (matchWords.every((word) => text.includes(word))) {
+                        matches.push(article);
+
+                        if (matches.length > 100) {
+                            searchResultsEl.innerHTML =
+                                "Too many results to show.";
+                            return;
+                        }
+                    }
+                }
+
+                searchResultsEl.innerHTML = matches.length
+                    ? articleList(matches)
+                    : "No results.";
             }, 300);
         }
     )
