@@ -19,13 +19,13 @@ test("Ctrl+Enter saves edits when the editor is open", async ({ page }) => {
     await page.keyboard.press("Control+Enter");
 
     await expect(page.locator(".of-input")).toBeHidden();
-    await expect(
-        page.locator("article#ctrl-enter-page h1")
-    ).toHaveText("Ctrl Enter Page");
+    await expect(page.locator("article#ctrl-enter-page h1")).toHaveText(
+        "Ctrl Enter Page"
+    );
 });
 
 test("Meta+Enter (Cmd+Enter) also starts editing and saves", async ({
-    page,
+    page
 }) => {
     await goto(page);
     await expect(page.locator(".of-input")).toBeHidden();
@@ -37,7 +37,7 @@ test("Meta+Enter (Cmd+Enter) also starts editing and saves", async ({
     await page.keyboard.press("Meta+Enter");
 
     await expect(page.locator(".of-input")).toBeHidden();
-    await expect(
-        page.locator("article.index h1")
-    ).toHaveText("Meta Enter Test");
+    await expect(page.locator("article.index h1")).toHaveText(
+        "Meta Enter Test"
+    );
 });

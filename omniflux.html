@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"><meta name="version" content="2027.08.03"><meta name="application-name" content="OmniFlux Wiki"><meta name="build-time" content="2026-08-03T18:34:06.475Z"><title>OmniFlux Wiki</title></head><body class=""><div class="of-articles"><article class="index">
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"><meta name="version" content="2026.08.06"><meta name="application-name" content="OmniFlux Wiki"><meta name="build-time" content="2026-08-06T14:15:49.986Z"><title>OmniFlux Wiki</title></head><body class=""><div class="of-articles"><article class="index">
 <h1>OmniFlux - Single-Page Wiki</h1>
 
 <p>You're looking at a complete, self-contained wiki. This one file can be downloaded, edited with Markdown, and saved again. It even supports autosaving when content changes. Try it now by pressing the "Edit" button in the upper right. <a href="#markdown-syntax">Learn about supported Markdown.</a></p>
@@ -46,6 +46,7 @@
 <li>Detection of broken internal links. When there are none, the sidebar item is removed.</li>
 <li>The JavaScript has TypeScript annotations to provide information to intelligent editors.</li>
 <li>Binary and text files can be uploaded to and downloaded from the wiki.</li>
+<li>Advanced <a href="#paste-support">paste support</a> for HTML and links.</li>
 <li>Image support - these can be files that are external to the wiki or uploaded and used within the wiki, like this <a href="#solar-flare.jpg">solar-flare.jpg</a>.</li>
 </ul>
 
@@ -220,6 +221,8 @@ Make your own haiku</p>
 <pre><code class="language-md">![Solar Flare](#solar-flare.jpg)
 </code></pre>
 
+<p>You can also copy and paste links or highlight text and paste URLs. Learn more about <a href="#paste-support">paste support</a>.</p>
+
 
 <h4>Avoid</h4>
 
@@ -387,6 +390,7 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <a href="#fair-comparison">Fair Comparison</a><br>
 <a href="#keybindings">Keybindings</a><br>
 <a href="#markdown-syntax">Markdown Syntax</a><br>
+<a href="#paste-support">Paste Support</a><br>
 <a href="#rule-processing">Rule Processing</a><br>
 <a href="#saving-with-webdav">Saving with WebDAV</a><br>
 <a href="#upgrading">Upgrading</a></p>
@@ -396,9 +400,10 @@ Use <code>&gt; &gt; </code> (or more) at the beginning of the line.</p>
 <p>Is your version a little stale or missing some features? <a href="#upgrading">Learn how to upgrade!</a></p>
 
 <ul>
-<li><b>2027-08-03</b> - Updated search to provide feedback for too many and zero results.</li>
-<li><b>2027-07-27</b> - Added more metadata. Hide delete button for index page.</li>
-<li><b>2027-07-23</b> - Added metadata for the application name and version. Fixed edit page's wrapping of the page ID to now use ellipsis.</li>
+<li><b>2026-08-06</b> - Implemented <a href="#paste-support">paste support</a> for HTML and links.</li>
+<li><b>2026-08-03</b> - Updated search to provide feedback for too many and zero results.</li>
+<li><b>2026-07-27</b> - Added more metadata. Hide delete button for index page.</li>
+<li><b>2026-07-23</b> - Added metadata for the application name and version. Fixed edit page's wrapping of the page ID to now use ellipsis.</li>
 <li><b>2026-07-22</b> - Documentation update. Code and CSS cleanup. Added document title to top toolbar.</li>
 <li><b>2026-07-21</b> - Added Control/Command-S behavior to save the wiki, along with additional <a href="#keybindings">keybindings</a>. Added Escape shortcuts for canceling an edit and toggling the sidebar. Changed the edit confirmation button to say "Apply" to differentiate it from "Save".</li>
 <li><b>2026-07-20</b> - Standardized class names, attributes, and more to use hyphens. Documented transclusion and removed transcluded content when editing.</li>
@@ -1023,6 +1028,19 @@ This content is sent to the custom element.
 <tr><td align="left">Escape</td><td align="left">Viewing</td><td align="left">Toggle the sidebar.</td></tr>
 </tbody>
 </table>
+</article><article id="paste-support">
+<h1>Paste Support</h1>
+
+<p>When editing a page in OmniFlux, you are able to paste in content and have certain effects happen automatically. This speeds up the creation and maintenance of your documentation.</p>
+
+<ul>
+<li>Pasting text or a URL will paste it as-is. This is normal behavior in a <code>textarea</code> element in the browser and works everywhere.</li>
+<li>Highlighting and pasting a URL will turn the highlighted text into a link to the URL.</li>
+<li>Copying a link from a browser and pasting it will convert the link into Markdown.</li>
+<li>Copying HTML from elsewhere and pasting it will convert the content into Markdown.</li>
+</ul>
+
+<p>Refer to <a href="#markdown-syntax">Markdown syntax</a> for information on supported Markdown in OmniFlux.</p>
 </article></div>
 <div class="of-toolbar">
     <button class="of-toolbar-spacer of-js-on" data-of-transclude=".of-edit" aria-hidden="true" tabindex="-1">Edit</button>
@@ -1046,6 +1064,7 @@ This content is sent to the custom element.
 <a href="#fair-comparison">Fair Comparison</a><br>
 <a href="#keybindings">Keybindings</a><br>
 <a href="#markdown-syntax">Markdown Syntax</a><br>
+<a href="#paste-support">Paste Support</a><br>
 <a href="#rule-processing">Rule Processing</a><br>
 <a href="#saving-with-webdav">Saving with WebDAV</a><br>
 <a href="#upgrading">Upgrading</a></p>
@@ -1073,6 +1092,7 @@ This content is sent to the custom element.
 <a href="#markdown-syntax">Markdown Syntax</a><br>
 <a href="#">OmniFlux - Single-Page Wiki</a><br>
 <a href="#overview">Overview</a><br>
+<a href="#paste-support">Paste Support</a><br>
 <a href="#rule-processing">Rule Processing</a><br>
 <a href="#saving-with-webdav">Saving with WebDAV</a><br>
 <a href="#tilt-custom-element">Tilt Custom Element</a><br>

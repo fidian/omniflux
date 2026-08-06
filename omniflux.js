@@ -100,6 +100,20 @@ const setAttributes = (el, attrs) => {
  */
 const cssEscape = (str) => CSS.escape(str);
 
+/**
+ * Insert text into the textarea at the current cursor position. Attempts to
+ * use execCommand to allow undo/redo to work.
+ * @type {(text: string) => unknown}
+ */
+const insertTextAtCursor = (markdown) =>
+    doc.execCommand("insertText", false, markdown) ||
+    inputEl.setRangeText(
+        markdown,
+        inputEl.selectionStart || 0,
+        inputEl.selectionEnd || 0,
+        "end"
+    );
+
 /** @type {(id: string) => HTMLElement | undefined} */
 const getArticle = (id) =>
     querySelector(`article${id ? `#${cssEscape(id)}` : ".index"}`);
@@ -484,7 +498,8 @@ const inlineRules = [
     ],
     [
         /(?<!mailto:)[^\s]+@[^\s]+/i,
-        (email) => dom("a", email, { href: 'mailto:' + email, ...linkAttributes })
+        (email) =>
+            dom("a", email, { href: "mailto:" + email, ...linkAttributes })
     ]
 ];
 
@@ -714,7 +729,7 @@ const html2MdConversions = [
                 } else {
                     add(`[[${href.slice(1)}|${text}]]`);
                 }
-            } else if (href === 'mailto:' + text) {
+            } else if (href === "mailto:" + text) {
                 add(text);
             } else {
                 add(href === text ? href : `[${text}](${href})`);
@@ -1241,6 +1256,33 @@ on(".of-cancel", "click", doneEditing);
 on(".of-apply", "click", saveEdits);
 
 on(".of-put", "click", autoputAction);
+
+on(
+    inputEl,
+    "paste",
+    /** @type {(event: ClipboardEvent) => void} */ (
+        (event) => {
+            const { clipboardData } = event;
+            const div = dom("div");
+            div.innerHTML = clipboardData?.getData("text/html") || "";
+            const markdown = html2Md(div, true);
+            if (markdown) {
+                event.preventDefault();
+                insertTextAtCursor(markdown);
+            } else {
+                const selection = inputEl.value.substring(
+                    inputEl.selectionStart ?? 0,
+                    inputEl.selectionEnd ?? 0
+                );
+                const text = clipboardData?.getData("text/plain") || "";
+                if (selection && text.match(/^https?:\/\/[^\s]+$/i)) {
+                    event.preventDefault();
+                    insertTextAtCursor(`[${selection || text}](${text})`);
+                }
+            }
+        }
+    )
+);
 
 on(".of-delete", "click", () => {
     if (confirm("Are you sure you want to delete this page?")) {

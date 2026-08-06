@@ -19,7 +19,7 @@ The focus is to have **minimal code** in `omniflux.js` (not minified source, but
 1. Prefer constructs with fewer JavaScript tokens when behavior is equivalent.
 2. Use modern baseline JS features when they reduce token count and keep clarity.
 3. Example preference:
-   - Prefer `if (event.target?.tagName === 'A')` over `if (event.target && event.target.tagName === 'A')`.
+    - Prefer `if (event.target?.tagName === 'A')` over `if (event.target && event.target.tagName === 'A')`.
 4. Reuse helpers and existing utilities instead of duplicating logic.
 5. Avoid verbose defensive patterns when concise baseline-safe syntax exists.
 6. Keep `// @ts-check` and JSDoc typing approach intact unless there is a strong reason to change it.
@@ -48,10 +48,15 @@ The focus is to have **minimal code** in `omniflux.js` (not minified source, but
 
 ## Testing and Validation Requirements
 
-1. Any change that can be easily tested should be tested.
+1. Functional changes must include automated test coverage (new test or an update to existing tests) unless impossible; if impossible, document why.
 2. Prioritize targeted checks related to modified behavior.
 3. For parser/converter behavior changes, ensure round-trip expectations still hold (Markdown↔HTML where applicable).
 4. Do not skip practical verification for save/edit/navigation/search/import/upload paths when touched.
+
+## Formatting Requirements
+
+1. Run Prettier on files changed in a task before finishing.
+2. Keep formatting consistent with existing repository style and Prettier output.
 
 ## Agent Working Rules
 
