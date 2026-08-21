@@ -15,6 +15,7 @@ OmniFlux is a self-contained wiki that runs from a single HTML file. It is desig
 * Search, backlinks, broken-link detection, and a generated page index are built in.
 * Uploaded files and images can be embedded directly in the wiki.
 * CSS-based routing lets the wiki be browsed without JavaScript.
+* Light and dark themes follow the operating system setting automatically.
 
 
 ## Design Goals

@@ -10,27 +10,83 @@ html {
     }
 }
 
-/* Sidebar colors change based on if there are changes or if the content is
- * automatically saving. */
+/* The whole palette comes from these tokens. Colors use oklch so the light
+ * and dark themes can share hues and only shift lightness. */
 :root {
-    --of-sidebar-color: #ccf;
-    --of-sidebar-section-color: #aae;
-    --of-sidebar-hover: #def;
+    color-scheme: light;
+    accent-color: var(--of-link);
+
+    --of-bg: oklch(99% 0.004 275);
+    --of-fg: oklch(26% 0.02 275);
+    --of-muted: oklch(52% 0.025 275);
+    --of-line: oklch(88% 0.013 275);
+    --of-link: oklch(48% 0.16 275);
+    --of-visited: oklch(48% 0.13 320);
+    --of-surface: oklch(96% 0.008 275);
+    --of-ok: oklch(62% 0.15 150);
+    --of-ok-bg: oklch(94% 0.05 150);
+
     --of-toolbar-height: 35px;
     --of-article-top-margin: calc(var(--of-toolbar-height) + 27px);
 }
 
+/* --of-header is the shared surface for sidebar section bars and table
+ * header rows, so a heading reads the same wherever it appears.
+ *
+ * The sidebar handle and the sidebar notices show whether the wiki is saving
+ * automatically or has unsaved changes. Each state picks a hue, a chroma, and
+ * a lightness per theme. Idle lands on the sidebar color, so the handle blends
+ * in until something happens. */
+body {
+    --of-h: 275;
+    --of-c: 0.035;
+    --of-l: 92%;
+    --of-l-dark: 28%;
+    --of-sidebar-color: oklch(92% 0.035 275);
+    --of-header: oklch(85% 0.07 275);
+    --of-sidebar-hover: oklch(97% 0.015 275);
+    --of-status: oklch(var(--of-l) var(--of-c) var(--of-h));
+    --of-status-line: oklch(58% calc(var(--of-c) * 1.5) var(--of-h));
+}
+
 body.of-autosave-flag,
 body.of-autoput-flag {
-    --of-sidebar-color: #cfc;
-    --of-sidebar-section-color: #aea;
-    --of-sidebar-hover: #beb;
+    --of-h: 150;
+    --of-c: 0.1;
+    --of-l: 89%;
+    --of-l-dark: 38%;
 }
 
 body.of-dirty-flag {
-    --of-sidebar-color: #fcc;
-    --of-sidebar-section-color: #eaa;
-    --of-sidebar-hover: #fed;
+    --of-h: 75;
+    --of-c: 0.08;
+    --of-l: 89%;
+    --of-l-dark: 40%;
+}
+
+/* If in dark mode, swap the palette. Printing keeps the light theme. */
+@media screen and (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: dark;
+
+        --of-bg: oklch(19% 0.014 275);
+        --of-fg: oklch(92% 0.014 275);
+        --of-muted: oklch(70% 0.022 275);
+        --of-line: oklch(34% 0.022 275);
+        --of-link: oklch(79% 0.105 275);
+        --of-visited: oklch(79% 0.09 320);
+        --of-surface: oklch(24% 0.018 275);
+        --of-ok: oklch(60% 0.13 150);
+        --of-ok-bg: oklch(28% 0.06 150);
+    }
+
+    body {
+        --of-sidebar-color: oklch(28% 0.04 275);
+        --of-header: oklch(35% 0.055 275);
+        --of-sidebar-hover: oklch(41% 0.065 275);
+        --of-status: oklch(var(--of-l-dark) var(--of-c) var(--of-h));
+        --of-status-line: oklch(72% calc(var(--of-c) * 1.5) var(--of-h));
+    }
 }
 
 /* CSS-based navigation - https://dev.to/fedia/15kb-single-file-wiki-46a1 */
@@ -72,12 +128,24 @@ body:has(.of-articles > :target) .of-delete {
 }
 
 body {
-    background-color: #fefefe;
-    color: #1d1d1d;
+    background-color: var(--of-bg);
+    color: var(--of-fg);
     margin: 0;
     padding: 0;
     font: 1.25em sans-serif;
     line-height: 1.5;
+}
+
+a {
+    color: var(--of-link);
+}
+
+a:visited {
+    color: var(--of-visited);
+}
+
+.of-search {
+    width: 100%;
 }
 
 .of-editor {
@@ -108,7 +176,9 @@ body {
 }
 
 .of-input {
+    background-color: var(--of-bg);
     border: 0;
+    color: var(--of-fg);
     flex: 1;
     outline: none;
     padding: 0.5rem;
@@ -122,8 +192,8 @@ body.of-edit-flag {
 
 .of-toolbar {
     align-items: center;
-    background-color: #f1e2e2;
-    border-bottom: 1px solid #ccc;
+    background-color: var(--of-surface);
+    border-bottom: 1px solid var(--of-line);
     display: flex;
     gap: 0.5rem;
     height: var(--of-toolbar-height);
@@ -256,7 +326,7 @@ body.of-edit-flag {
             list-style-type: none;
             cursor: pointer;
             font-weight: bold;
-            background-color: var(--of-sidebar-section-color);
+            background-color: var(--of-header);
             padding: 0 0.2em;
             user-select: none;
 
@@ -273,7 +343,8 @@ body.of-edit-flag {
 }
 
 .of-sidebar-handle {
-    background-color: var(--of-sidebar-color);
+    background-color: var(--of-status);
+    box-shadow: inset 0 0 0 2px var(--of-status-line);
     display: flex;
     flex-direction: column;
     height: 50px;
@@ -285,7 +356,7 @@ body.of-edit-flag {
 }
 
 .of-hamburger-bar {
-    background-color: #333;
+    background-color: var(--of-fg);
     border-radius: 3px;
     height: 100%;
     transition: all 0.2s ease-in-out;
@@ -301,24 +372,22 @@ pre code {
 
 pre,
 code {
-    background-color: #e0e0e0;
+    background-color: var(--of-surface);
 }
 
 pre {
     padding: 0.5em;
     overflow-x: auto;
-    border: 1px solid #bbb;
+    border: 1px solid var(--of-line);
 }
 
 /* Keyboard shortcuts */
 kbd {
-    background-color: #f7f7f7;
-    border: 1px solid #ccc;
+    background-color: var(--of-surface);
+    border: 1px solid var(--of-line);
     border-radius: 3px;
-    box-shadow:
-        0 1px 0 rgba(0, 0, 0, 0.2),
-        0 0 0 2px #fff inset;
-    color: #333;
+    box-shadow: 0 1px 0 var(--of-line);
+    color: inherit;
     display: inline-block;
     padding: 0.1em 0.4em;
     white-space: nowrap;
@@ -347,16 +416,19 @@ details[open]::details-content {
 
 blockquote {
     padding: 0 1em;
-    color: #656d76;
-    border-left: 0.25em solid #d0d7de;
+    color: var(--of-muted);
+    border-left: 0.25em solid var(--of-line);
     margin: 0 0 16px 0;
 }
 
+/* Status chip shown in the sidebar for unsaved changes or autosaving */
 .of-notice {
-    padding: 0.5em;
-    margin: 0.5em 0.5em;
+    padding: 0.4em 0.6em;
+    margin: 0.5em;
     text-align: center;
-    background-color: var(--of-sidebar-section-color);
+    background-color: var(--of-status);
+    border-left: 0.3em solid var(--of-status-line);
+    border-radius: 0.3em;
 }
 
 table {
@@ -365,16 +437,16 @@ table {
     th,
     td {
         padding: 4px 10px;
-        border: 1px solid #cdd;
+        border: 1px solid var(--of-line);
     }
 
     th {
         font-weight: 600;
-        background-color: #bdd;
+        background-color: var(--of-header);
     }
 
     tr:nth-child(even) {
-        background-color: #eef;
+        background-color: var(--of-surface);
     }
 }
 
@@ -400,8 +472,8 @@ table {
     right: 0.4em;
     bottom: 0.4em;
     padding: 0.6em 1em;
-    border: 2px solid #0c0;
-    background-color: #cfc;
+    border: 2px solid var(--of-ok);
+    background-color: var(--of-ok-bg);
     transition: all 0.3s ease-in-out;
     opacity: 0;
     pointer-events: none;
@@ -434,13 +506,6 @@ body:not(.of-js-flag) .of-js-on,
 body:not(.of-saved-flag) .of-saved-on,
 body:not(.of-webdav-flag) .of-webdav-on {
     display: none;
-}
-
-/* If in dark mode, apply a filter to make the page dark. */
-@media screen and (prefers-color-scheme: dark) {
-    html {
-        filter: invert(1) hue-rotate(180deg);
-    }
 }
 
 /* Limit a table's width and scroll if necessary */

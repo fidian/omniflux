@@ -1,12 +1,13 @@
 import { goto, openSidebar, openSidebarSection, hashNavigate } from "./util";
 import { test, expect } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 // ---------------------------------------------------------------------------
 // Index panel
 // ---------------------------------------------------------------------------
 
 test("Index panel lists every article and updates when pages are created or edited", async ({
-    page,
+    page
 }) => {
     await goto(page);
     await openSidebar(page);
@@ -34,7 +35,7 @@ test("Index panel lists every article and updates when pages are created or edit
 // ---------------------------------------------------------------------------
 
 test("Backlinks lists articles that contain a link to the current page", async ({
-    page,
+    page
 }) => {
     // Create a page that links to another.
     await goto(page, "backlink-source");
@@ -55,7 +56,7 @@ test("Backlinks lists articles that contain a link to the current page", async (
 });
 
 test("Backlinks shows 'No pages link here.' when nothing links to the current page", async ({
-    page,
+    page
 }) => {
     // Create an isolated page that no other page references.
     await goto(page, "isolated-page-abc123");
@@ -74,7 +75,7 @@ test("Backlinks shows 'No pages link here.' when nothing links to the current pa
 // ---------------------------------------------------------------------------
 
 test("Broken links panel highlights links to non-existent pages", async ({
-    page,
+    page
 }) => {
     await goto(page);
 
@@ -89,7 +90,7 @@ test("Broken links panel highlights links to non-existent pages", async ({
 });
 
 test("Broken links panel clears when the missing page is created", async ({
-    page,
+    page
 }) => {
     await goto(page);
     await expect(page.locator("body")).toHaveClass(/of-broken-flag/);
@@ -104,3 +105,47 @@ test("Broken links panel clears when the missing page is created", async ({
         page.locator(".of-broken a[href='#intentionally-missing-page']")
     ).not.toBeAttached();
 });
+
+// ---------------------------------------------------------------------------
+// Save status notices
+// ---------------------------------------------------------------------------
+
+/**
+ * The notices are driven purely by the flag classes on the body, so the flags
+ * are set directly rather than going through the save pickers and a WebDAV
+ * server.
+ */
+async function setFlags(page: Page, flags: string) {
+    await page.evaluate((value) => {
+        document.body.className = value;
+    }, flags);
+}
+
+const noticeCases: [string, string, string[]][] = [
+    ["nothing is enabled", "", []],
+    ["autosaving locally", "of-autosave-flag", ["Autosaving"]],
+    ["auto uploading", "of-autoput-flag", ["Auto Uploading"]],
+    [
+        "both are enabled",
+        "of-autosave-flag of-autoput-flag",
+        ["Autosaving & Uploading"]
+    ],
+    ["there are unsaved changes", "of-dirty-flag", ["Unsaved Changes"]]
+];
+
+for (const [description, flags, expected] of noticeCases) {
+    test(`Sidebar shows one save status notice when ${description}`, async ({
+        page
+    }) => {
+        await goto(page);
+        await openSidebar(page);
+        await setFlags(page, flags);
+
+        const visible = page.locator(".of-notice:visible");
+        await expect(visible).toHaveCount(expected.length);
+
+        if (expected.length) {
+            await expect(visible).toHaveText(expected);
+        }
+    });
+}
