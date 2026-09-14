@@ -164,7 +164,9 @@ const wikiContent = () => {
         (el) => (el.innerHTML = "")
     );
 
-    return `<!DOCTYPE html>\n${copy.outerHTML}\n`;
+    // The HTML parser moves whitespace after </html> into body. Drop it so it
+    // does not accumulate on each save.
+    return `<!DOCTYPE html>\n${copy.outerHTML.replace(/\s+(?=<\/body>)/, "")}\n`;
 };
 
 /**
