@@ -569,18 +569,21 @@ const blockRules = [
              */
             const lines = all
                 .split("\n")
-                // Map lines to [fullMatch, listStyle, content]
+                // Map lines to [fullMatch, indent, listStyle, content]
                 .map(
                     (line) =>
-                        line.match(/^( *(?:\d+\.|[-*+]) +)(.+)$/) || [
+                        line.match(/^( *)((?:\d+\.|[-*+]) +)(.+)$/) || [
+                            "",
                             "",
                             "",
                             line
                         ]
                 )
-                // Now change to [indentSize, listType, listDomNode]
-                .map(([_, listStyle, content]) => [
-                    listStyle.length,
+                // Now change to [indentSize, listType, listDomNode]. Only the
+                // leading spaces nest; the marker's width does not, so "10."
+                // stays level with "9."
+                .map(([_, indent, listStyle, content]) => [
+                    indent.length,
                     listStyle.match(/\d/) ? "ol" : "ul",
                     [dom("li", listItem(content.trim())), "\n"]
                 ]);

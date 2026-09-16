@@ -1,0 +1,38 @@
+md2html: true
+html2md: true
+markdown:
+ > 1. one
+ > 2. two
+ > 3. three
+ > 4. four
+ > 5. five
+ > 6. six
+ > 7. seven
+ > 8. eight
+ > 9. nine
+ > 10. ten
+ >   - nested
+ >   - items
+ > 11. eleven
+ > 12. twelve
+html:
+ >
+ > <ol>
+ > <li>one</li>
+ > <li>two</li>
+ > <li>three</li>
+ > <li>four</li>
+ > <li>five</li>
+ > <li>six</li>
+ > <li>seven</li>
+ > <li>eight</li>
+ > <li>nine</li>
+ > <li>ten</li>
+ > <ul>
+ > <li>nested</li>
+ > <li>items</li>
+ > </ul>
+ > <li>eleven</li>
+ > <li>twelve</li>
+ > </ol>
+ >
