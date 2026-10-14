@@ -514,3 +514,14 @@ article table {
     overflow-x: auto;
     max-width: 100%;
 }
+
+/* A top-level table that is too wide for the article first grows past the
+ * margins, centered on the text, and only scrolls once it fills the window.
+ * The 2em keeps it clear of the page's scrollbar. */
+article > table {
+    margin-left: 50%;
+    max-width: calc(100vw - 2em);
+    min-width: 100%;
+    translate: -50%;
+    width: min-content;
+}
