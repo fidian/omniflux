@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://fidian.github.com/omniflux/sitemap.xml
